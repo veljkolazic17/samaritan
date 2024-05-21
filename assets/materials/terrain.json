@@ -1,0 +1,6 @@
+{
+    "version": 1.0,
+    "name": "terrain",
+    "diffusecolor": "1.0 1.0 1.0 1.0",
+    "diffusemapname": "terrain"
+}
