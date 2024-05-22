@@ -3,6 +3,7 @@
 #include <utils/logger/remotelogger/redislogger.hpp>
 #include <engine/clock.hpp>
 #include <engine/memory/memory.hpp>
+#include <engine/memory/memoryholders/singleframeallocator.hpp>
 
 BEGIN_NAMESPACE
 
@@ -51,10 +52,13 @@ namespace Engine
 
 	void Engine::Run(void)
 	{
+		Memory::SingleFrameAllocator& singleFrameAllocator = Memory::SingleFrameAllocator::GetInstance();
+
 		ENGINE_RUN();
 		while (IS_ENGINE_RUNNING())
 		{
 			LoopPreProcess();
+			singleFrameAllocator.Clear();
 			// Process Loop
 		}
 	}

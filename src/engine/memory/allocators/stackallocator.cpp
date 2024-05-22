@@ -8,8 +8,12 @@ namespace Memory
 {
 	void StackAllocator::Init(muint64 allocatorSize)
 	{
-		m_AllocatorSize = allocatorSize;
-		m_MemoryChunk = mmaloc(allocatorSize, false);
+		if (m_MemoryChunk == nullptr)
+		{
+			m_AllocatorSize = allocatorSize;
+			m_MemoryChunk = mmaloc(allocatorSize, false);
+			m_StackTail = m_MemoryChunk;
+		}
 	}
 
 	void* StackAllocator::Allocate(muint64 stackSize)
@@ -21,25 +25,33 @@ namespace Memory
 		}
 		m_StackPointer += stackSize;
 		m_CurrentChunkSize = stackSize;
-		m_MemoryChunk = (void*)((muint64*)m_MemoryChunk + m_StackPointer - m_CurrentChunkSize);
-		return m_MemoryChunk;
+		m_StackTail = (void*)((muint64*)m_StackTail + m_StackPointer - m_CurrentChunkSize);
+		return m_StackTail;
 	}
 
 	void StackAllocator::Clear()
 	{
-		m_StackPointer = 0;
-		m_CurrentChunkSize = 0;
-		m_MemoryChunk = (void*)((muint64*)m_MemoryChunk - m_CurrentChunkSize);
-		mmfree(m_MemoryChunk, false);
+		// This means that allocator has been initialized
+		if (m_AllocatorSize != 0)
+		{
+			m_StackPointer = 0;
+			m_CurrentChunkSize = 0;
+			m_StackTail = (void*)((muint64*)m_StackTail - m_CurrentChunkSize);
+			mmzero(m_StackTail, m_AllocatorSize);
+		}
 	}
 
 	void StackAllocator::Rollback(marker memMarker)
 	{
 		m_StackPointer -= m_CurrentChunkSize;
 		m_CurrentChunkSize = memMarker;
-		m_MemoryChunk  = (void*)((muint64*)m_MemoryChunk - memMarker);
+		m_StackTail = (void*)((muint64*)m_StackTail - memMarker);
 	}
 
+	StackAllocator::~StackAllocator()
+	{
+		mmfree(m_MemoryChunk, false);
+	}
 }
 
 END_NAMESPACE

@@ -16,9 +16,12 @@ namespace Memory
 		void Rollback(marker memMarker);
 		inline marker GetMarker(void) { return m_CurrentChunkSize; }
 		void Clear();
+
+		~StackAllocator();
 	private:
 		muint64 m_StackPointer = 0;
 		muint64 m_CurrentChunkSize = 0;
+		void* m_StackTail = nullptr;
 	};
 }
 
