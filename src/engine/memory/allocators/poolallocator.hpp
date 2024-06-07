@@ -31,14 +31,14 @@ namespace Memory
 
 			Chunk* freeChunk = (Chunk*)m_MemoryChunk;
 
-			(Chunk*)m_MemoryChunk = (Chunk*)m_MemoryChunk->m_NextChunk;
+			(Chunk*)m_MemoryChunk = ((Chunk*)m_MemoryChunk)->m_NextChunk;
 
 			return freeChunk;
 		}
 
 		void Deallocate(void* chunk, muint32 size)
 		{
-			(Chunk*)chunk->m_NextChunk = (Chunk*)m_MemoryChunk;
+			((Chunk*)chunk)->m_NextChunk = (Chunk*)m_MemoryChunk;
 
 			m_MemoryChunk = chunk;
 		}
@@ -57,7 +57,7 @@ namespace Memory
 				chunk->m_NextChunk = reinterpret_cast<Chunk*>(reinterpret_cast<char*>(chunk) + chunkSize);
 				chunk = chunk->m_NextChunk;
 			}
-			chunk->next = nullptr;
+			chunk->m_NextChunk = nullptr;
 
 			return blockHead;
 		}

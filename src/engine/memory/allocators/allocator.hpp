@@ -5,6 +5,8 @@ BEGIN_NAMESPACE
 
 namespace Memory
 {
+
+	// TODO : This class should be done using allocator traits
 	class Allocator
 	{
 	public:
