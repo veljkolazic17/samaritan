@@ -5,7 +5,8 @@ enum class LogChannel
 	General,
 	Inputs,
 	Graphics,
-	Gameplay
+	Gameplay,
+	Memory
 };
 
 const char* LogChannelToString(LogChannel channel);

@@ -1,3 +1,4 @@
+#pragma once
 #include <defines.hpp>
 #include <engine/memory/memory.hpp>
 #include <engine/memory/allocators/allocator.hpp>
@@ -12,7 +13,6 @@ namespace Containers
     public:
         virtual muint64 GetSize() = 0;
         virtual void Clear() = 0;
-        virtual void Print() = 0;
     };
 }
 

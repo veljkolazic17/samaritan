@@ -1,5 +1,7 @@
 #ifdef TARGET_WIN
+#include <Windows.h>
 #include <engine/memory/memory.hpp>
+#include <engine/memory/memorystats.hpp>
 
 BEGIN_NAMESPACE
 
@@ -28,6 +30,58 @@ namespace Memory
 	void* mmset(void* destination, muint32 value, muint64 size)
 	{
 		return memset(destination, value, size);
+	}
+
+	void* GPAllocate(muint64 size, MemoryTag tag)
+	{
+		GP_ALLOC_CONSTRAINT(tag);
+#ifdef MEM_STATS_ENABLED
+		MemoryStats::GetInstance().MemoryTagAllocate(size, tag);
+#endif
+		return mmaloc(size, false);
+	}
+
+	void GPFree(void* memoryBlock, muint64 size, MemoryTag tag)
+	{
+		GP_ALLOC_CONSTRAINT(tag);
+#ifdef MEM_STATS_ENABLED
+		MemoryStats::GetInstance().MemoryTagFree(size, tag);
+#endif
+		mmfree(memoryBlock, false);
+	}
+
+	void* VMAllocate(muint64 size, MemoryTag tag)
+	{
+		VM_ALLOC_CONSTRAINT(tag);
+#ifdef MEM_STATS_ENABLED
+		MemoryStats::GetInstance().MemoryTagAllocate(size, tag);
+#endif
+		// TODO : should there be commit ? or should commit be done later ?
+		return VirtualAlloc(0, size, MEM_RESERVE | MEM_COMMIT, PAGE_READWRITE);
+	}
+
+	void* VMFree(void* memory, muint64 size, MemoryTag tag)
+	{
+		VM_ALLOC_CONSTRAINT(tag);
+#ifdef MEM_STATS_ENABLED
+		MemoryStats::GetInstance().MemoryTagFree(size, tag);
+#endif
+		VirtualFree(memory, 0, MEM_RELEASE);
+	}
+
+	void* Zero(void* memoryBlock, muint64 size)
+	{
+		return mmzero(memoryBlock, size);
+	}
+
+	void* Copy(void* source, const void* destination, muint64 size)
+	{
+		return mmcpy(destination, source, size);
+	}
+
+	void* Set(void* destination, muint32 value, muint64 size)
+	{
+		return mmset(destination, value, size);
 	}
 }
 

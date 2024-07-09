@@ -5,19 +5,11 @@ BEGIN_NAMESPACE
 
 namespace Memory
 {
-
-	// TODO : This class should be done using allocator traits
 	class Allocator
 	{
 	public:
-		virtual void Init(muint64 allocatorSize) = 0;
-		virtual void* Allocate(muint64 stackSize) = 0;
-
-		inline muint64 GetAllocatorSize(void) { return m_AllocatorSize; }
-		inline void* GetMemoryChunk(void) { return m_MemoryChunk; }
-	protected:
-		void* m_MemoryChunk = nullptr;
-		muint64 m_AllocatorSize = 0;
+		virtual void* Allocate(muint64 size) = 0;
+		virtual void Deallocate(void* memory) = 0;
 	};
 }
 

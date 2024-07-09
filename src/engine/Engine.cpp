@@ -3,7 +3,8 @@
 #include <utils/logger/remotelogger/redislogger.hpp>
 #include <engine/clock.hpp>
 #include <engine/memory/memory.hpp>
-#include <engine/memory/memoryholders/singleframeallocator.hpp>
+//TODO : this should be changed to be in another folder
+#include <engine/memory/containers/singleframeallocator.hpp>
 
 BEGIN_NAMESPACE
 

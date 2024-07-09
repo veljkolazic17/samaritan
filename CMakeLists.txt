@@ -6,5 +6,4 @@ project(Chapter1)
 
 include(./CommonMacros.cmake)
 
-SETUP_APP(Vulkan_WinAPI vulkanapi Win true WINDOW_NATIVE_WIN)
-SETUP_APP(Vulkan_GLFW vulkanapi Win true WINDOW_GLFW)
+SETUP_APP(Vulkan_WinAPI vulkanapi Win true WINDOW_NATIVE_WIN true)
