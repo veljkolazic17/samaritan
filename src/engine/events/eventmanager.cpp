@@ -53,7 +53,7 @@ namespace Events
         }
     }
     
-    void EventManager::QueueEvent(std::unique_ptr<Event>&& event)
+    void EventManager::AddEvent(std::unique_ptr<Event>&& event)
     {
         m_EventsQueue.emplace_back(std::move(event));
     }
@@ -72,6 +72,16 @@ namespace Events
                 ++eventIt;
             }
         }
+    }
+
+    inline void AddEvent(std::unique_ptr<Event>&& event)
+    {
+        EventManager::GetInstance().AddEvent(std::forward<std::unique_ptr<Event>>(event));
+    }
+
+    inline void TriggerEvent(const Event& event)
+    {
+        EventManager::GetInstance().TriggerEvent(event);
     }
 }
 

@@ -13,7 +13,7 @@ namespace Memory
 
 namespace Memory
 {
-	// C++ style memory allocation
+	// GP C++ style memory allocation
 	template <typename T, typename... Args>
 	T* mnew(Args&&... args)
 	{
@@ -24,7 +24,7 @@ namespace Memory
 	{
 		delete object;
 	}
-	// C style memory allocation
+	// GP C style memory allocation
 	void* mmaloc(muint64 size, mbool isAligned);
 	void mmfree(void* memoryBlock, mbool isAligned);
 	void* mmzero(void* memoryBlock, muint64 size);
@@ -39,12 +39,17 @@ namespace Memory
 	void* VMAllocate(muint64 size, MemoryTag tag);
 	void* VMFree(void*memory, muint64 size, MemoryTag tag);
 
+	//TODO : Why is this used?
 	void* Zero(void* memoryBlock, muint64 size);
 	void* Copy(void* source, const void* destination, muint64 size);
 	void* Set(void* destination, muint32 value, muint64 size);
 }
 
 END_NAMESPACE
+
+#define Zero(memoryBlock, size)			mmzero(memoryBlock, size)
+#define Copy(source, destination, size)	mmcopy(source, destination, size)
+#define Set(destination, value, size)	mmset(destination, value, size)
 
 // Heap style general purpose allocator macros
 #define gpAllocArray(size)				GPAllocate(size, MemoryTag::MEM_ARRAY);

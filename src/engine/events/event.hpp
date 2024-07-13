@@ -1,11 +1,6 @@
 #pragma once
 #include <defines.hpp>
 
-#define EVENT_CONTEXT_SIZE	128
-#define MAX_EVENT_CODES		16384
-#define InvalidCallback		nullptr
-#define InvalidCaller		nullptr
-
 BEGIN_NAMESPACE
 
 namespace Events
@@ -21,3 +16,9 @@ namespace Events
 }
 
 END_NAMESPACE
+
+#define DEFINE_EVENT(eventType)                		\                                        
+    const std::string GetEventType() const override 	\
+    {                                           	\
+        return eventType;            				\
+    }

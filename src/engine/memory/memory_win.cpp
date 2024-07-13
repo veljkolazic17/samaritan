@@ -68,21 +68,6 @@ namespace Memory
 #endif
 		VirtualFree(memory, 0, MEM_RELEASE);
 	}
-
-	void* Zero(void* memoryBlock, muint64 size)
-	{
-		return mmzero(memoryBlock, size);
-	}
-
-	void* Copy(void* source, const void* destination, muint64 size)
-	{
-		return mmcpy(destination, source, size);
-	}
-
-	void* Set(void* destination, muint32 value, muint64 size)
-	{
-		return mmset(destination, value, size);
-	}
 }
 
 END_NAMESPACE
