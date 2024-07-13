@@ -1,19 +1,15 @@
 #pragma once
 #include <defines.hpp>
+#include <objecttemplates/singleton.hpp>
 
 BEGIN_NAMESPACE
 
 namespace Engine
 {
-	class Clock
+	class Clock SINGLETON(Clock)
 	{
-	public:
-		static Clock& GetInstance() { static Clock instance; return instance; }
-		Clock(Clock& other) = delete;
-		void operator=(const Clock&) = delete;
 	private:
-		Clock() {};
-		~Clock() {};
+		SINGLETON_CONSTRUCTOR(Clock);
 	public:
 		void Init(void);
 		mfloat64 GetTime();
