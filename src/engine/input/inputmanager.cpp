@@ -56,11 +56,13 @@ namespace Input
             if(isPressed)
             {
                 std::unique_ptr<KeyboardInputPressedEvent> pressedEvent = std::move(std::make_unique<KeyboardInputPressedEvent>());
+                pressedEvent->m_Key = key;
                 Events::AddEvent(std::move(pressedEvent));
             }
             else
             {
                 std::unique_ptr<KeyboardInputReleasedEvent> releasedEvent = std::move(std::make_unique<KeyboardInputReleasedEvent>());
+                releasedEvent->m_Key = key;
                 Events::AddEvent(std::move(releasedEvent));
             }
         }
@@ -72,6 +74,7 @@ namespace Input
         {
             return;
         }
+        return !m_InputStates.m_CurrentKeyboardState.m_Keys[(unsigned long)key];
     }
 
     mbool InputManager::IsKeyDown(Key key)
@@ -80,6 +83,7 @@ namespace Input
         {
             return false;
         }
+        return m_InputStates.m_CurrentKeyboardState.m_Keys[(unsigned long)key];
     }
 
     mbool InputManager::WasKeyUp(Key key)
@@ -88,6 +92,7 @@ namespace Input
         {
             return false;
         }
+        return !m_InputStates.m_PrevoiusKeyboardState.m_Keys[(unsigned long)key];
     }
 
     mbool InputManager::WasKeyDown(Key key)
@@ -96,6 +101,7 @@ namespace Input
         {
             return false;
         }
+        return m_InputStates.m_PrevoiusKeyboardState.m_Keys[(unsigned long)key];
     }
     
     //Mouse
@@ -105,6 +111,23 @@ namespace Input
         {
             return;
         }
+        if(m_InputStates.m_CurrentMouseState.m_Buttons[(unsigned long)button] != isPressed)
+        {
+            m_InputStates.m_CurrentMouseState.m_Buttons[(unsigned long)button] = isPressed;
+
+            if(isPressed)
+            {
+                std::unique_ptr<MouseButtonPressedEvent> pressedEvent = std::move(std::make_unique<MouseButtonPressedEvent>());
+                pressedEvent->m_Button = button;
+                Events::AddEvent(std::move(pressedEvent));
+            }
+            else
+            {
+                std::unique_ptr<MouseButtonReleasedEvent> releasedEvent = std::move(std::make_unique<MouseButtonReleasedEvent>());
+                releasedEvent->m_Button = button;
+                Events::AddEvent(std::move(releasedEvent));
+            }
+        }
     }
 
     void InputManager::ProcessMouseMovement(mint16 x, mint16 y)
@@ -112,6 +135,16 @@ namespace Input
         if(!m_IsInitialized)
         {
             return;
+        }
+        if(m_InputStates.m_CurrentMouseState.m_X != x || m_InputStates.m_CurrentMouseState.m_Y != y)
+        {
+            m_InputStates.m_CurrentMouseState.m_X = x;
+            m_InputStates.m_CurrentMouseState.m_Y = y;
+
+            std::unique_ptr<MouseMovedEvent> movedEvent = std::move(std::make_unique<MouseMovedEvent>());
+            movedEvent->m_X = x;
+            movedEvent->m_Y = y;
+            Events::AddEvent(std::move(movedEvent));
         }
     }
 
@@ -121,6 +154,7 @@ namespace Input
         {
             return;
         }
+        //TODO : Implement mouse wheel
     }
 
     mbool InputManager::IsMouseButtonUp(MouseButton button)
@@ -129,6 +163,7 @@ namespace Input
         {
             return false;
         }
+        return !m_InputStates.m_CurrentMouseState.m_Buttons[(unsigned long)button];
     }
 
     mbool InputManager::IsMouseButtonDown(MouseButton button)
@@ -137,6 +172,7 @@ namespace Input
         {
             return false;
         }
+        return m_InputStates.m_CurrentMouseState.m_Buttons[(unsigned long)button];
     }
 
     mbool InputManager::WasMouseButtonUp(MouseButton button)
@@ -145,6 +181,7 @@ namespace Input
         {
             return false;
         }
+        return !m_InputStates.m_PreviousMousetate.m_Buttons[(unsigned long)button];
     }
 
     mbool InputManager::WasMouseButtonDown(MouseButton button)
@@ -153,6 +190,7 @@ namespace Input
         {
             return false;
         }
+        return m_InputStates.m_PreviousMousetate.m_Buttons[(unsigned long)button];
     }
 }
 

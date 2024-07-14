@@ -26,6 +26,9 @@ namespace Events
         std::vector<std::unique_ptr<Event>> m_EventsQueue;
         std::unordered_map<std::string, std::vector<std::unique_ptr<EventHandlerWrapperInterface>>> m_Subscribers;
     };
+
+    inline void AddEvent(std::unique_ptr<Event>&& event);
+    inline void TriggerEvent(const Event& event);
 }
 
 END_NAMESPACE

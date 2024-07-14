@@ -13,12 +13,12 @@ namespace Input
     public:
         DEFINE_EVENT("MouseButtonPressed")
 
-        MouseButtonPressedEvent(MouseButton key)
-            : m_Key(key)
+        MouseButtonPressedEvent(MouseButton button)
+            : m_Button(button)
         {
         }  
 
-        MouseButton m_Key { 0 };
+        MouseButton m_Button { 0 };
     };
 
     class MouseButtonReleasedEvent : public Events::Event
@@ -26,12 +26,12 @@ namespace Input
     public:
         DEFINE_EVENT("MouseButtonReleased")
 
-        MouseButtonReleasedEvent(MouseButton key)
-            : m_Key(key)
+        MouseButtonReleasedEvent(MouseButton button)
+            : m_Button(button)
         {
         }  
 
-        MouseButton m_Key { 0 };
+        MouseButton m_Button { 0 };
     };
 
     class MouseMovedEvent : public Events::Event
