@@ -6,18 +6,19 @@ namespace Memory
 {
     void* SingleFrameAllocator::Allocate(muint64 size)
     {
-        static mbool hasFiredFirstAllocation = false;
+        /*static mbool hasFiredFirstAllocation = false;
         if (hasFiredFirstAllocation == false)
         {
             m_StackAllocator.Init(SingleFrameAllocator::SINGLE_FRAME_ALLOCATOR_SIZE);
             hasFiredFirstAllocation = true;
         }
-        return m_StackAllocator.Allocate(size);
+        return m_StackAllocator.Allocate(size);*/
+        return nullptr;
     }
 
     void SingleFrameAllocator::Clear(void)
     {
-        m_StackAllocator.Clear();
+        //m_StackAllocator.Clear();
     }
 }
 

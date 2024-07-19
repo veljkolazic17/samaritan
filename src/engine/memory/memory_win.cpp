@@ -60,7 +60,7 @@ namespace Memory
 		return VirtualAlloc(0, size, MEM_RESERVE | MEM_COMMIT, PAGE_READWRITE);
 	}
 
-	void* VMFree(void* memory, muint64 size, MemoryTag tag)
+	void VMFree(void* memory, muint64 size, MemoryTag tag)
 	{
 		VM_ALLOC_CONSTRAINT(tag);
 #ifdef MEM_STATS_ENABLED

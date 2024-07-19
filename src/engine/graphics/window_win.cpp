@@ -6,6 +6,12 @@
 #include <utils/asserts/assert.hpp>
 #include <engine/memory/memory.hpp>
 
+#include <engine/input/input_win.hpp>
+#include <engine/events/eventmanager.hpp>
+#include <engine/graphics/events/windowevents.hpp>
+
+#include <utils/logger/log.hpp>
+
 BEGIN_NAMESPACE
 
 namespace Graphics
@@ -16,6 +22,22 @@ namespace Graphics
         HWND m_Hwnd;
     };
 
+    inline void ProcessWindowResize(LPARAM l_param)
+    {
+        WindowResizedEvent windowResizedEvent;
+
+        windowResizedEvent.m_Width = LOWORD(l_param);
+        windowResizedEvent.m_Height = HIWORD(l_param);
+        
+        Events::AddEvent<WindowResizedEvent>(std::move(windowResizedEvent));
+        LogInfoTTY("Window resized to: Width %d Height %d", windowResizedEvent.m_Width, windowResizedEvent.m_Height);
+    }
+
+    inline void ProcessWindowClose()
+    {
+        Events::AddEvent<WindowClosedEvent>({});
+    }
+
     LRESULT CALLBACK messageCallback(HWND hwnd, muint32 msg, WPARAM w_param, LPARAM l_param)
     {
         switch (msg) 
@@ -24,12 +46,16 @@ namespace Graphics
                 // Notify the OS that erasing will be handled by the application to prevent flicker.
                 return 1;
             case WM_CLOSE:
-                return 0;
+            {
+                ProcessWindowClose();
+            }
+            break;
             case WM_DESTROY:
                 PostQuitMessage(0);
                 return 0;
             case WM_SIZE: 
             {
+                ProcessWindowResize(l_param);
             } 
             break;
             case WM_KEYDOWN:
@@ -37,15 +63,18 @@ namespace Graphics
             case WM_KEYUP:
             case WM_SYSKEYUP: 
             {
-            } 
+                Input::Win::ProcessKeyboardButtons(msg, w_param);
+            }
             break;
-            case WM_MOUSEMOVE: 
+            case WM_MOUSEMOVE:
             {
-            } 
+                Input::Win::ProcessMouseMove(l_param);
+            }
             break;
             case WM_MOUSEWHEEL: 
             {
-            } 
+                
+            }
             break;
             case WM_LBUTTONDOWN:
             case WM_MBUTTONDOWN:
@@ -54,6 +83,7 @@ namespace Graphics
             case WM_MBUTTONUP:
             case WM_RBUTTONUP: 
             {
+                Input::Win::ProcessMouseButtons(msg);
             } 
             break;
         }

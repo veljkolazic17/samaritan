@@ -36,10 +36,12 @@ namespace Input
         DEFINE_KEY(DOWN, 0x28),
         DEFINE_KEY(SELECT, 0x29),
         DEFINE_KEY(PRINT, 0x2A),
-        DEFINE_KEY(EXECUTE, 0x2B),
+        //Don't change name of key
+        DEFINE_KEY(EXEC, 0x2B),
         DEFINE_KEY(SNAPSHOT, 0x2C),
         DEFINE_KEY(INSERT, 0x2D),
-        DEFINE_KEY(DELETE, 0x2E),
+        //Don't change name of key
+        DEFINE_KEY(DEL, 0x2E),
         DEFINE_KEY(HELP, 0x2F),
 
         DEFINE_KEY(A, 0x41),

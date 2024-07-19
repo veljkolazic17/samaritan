@@ -28,7 +28,7 @@ namespace Memory
 	void* mmaloc(muint64 size, mbool isAligned);
 	void mmfree(void* memoryBlock, mbool isAligned);
 	void* mmzero(void* memoryBlock, muint64 size);
-	void* mmcpy(void* source, const void* destination, muint64 size);
+	void* mmcpy(const void* source, void* destination, muint64 size);
 	void* mmset(void* destination, muint32 value, muint64 size);
 
 	// Heap allocations ( do not use often )
@@ -37,19 +37,14 @@ namespace Memory
 	
 	// Virtual memory page allocation ( allocates 4KiB )
 	void* VMAllocate(muint64 size, MemoryTag tag);
-	void* VMFree(void*memory, muint64 size, MemoryTag tag);
-
-	//TODO : Why is this used?
-	void* Zero(void* memoryBlock, muint64 size);
-	void* Copy(void* source, const void* destination, muint64 size);
-	void* Set(void* destination, muint32 value, muint64 size);
+	void VMFree(void*memory, muint64 size, MemoryTag tag);
 }
 
 END_NAMESPACE
 
-#define Zero(memoryBlock, size)			mmzero(memoryBlock, size)
-#define Copy(source, destination, size)	mmcopy(source, destination, size)
-#define Set(destination, value, size)	mmset(destination, value, size)
+#define Zero(memoryBlock, size)			samaritan::Memory::mmzero(memoryBlock, size)
+#define Copy(source, destination, size)	samaritan::Memory::mmcpy(source, destination, size)
+#define Set(destination, value, size)	samaritan::Memory::mmset(destination, value, size)
 
 // Heap style general purpose allocator macros
 #define gpAllocArray(size)				GPAllocate(size, MemoryTag::MEM_ARRAY);

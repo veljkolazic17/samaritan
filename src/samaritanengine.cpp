@@ -3,8 +3,11 @@
 
 int main(void) 
 {
-    samaritan::Engine::Engine::GetInstance().Init();
-    samaritan::Engine::Engine::GetInstance().Run();
-    samaritan::Engine::Engine::GetInstance().Shutdown();
+    samaritan::Engine::Engine& engine = samaritan::Engine::Engine::GetInstance();
+
+    engine.Init();
+    engine.Run();
+    engine.Shutdown();
+
     return 0;
 }

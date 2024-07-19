@@ -3,6 +3,8 @@
 #include <utils/logger/remotelogger/redislogger.hpp>
 #include <engine/clock.hpp>
 #include <engine/memory/memory.hpp>
+#include <engine/events/eventmanager.hpp>
+#include <engine/input/inputmanager.hpp>
 //TODO : this should be changed to be in another folder
 #include <engine/memory/containers/singleframeallocator.hpp>
 
@@ -49,11 +51,16 @@ namespace Engine
 		// TODO : Not good way of doing this ! Don't use copy constructor
 		m_Window = Memory::mnew<Graphics::Window>(1280, 720, 100, 100, "My first win window :)");
 		m_Window->Init();
+
+		Events::EventManager::GetInstance().Init();
+		Input::InputManager::GetInstance().Init();
 	}
 
 	void Engine::Run(void)
 	{
 		Memory::SingleFrameAllocator& singleFrameAllocator = Memory::SingleFrameAllocator::GetInstance();
+		Events::EventManager& eventManager = Events::EventManager::GetInstance();
+		Input::InputManager& inputManager = Input::InputManager::GetInstance();
 
 		ENGINE_RUN();
 		while (IS_ENGINE_RUNNING())
@@ -61,6 +68,10 @@ namespace Engine
 			LoopPreProcess();
 			singleFrameAllocator.Clear();
 			// Process Loop
+
+			//End of loop
+			eventManager.DispatchEvents();
+			inputManager.Update(0);
 		}
 	}
 
@@ -69,6 +80,9 @@ namespace Engine
 		ENGINE_SHUTDOWN();
 		m_Window->Shutdown();
 		Memory::mdelete<Graphics::Window>(m_Window);
+
+		Input::InputManager::GetInstance().Shutdown();
+		Events::EventManager::GetInstance().Shutdown();
 	}
 
 	void Engine::LoopPreProcess(void)

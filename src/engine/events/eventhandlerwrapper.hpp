@@ -3,6 +3,8 @@
 
 #include<engine/events/event.hpp>
 
+#include <functional>
+
 BEGIN_NAMESPACE
 
 namespace Events
@@ -10,9 +12,13 @@ namespace Events
     template<typename EventType>
 	using EventHandler = std::function<void(const EventType& e)>;
 
-    class EventHandlerWrapperInterface 
+    class EventHandlerWrapperInterface
     {
     public:
+        virtual ~EventHandlerWrapperInterface() = default;
+        EventHandlerWrapperInterface(EventHandlerWrapperInterface&&) = default;
+        EventHandlerWrapperInterface& operator=(EventHandlerWrapperInterface&&) = default;
+
         void Exec(const Event& e)
         {
             Call(e);
@@ -30,7 +36,7 @@ namespace Events
     public:
         explicit EventHandlerWrapper(const EventHandler<EventType>& handler)
             : m_Handler(handler)
-            , m_HandlerType(m_Handler.target_type().name()) {};
+            , m_HandlerType(m_Handler.target_type().name()) {}
 
     private:
         void Call(const Event& e) override

@@ -5,12 +5,17 @@ BEGIN_NAMESPACE
 
 namespace Events
 {
+    void EventManager::Init()
+    {
+
+    }
+
     void EventManager::Shutdown()
     {
         m_Subscribers.clear();
     }
 
-    void EventManager::Subscribe(const std::string& eventId, const std::unique_ptr<EventHandlerWrapperInterface>&& handler)
+    void EventManager::Subscribe(const std::string& eventId, std::unique_ptr<EventHandlerWrapperInterface>&& handler)
     {
         auto subscribers = m_Subscribers.find(eventId);
 
@@ -72,16 +77,6 @@ namespace Events
                 ++eventIt;
             }
         }
-    }
-
-    inline void AddEvent(std::unique_ptr<Event>&& event)
-    {
-        EventManager::GetInstance().AddEvent(std::forward<std::unique_ptr<Event>>(event));
-    }
-
-    inline void TriggerEvent(const Event& event)
-    {
-        EventManager::GetInstance().TriggerEvent(event);
     }
 }
 

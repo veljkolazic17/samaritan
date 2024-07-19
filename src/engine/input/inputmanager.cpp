@@ -5,13 +5,19 @@
 #include <engine/input/events/mouseevents.hpp>
 #include <engine/events/eventmanager.hpp>
 
+#ifdef DEBUG
+#include <utils/logger/log.hpp>
+#endif
+
+#include <memory>
+
 BEGIN_NAMESPACE
 
 namespace Input
 {
     void InputManager::Init()
     {
-        Memory::Zero(&m_InputStates, sizeof(m_InputStates));
+        Zero(&m_InputStates, sizeof(m_InputStates));
         m_IsInitialized = true;
     }
 
@@ -27,16 +33,16 @@ namespace Input
             return;
         }
 
-        Memory::mmcpy(
+        Copy(
             &m_InputStates.m_CurrentKeyboardState, 
             &m_InputStates.m_PrevoiusKeyboardState, 
-            sizeof(Key)
+            (unsigned long)sizeof(Key)
         );
 
-        Memory::mmcpy(
+        Copy(
             &m_InputStates.m_CurrentMouseState, 
             &m_InputStates.m_PreviousMousetate, 
-            sizeof(MouseButton)
+            (unsigned long)sizeof(MouseButton)
         );
 
         //TODO : XBox controller states
@@ -55,15 +61,17 @@ namespace Input
 
             if(isPressed)
             {
-                std::unique_ptr<KeyboardInputPressedEvent> pressedEvent = std::move(std::make_unique<KeyboardInputPressedEvent>());
-                pressedEvent->m_Key = key;
-                Events::AddEvent(std::move(pressedEvent));
+                KeyboardInputPressedEvent pressedEvent;
+                pressedEvent.m_Key = key;
+                Events::AddEvent<KeyboardInputPressedEvent>(std::move(pressedEvent));
+                LogInfoTTY("Keyboard button pressed!");
             }
             else
             {
-                std::unique_ptr<KeyboardInputReleasedEvent> releasedEvent = std::move(std::make_unique<KeyboardInputReleasedEvent>());
-                releasedEvent->m_Key = key;
-                Events::AddEvent(std::move(releasedEvent));
+                KeyboardInputReleasedEvent releasedEvent;
+                releasedEvent.m_Key = key;
+                Events::AddEvent<KeyboardInputReleasedEvent>(std::move(releasedEvent));
+                LogInfoTTY("Keyboard button released!");
             }
         }
     }
@@ -72,7 +80,7 @@ namespace Input
     {
         if(!m_IsInitialized)
         {
-            return;
+            return false;
         }
         return !m_InputStates.m_CurrentKeyboardState.m_Keys[(unsigned long)key];
     }
@@ -117,15 +125,17 @@ namespace Input
 
             if(isPressed)
             {
-                std::unique_ptr<MouseButtonPressedEvent> pressedEvent = std::move(std::make_unique<MouseButtonPressedEvent>());
-                pressedEvent->m_Button = button;
-                Events::AddEvent(std::move(pressedEvent));
+                MouseButtonPressedEvent pressedEvent;
+                pressedEvent.m_Button = button;
+                Events::AddEvent<MouseButtonPressedEvent>(std::move(pressedEvent));
+                LogInfoTTY("Mouse button pressed!");
             }
             else
             {
-                std::unique_ptr<MouseButtonReleasedEvent> releasedEvent = std::move(std::make_unique<MouseButtonReleasedEvent>());
-                releasedEvent->m_Button = button;
-                Events::AddEvent(std::move(releasedEvent));
+                MouseButtonReleasedEvent releasedEvent;
+                releasedEvent.m_Button = button;
+                Events::AddEvent<MouseButtonReleasedEvent>(std::move(releasedEvent));
+                LogInfoTTY("Mouse button released!");
             }
         }
     }
@@ -141,10 +151,10 @@ namespace Input
             m_InputStates.m_CurrentMouseState.m_X = x;
             m_InputStates.m_CurrentMouseState.m_Y = y;
 
-            std::unique_ptr<MouseMovedEvent> movedEvent = std::move(std::make_unique<MouseMovedEvent>());
-            movedEvent->m_X = x;
-            movedEvent->m_Y = y;
-            Events::AddEvent(std::move(movedEvent));
+            MouseMovedEvent movedEvent;
+            movedEvent.m_X = x;
+            movedEvent.m_Y = y;
+            Events::AddEvent<MouseMovedEvent>(std::move(movedEvent));
         }
     }
 

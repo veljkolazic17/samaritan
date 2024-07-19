@@ -8,29 +8,15 @@ BEGIN_NAMESPACE
 
 namespace Input
 {
-    class KeyboardInputPressedEvent : public Events::Event
+    struct KeyboardInputPressedEvent : public Events::Event
     {
-    public:
-        DEFINE_EVENT("KeyboardInputPressed")
-
-        KeyboardInputPressedEvent(Key key)
-            : m_Key(key)
-        {
-        }  
-
+        DEFINE_EVENT("KeyboardInputPressed");
         Key m_Key { 0 };
     };
 
-    class KeyboardInputReleasedEvent : public Events::Event
+    struct KeyboardInputReleasedEvent : public Events::Event
     {
-    public:
-        DEFINE_EVENT("KeyboardInputReleased")
-
-        KeyboardInputReleasedEvent(Key key)
-            : m_Key(key)
-        {
-        }  
-
+        DEFINE_EVENT("KeyboardInputReleased");
         Key m_Key { 0 };
     };
 

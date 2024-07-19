@@ -3,21 +3,24 @@
 
 #include <engine/events/eventhandlerwrapper.hpp>
 #include <objecttemplates/singleton.hpp>
+#include <objecttemplates/shutdownable.hpp>
 
 #include <vector>
 #include <unordered_map>
+#include <memory>
 
 BEGIN_NAMESPACE
 
 namespace Events
 {
-    class EventManager SINGLETON(EventManager)
+    class EventManager SINGLETON(EventManager), public Shutdownable
     {
     private:
         SINGLETON_CONSTRUCTOR(EventManager);
     public:
-        void Shutdown();
-        void Subscribe(const std::string& eventId, const std::unique_ptr<EventHandlerWrapperInterface>&& handler);
+        void Init() override;
+        void Shutdown() override;
+        void Subscribe(const std::string& eventId, std::unique_ptr<EventHandlerWrapperInterface>&& handler);
         void Unsubscribe(const std::string& eventId, const std::string handlerName);
         void TriggerEvent(const Event& event);
         void AddEvent(std::unique_ptr<Event>&& event);
@@ -27,8 +30,17 @@ namespace Events
         std::unordered_map<std::string, std::vector<std::unique_ptr<EventHandlerWrapperInterface>>> m_Subscribers;
     };
 
-    inline void AddEvent(std::unique_ptr<Event>&& event);
-    inline void TriggerEvent(const Event& event);
+    template<typename EventType>
+    inline void AddEvent(EventType&& event)
+    {
+        std::unique_ptr<EventType> pressedEvent = std::move(std::make_unique<EventType>(event));
+        EventManager::GetInstance().AddEvent(std::forward<std::unique_ptr<EventType>>(pressedEvent));
+    }
+
+    inline void TriggerEvent(const Event& event)
+    {
+        EventManager::GetInstance().TriggerEvent(event);
+    }
 }
 
 END_NAMESPACE

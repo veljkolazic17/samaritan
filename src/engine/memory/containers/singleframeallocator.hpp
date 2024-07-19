@@ -1,5 +1,6 @@
 #pragma once
-#include <engine/memory/allocators/stackallocator.hpp>
+//#include <engine/memory/allocators/stackallocator.hpp>
+#include <defines.hpp>
 
 BEGIN_NAMESPACE
 
@@ -21,7 +22,7 @@ namespace Memory
 
         static constexpr muint32 SINGLE_FRAME_ALLOCATOR_SIZE = 65536;
     private:
-        StackAllocator m_StackAllocator;
+        //StackAllocator m_StackAllocator;
 	};
 
 }
