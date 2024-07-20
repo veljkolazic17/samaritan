@@ -1,6 +1,7 @@
 #include <engine/memory/memorystats.hpp>
 #include <utils/asserts/assert.hpp>
 #include <utils/logger/log.hpp>
+#include <engine/memory/memory.hpp>
 
 BEGIN_NAMESPACE
 

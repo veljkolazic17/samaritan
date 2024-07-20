@@ -1,7 +1,6 @@
 #pragma once
 #include <defines.hpp>
 #include <objecttemplates/singleton.hpp>
-#include <engine/memory/memory.hpp>
 
 BEGIN_NAMESPACE
 

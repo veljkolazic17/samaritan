@@ -13,14 +13,14 @@ namespace Engine
 		m_Frequency = 1.0 / (mfloat64)frequency.QuadPart;
 	}
 
-	mfloat64 Clock::GetTime()
+	Time Clock::GetTime()
 	{
 		LARGE_INTEGER now_time;
 		QueryPerformanceCounter(&now_time);
 		return (mfloat64)now_time.QuadPart * m_Frequency;
 	}
 
-	void Clock::Sleep(muint64 miliseconds)
+	void Clock::Sleep(Time miliseconds)
 	{
 		::Sleep(miliseconds);
 	}

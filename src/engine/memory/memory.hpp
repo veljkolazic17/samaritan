@@ -1,22 +1,25 @@
 #pragma once
 #include <defines.hpp>
 #include <utility>
+#include <engine/memory/memorystats.hpp>
 
 #define PAGE_SIZE	1024
+
+#define GP_ALLOC_CONSTRAINT(tag) hardAssert(tag != samaritan::Memory::MemoryTag::MEM_PAGE, "Cannot be used for allocation vm page!");
+#define VM_ALLOC_CONSTRAINT(tag) hardAssert(tag == samaritan::Memory::MemoryTag::MEM_PAGE, "Cannot be used for allocation that is not vm page!");
 
 BEGIN_NAMESPACE
 
 namespace Memory
 {
-	enum class MemoryTag;
-}
-
-namespace Memory
-{
 	// GP C++ style memory allocation
 	template <typename T, typename... Args>
-	T* mnew(Args&&... args)
+	T* mnew(MemoryTag tag, Args&&... args)
 	{
+		GP_ALLOC_CONSTRAINT(tag);
+#ifdef MEM_STATS_ENABLED
+		MemoryStats::GetInstance().MemoryTagAllocate(sizeof(T), tag);
+#endif
 		return new (std::nothrow) T(std::forward<Args>(args)...);
 	}
 
@@ -47,26 +50,22 @@ END_NAMESPACE
 #define Set(destination, value, size)	samaritan::Memory::mmset(destination, value, size)
 
 // Heap style general purpose allocator macros
-#define gpAllocArray(size)				GPAllocate(size, MemoryTag::MEM_ARRAY);
-#define gpAllocDictionary(size)			GPAllocate(size, MemoryTag::MEM_DICTIONARY);
-#define gpAllocString(size)				GPAllocate(size, MemoryTag::MEM_STRING);
-#define gpAllocTexture(size)			GPAllocate(size, MemoryTag::MEM_TEXTURE);
-#define gpAllocEntity(size)				GPAllocate(size, MemoryTag::MEM_ENTITY);
-#define gpAllocTask(size)				GPAllocate(size, MemoryTag::MEM_TASK);
-#define gpAllocRenderer(size)			GPAllocate(size, MemoryTag::MEM_RENDERER);
+#define gpAllocArray(size)				samaritan::Memory::GPAllocate(size, samaritan::Memory::MemoryTag::MEM_ARRAY);
+#define gpAllocDictionary(size)			samaritan::Memory::GPAllocate(size, samaritan::Memory::MemoryTag::MEM_DICTIONARY);
+#define gpAllocString(size)				samaritan::Memory::GPAllocate(size, samaritan::Memory::MemoryTag::MEM_STRING);
+#define gpAllocTexture(size)			samaritan::Memory::GPAllocate(size, samaritan::Memory::MemoryTag::MEM_TEXTURE);
+#define gpAllocEntity(size)				samaritan::Memory::GPAllocate(size, samaritan::Memory::MemoryTag::MEM_ENTITY);
+#define gpAllocTask(size)				samaritan::Memory::GPAllocate(size, samaritan::Memory::MemoryTag::MEM_TASK);
+#define gpAllocRenderer(size)			samaritan::Memory::GPAllocate(size, samaritan::Memory::MemoryTag::MEM_RENDERER);
 
-#define gpFreeArray(memory, size)		GPFree(memory, size, MemoryTag::MEM_ARRAY);
-#define gpFreeDictionary(memory, size)	GPFree(memory, size, MemoryTag::MEM_DICTIONARY);
-#define gpFreeString(memory, size)		GPFree(memory, size, MemoryTag::MEM_STRING);
-#define gpFreeTexture(memory, size)		GPFree(memory, size, MemoryTag::MEM_TEXTURE);
-#define gpFreeEntity(memory, size)		GPFree(memory, size, MemoryTag::MEM_ENTITY);
-#define gpFreeTask(memory, size)		GPFree(memory, size, MemoryTag::MEM_TASK);
-#define gpFreeRenderer(memory, size)	GPFree(memory, size, MemoryTag::MEM_RENDERER);
+#define gpFreeArray(memory, size)		samaritan::Memory::GPFree(memory, size, samaritan::Memory::MemoryTag::MEM_ARRAY);
+#define gpFreeDictionary(memory, size)	samaritan::Memory::GPFree(memory, size, samaritan::Memory::MemoryTag::MEM_DICTIONARY);
+#define gpFreeString(memory, size)		samaritan::Memory::GPFree(memory, size, samaritan::Memory::MemoryTag::MEM_STRING);
+#define gpFreeTexture(memory, size)		samaritan::Memory::GPFree(memory, size, samaritan::Memory::MemoryTag::MEM_TEXTURE);
+#define gpFreeEntity(memory, size)		samaritan::Memory::GPFree(memory, size, samaritan::Memory::MemoryTag::MEM_ENTITY);
+#define gpFreeTask(memory, size)		samaritan::Memory::GPFree(memory, size, samaritan::Memory::MemoryTag::MEM_TASK);
+#define gpFreeRenderer(memory, size)	samaritan::Memory::GPFree(memory, size, samaritan::Memory::MemoryTag::MEM_RENDERER);
 
 // Page allocations macros 
-#define vmAllocPage(size)				VMAllocate(size, MemoryTag::MEM_PAGE);
-#define vmFreePage(memory, size)		VMAllocate(memory, size, MemoryTag::MEM_PAGE);
-
-#define GP_ALLOC_CONSTRAINT(tag) hardAssert(tag != MemoryTag::MEM_PAGE, "Cannot be used for allocation vm page!");
-#define VM_ALLOC_CONSTRAINT(tag) hardAssert(tag == MemoryTag::MEM_PAGE, "Cannot be used for allocation that is not vm page!");
-
+#define vmAllocPage(size)				samaritan::Memory::VMAllocate(size, MemoryTag::MEM_PAGE);
+#define vmFreePage(memory, size)		samaritan::Memory::VMAllocate(memory, size, MemoryTag::MEM_PAGE);

@@ -30,7 +30,7 @@ namespace Graphics
         windowResizedEvent.m_Height = HIWORD(l_param);
         
         Events::AddEvent<WindowResizedEvent>(std::move(windowResizedEvent));
-        LogInfoTTY("Window resized to: Width %d Height %d", windowResizedEvent.m_Width, windowResizedEvent.m_Height);
+        LogInfo(LogChannel::Inputs, "Window resized to: Width %d Height %d", windowResizedEvent.m_Width, windowResizedEvent.m_Height);
     }
 
     inline void ProcessWindowClose()

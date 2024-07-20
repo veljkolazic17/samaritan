@@ -12,10 +12,22 @@ namespace Engine
 		SINGLETON_CONSTRUCTOR(Clock);
 	public:
 		void Init(void);
-		mfloat64 GetTime();
-		void Sleep(muint64 miliseconds);
+		inline Time GetStartTime() { return m_StartTime; }
+		inline Time GetElapsed() { return m_Elapsed; }
+
+		// Platform specific
+		Time GetTime();
+		void Sleep(Time miliseconds);
+
+		// Not platform specific
+		void Update();
+		void Start();
+		void Stop();
+
 	private:
 		mfloat64 m_Frequency = 0;
+		Time m_StartTime = 0;
+		Time m_Elapsed = 0;
 	};
 }
 

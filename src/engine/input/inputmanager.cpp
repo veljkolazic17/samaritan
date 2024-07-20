@@ -64,14 +64,14 @@ namespace Input
                 KeyboardInputPressedEvent pressedEvent;
                 pressedEvent.m_Key = key;
                 Events::AddEvent<KeyboardInputPressedEvent>(std::move(pressedEvent));
-                LogInfoTTY("Keyboard button pressed!");
+                LogInfo(LogChannel::Inputs, "Keyboard button pressed!");
             }
             else
             {
                 KeyboardInputReleasedEvent releasedEvent;
                 releasedEvent.m_Key = key;
                 Events::AddEvent<KeyboardInputReleasedEvent>(std::move(releasedEvent));
-                LogInfoTTY("Keyboard button released!");
+                LogInfo(LogChannel::Inputs, "Keyboard button released!");
             }
         }
     }
@@ -128,14 +128,14 @@ namespace Input
                 MouseButtonPressedEvent pressedEvent;
                 pressedEvent.m_Button = button;
                 Events::AddEvent<MouseButtonPressedEvent>(std::move(pressedEvent));
-                LogInfoTTY("Mouse button pressed!");
+                LogInfo(LogChannel::Inputs, "Mouse button pressed!");
             }
             else
             {
                 MouseButtonReleasedEvent releasedEvent;
                 releasedEvent.m_Button = button;
                 Events::AddEvent<MouseButtonReleasedEvent>(std::move(releasedEvent));
-                LogInfoTTY("Mouse button released!");
+                LogInfo(LogChannel::Inputs, "Mouse button released!");
             }
         }
     }

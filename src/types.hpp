@@ -26,3 +26,6 @@ typedef bool            mbool;
 // String Types
 typedef const char*     mcstring;
 typedef                 std::string mstring;
+
+// Engine
+typedef double			Time;
