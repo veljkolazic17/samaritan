@@ -3,6 +3,9 @@
 #include <engine/graphics/window.hpp>
 #include <engine/graphics/renderer/renderertype.inl>
 
+#include <objecttemplates/singleton.hpp>
+#include <objecttemplates/shutdownable.hpp>
+
 // Why am I doing this???
 #define ENGINE_RUN()			SetEngineState(EngineState::RUNNING);
 #define ENGINE_SUSPEND()		SetEngineState(EngineState::SUSPENDED);
@@ -25,25 +28,22 @@ namespace Engine
 		SIZE = 4
 	};
 
-	class Engine
+	class Engine SINGLETON(Engine), public Shutdownable
 	{
-	public:
-		static Engine& GetInstance() { static Engine instance; return instance; }
-		Engine(Engine& other) = delete;
-		void operator=(const Engine&) = delete;
 	private:
-		Engine() {};
-		~Engine() {};
+		SINGLETON_CONSTRUCTOR(Engine);
 	public:
-		void Init(void);
+		void Init(void) override;
+		void Shutdown(void) override;
 		void Run(void);
-		void Shutdown(void);
 
 		inline EngineState GetEngineState(void) { return m_EngineState; }
 		void SetEngineState(EngineState engineState);
 
 		void LoopPreProcess(void);
 		void LoopPostProcess(void);
+
+		inline const Graphics::Window* const GetWindow() { return m_Window; }
 	private:
 		void LoopPreProcessPlatformImpl(void);
 

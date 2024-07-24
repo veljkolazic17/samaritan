@@ -1,8 +1,6 @@
 #ifdef TARGET_WIN
 #ifdef WINDOW_NATIVE_WIN
 #include <engine/graphics/window.hpp>
-#include <windows.h>
-#include <windowsx.h>
 #include <utils/asserts/assert.hpp>
 #include <engine/memory/memory.hpp>
 
@@ -16,11 +14,6 @@ BEGIN_NAMESPACE
 
 namespace Graphics
 {
-    struct WindowState
-    {
-        HINSTANCE m_Instance;
-        HWND m_Hwnd;
-    };
 
     inline void ProcessWindowResize(LPARAM l_param)
     {

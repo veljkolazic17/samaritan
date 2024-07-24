@@ -106,6 +106,11 @@ namespace Graphics
         VulkanCheckResult(procaddr(m_Instance, &debugCreateInfo, m_Allocator, &m_DebugMessenger), "Could not create debugger!");
         LogInfo(LogChannel::Graphics, "Vulkan debugger created!");
 #endif
+        CreatePlatformSurface();
+        LogInfo(LogChannel::Graphics, "Vulkan surface created!");
+
+        m_VulkanDevice.Init();
+        LogInfo(LogChannel::Graphics, "Vulkan device created!");
 	}
 
 	void VulkanRenderer::Shutdown()
@@ -118,6 +123,119 @@ namespace Graphics
         vkDestroyInstance(m_Instance, m_Allocator);
         LogInfo(LogChannel::Graphics, "Vulkan instance destroyed!");
 	}
+
+    mbool VulkanRenderer::CheckDeviceRequerments
+    (
+        const VkPhysicalDevice& device,
+        const VkPhysicalDeviceProperties& properties,
+        const VkPhysicalDeviceFeatures& features,
+        const VkPhysicalDeviceMemoryProperties& memory
+    )
+    {
+        if (m_VulkanDevice.m_VPDRequirments.m_IsDiscrete && properties.deviceType != VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU)
+        {
+            hardAssert(false, "Supporting only descrete GPUs");
+        }
+
+        muint32 queuesFamilyCount = 0;
+        vkGetPhysicalDeviceQueueFamilyProperties(device, &queuesFamilyCount, 0);
+        std::vector<VkQueueFamilyProperties> queuesFamily(queuesFamilyCount);
+        vkGetPhysicalDeviceQueueFamilyProperties(device, &queuesFamilyCount, queuesFamily.data());
+
+        muint8 minimumTransferScore = 255;
+
+        muint8 indexCounter = 0;
+        for (const VkQueueFamilyProperties& familyProperties : queuesFamily)
+        {
+            muint8 transferScore = 0;
+
+            // Graphics queue?
+            if (familyProperties.queueFlags & VK_QUEUE_GRAPHICS_BIT) 
+            {
+                m_VulkanDevice.m_QueuesInfo.m_GraphicsIndex = indexCounter;
+                ++transferScore;
+            }
+
+            // Compute queue?
+            if (familyProperties.queueFlags & VK_QUEUE_COMPUTE_BIT) 
+            {
+                m_VulkanDevice.m_QueuesInfo.m_ComputeIndex = indexCounter;
+                ++transferScore;
+            }
+
+            // Transfer queue?
+            if (familyProperties.queueFlags & VK_QUEUE_TRANSFER_BIT) 
+            {
+                if (transferScore <= minimumTransferScore) 
+                {
+                    minimumTransferScore = transferScore;
+                    m_VulkanDevice.m_QueuesInfo.m_TransferIndex = indexCounter;
+                }
+            }
+
+            // Present queue?
+            VkBool32 isPresnetSupported = VK_FALSE;
+            VulkanCheckResult(vkGetPhysicalDeviceSurfaceSupportKHR(device, indexCounter, m_Surface, &isPresnetSupported), "Error Getting Device Presetn Support!");
+            if (isPresnetSupported)
+            {
+                m_VulkanDevice.m_QueuesInfo.m_PresentIndex = indexCounter;
+            }
+
+            ++indexCounter;
+        }
+        //TODO : More check here
+
+    }
+
+    void VulkanRenderer::SelectVPD()
+    {
+        muint32 deviceCount = 0;
+        mbool deviceSelected = false;
+
+        VulkanCheckResult(vkEnumeratePhysicalDevices(m_Instance, &deviceCount, 0), "Error getting device number!");
+        if (deviceCount == 0) 
+        {
+            hardAssert(false, "No devices support Vulkan!");
+        }
+
+        std::vector<VkPhysicalDevice> vpds(deviceCount);
+        VulkanCheckResult(vkEnumeratePhysicalDevices(m_Instance, &deviceCount, vpds.data()), "Error getting devices!");
+
+        for (const VkPhysicalDevice& vpd : vpds)
+        {
+            VkPhysicalDeviceProperties properties;
+            vkGetPhysicalDeviceProperties(vpd, &properties);
+
+            VkPhysicalDeviceFeatures features;
+            vkGetPhysicalDeviceFeatures(vpd, &features);
+
+            VkPhysicalDeviceMemoryProperties memory;
+            vkGetPhysicalDeviceMemoryProperties(vpd, &memory);
+
+            VPDRequirements requirements;
+            requirements.m_HasGraphicsQueue = true;
+            requirements.m_HasPresentQueue = true;
+            requirements.m_HasTransferQueue = true;
+            requirements.m_HasSamplerAnisotropy = true;
+            requirements.m_IsDiscrete = true;
+
+            requirements.m_DeviceExtensions.emplace_back(VK_KHR_SWAPCHAIN_EXTENSION_NAME);
+
+            if (CheckDeviceRequerments(vpd, properties, features, memory))
+            {
+
+
+                m_VulkanDevice.m_PhysicalDevice = std::move(vpd);
+                m_VulkanDevice.m_Properties = std::move(properties);
+                m_VulkanDevice.m_Features = std::move(features);
+                m_VulkanDevice.m_Memory = std::move(memory);
+                
+                deviceSelected = true;
+                break;
+            }
+        }
+        hardAssert(deviceSelected, "No Vulkan device selected!");
+    }
 
 	void VulkanRenderer::Resize(muint32 width, muint32 heigth)
 	{

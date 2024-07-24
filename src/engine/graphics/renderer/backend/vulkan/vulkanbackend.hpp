@@ -2,6 +2,7 @@
 #include <defines.hpp>
 #include <engine/graphics/renderer/backend/vulkan/vulkantypes.inl>
 #include <engine/graphics/renderer/backend/rendererbackend.hpp>
+#include <engine/graphics/renderer/backend/vulkan/vulkandevice.hpp>
 #include <vector>
 
 BEGIN_NAMESPACE
@@ -21,10 +22,23 @@ namespace Graphics
 		void EndFrame(Time time) override;
 
 		void GetPlatformExtensions(std::vector<const char*>& platfromExtensions);
+		void CreatePlatformSurface();
+		void SelectVPD();
 
 	private:
+		mbool CheckDeviceRequerments
+		(
+			const VkPhysicalDevice& device,
+			const VkPhysicalDeviceProperties& properties,
+			const VkPhysicalDeviceFeatures& features,
+			const VkPhysicalDeviceMemoryProperties& memory
+		);
+
 		VkInstance m_Instance;
 		VkAllocationCallbacks* m_Allocator = nullptr;
+		VulkanDevice m_VulkanDevice;
+		VkSurfaceKHR m_Surface;
+
 #ifdef DEBUG
 		VkDebugUtilsMessengerEXT m_DebugMessenger;
 #endif

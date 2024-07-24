@@ -1,17 +1,29 @@
 #pragma once
 #include <defines.hpp>
+#include <objecttemplates/shutdownable.hpp>
+
+#ifdef TARGET_WIN
+#ifdef WINDOW_NATIVE_WIN
+#include <windows.h>
+#include <windowsx.h>
+#endif
+#endif
 
 BEGIN_NAMESPACE
 
-// Forward declarations
 namespace Graphics
 {
-	struct WindowState;
-}
+	struct WindowState
+	{
+#ifdef TARGET_WIN
+#ifdef WINDOW_NATIVE_WIN
+		HINSTANCE m_Instance;
+		HWND m_Hwnd;
+#endif
+#endif
+	};
 
-namespace Graphics
-{
-	class Window
+	class Window : public Shutdownable
 	{
 	public:
 		Window(muint64 width, muint64 height, muint64 x, muint64 y, mcstring windowName)
@@ -28,8 +40,10 @@ namespace Graphics
 		inline void SetWidth(muint64 width) { m_Width = width; }
 		inline void SetHeight(muint64 height) { m_Height = height; }
 
-		void Init();
-		void Shutdown();
+		void Init() override;
+		void Shutdown() override;
+
+		inline const WindowState* const GetWindowState() const { return m_WindowState; }
 
 	private:
 		muint64 m_Width = 0;
