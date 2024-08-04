@@ -185,6 +185,53 @@ namespace Graphics
         }
         //TODO : More check here
 
+        const VPDRequirements& requirements = m_VulkanDevice.m_VPDRequirments;
+        const VPDQueues& vpdQueues = m_VulkanDevice.m_QueuesInfo;
+
+        if (
+        (!requirements.m_HasGraphicsQueue || (requirements.m_HasGraphicsQueue && vpdQueues.m_GraphicsIndex != 0xFFFFFFFF)) &&
+        (!requirements.m_HasPresentQueue || (requirements.m_HasPresentQueue && vpdQueues.m_PresentIndex != 0xFFFFFFFF)) &&
+        (!requirements.m_HasComputeQueue || (requirements.m_HasComputeQueue && vpdQueues.m_ComputeIndex != 0xFFFFFFFF)) &&
+        (!requirements.m_HasTransferQueue || (requirements.m_HasTransferQueue && vpdQueues.m_TransferIndex != 0xFFFFFFFF)))
+        {
+            LogInfo(LogChannel::Graphics, "Device has met specified requirements!");
+        }
+
+        // TODO : Check swap chain support
+
+        // Check device extensions
+        if (requirements.m_DeviceExtensions.size() > 0) 
+        {
+            muint32 extensionCount = 0;
+            VulkanCheckResult(vkEnumerateDeviceExtensionProperties(device, 0, &extensionCount, 0), "Error getting extension count!");
+
+
+            if (extensionCount > 0) 
+            {   
+                std::vector<VkExtensionProperties> extensions(extensionCount);
+
+
+                VulkanCheckResult(vkEnumerateDeviceExtensionProperties(device, 0, &extensionCount, extensions.data()), "Error getting extensions!");
+
+                for (const char* extensionName : requirements.m_DeviceExtensions) 
+                {
+                    // mbool isFou = false;;
+                    // for (u32 j = 0; j < available_extension_count; ++j) {
+                    //     if (strings_equal(requirements->device_extension_names[i], available_extensions[j].extensionName)) {
+                    //         found = TRUE;
+                    //         break;
+                    //     }
+                    // }
+
+                    // if (!found) {
+                    //     KINFO("Required extension not found: '%s', skipping device.", requirements->device_extension_names[i]);
+                    //     kfree(available_extensions, sizeof(VkExtensionProperties) * available_extension_count, MEMORY_TAG_RENDERER);
+                    //     return FALSE;
+                    // }
+                }
+            }
+        }
+
     }
 
     void VulkanRenderer::SelectVPD()
