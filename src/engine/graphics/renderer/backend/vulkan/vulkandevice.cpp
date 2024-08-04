@@ -4,14 +4,7 @@ BEGIN_NAMESPACE
 
 namespace Graphics
 {
-	void VulkanDevice::Init()
-	{
-	}
 
-	void VulkanDevice::Shutdown()
-	{
-
-	}
 }
 
 END_NAMESPACE

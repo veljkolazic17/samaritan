@@ -21,11 +21,12 @@ namespace Graphics
 		void BeginFrame(Time time) override;
 		void EndFrame(Time time) override;
 
+	private:
 		void GetPlatformExtensions(std::vector<const char*>& platfromExtensions);
 		void CreatePlatformSurface();
 		void SelectVPD();
+		void CreateDevice();
 
-	private:
 		mbool CheckDeviceRequerments
 		(
 			const VkPhysicalDevice& device,
@@ -38,6 +39,7 @@ namespace Graphics
 		VkAllocationCallbacks* m_Allocator = nullptr;
 		VulkanDevice m_VulkanDevice;
 		VkSurfaceKHR m_Surface;
+		VkSurfaceCapabilitiesKHR m_Capabilities;
 
 #ifdef DEBUG
 		VkDebugUtilsMessengerEXT m_DebugMessenger;

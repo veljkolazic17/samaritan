@@ -30,13 +30,8 @@ namespace Graphics
 		muint32 m_TransferIndex = 0xFFFFFFFF;
 	};
 
-
-	struct VulkanDevice : public Shutdownable
+	struct VulkanDevice
 	{
-		void Init() override;
-		void Shutdown() override;
-
-	
 		VkPhysicalDevice m_PhysicalDevice;
 		VkDevice m_LogicalDevice;
 

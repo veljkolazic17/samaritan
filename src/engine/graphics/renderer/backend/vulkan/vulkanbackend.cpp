@@ -1,6 +1,7 @@
 #include <engine/graphics/renderer/backend/vulkan/vulkanbackend.hpp>
 #include <utils/asserts/assert.hpp>
 #include <utils/logger/log.hpp>
+#include <engine/memory/memory.hpp>
 
 BEGIN_NAMESPACE
 
@@ -109,7 +110,7 @@ namespace Graphics
         CreatePlatformSurface();
         LogInfo(LogChannel::Graphics, "Vulkan surface created!");
 
-        m_VulkanDevice.Init();
+        CreateDevice();
         LogInfo(LogChannel::Graphics, "Vulkan device created!");
 	}
 
@@ -195,43 +196,83 @@ namespace Graphics
         (!requirements.m_HasTransferQueue || (requirements.m_HasTransferQueue && vpdQueues.m_TransferIndex != 0xFFFFFFFF)))
         {
             LogInfo(LogChannel::Graphics, "Device has met specified requirements!");
-        }
 
-        // TODO : Check swap chain support
+            //Check swap chain support
+            muint32 formatCount = 0;
+            muint32 presentModeCount = 0;
 
-        // Check device extensions
-        if (requirements.m_DeviceExtensions.size() > 0) 
-        {
-            muint32 extensionCount = 0;
-            VulkanCheckResult(vkEnumerateDeviceExtensionProperties(device, 0, &extensionCount, 0), "Error getting extension count!");
+            // Surface capabilities
+            VulkanCheckResult(vkGetPhysicalDeviceSurfaceCapabilitiesKHR(device, m_Surface, &m_Capabilities), "Error getting Surface Capabilities!");
 
+            // Surface formats
+            VulkanCheckResult(vkGetPhysicalDeviceSurfaceFormatsKHR(device, m_Surface, &formatCount, 0), "Error getting format count");
 
-            if (extensionCount > 0) 
-            {   
-                std::vector<VkExtensionProperties> extensions(extensionCount);
+            std::vector<VkSurfaceFormatKHR> formats;
+            if (formatCount != 0)
+            {
+                VulkanCheckResult(vkGetPhysicalDeviceSurfaceFormatsKHR(device, m_Surface, &formatCount, formats.data()), "Error getting formats");
+            }
+            else
+            {
+                LogInfo(LogChannel::Graphics, "Required swapchain support not present!");
+            }
 
+            // Present modes
+            VulkanCheckResult(vkGetPhysicalDeviceSurfacePresentModesKHR(device, m_Surface, &presentModeCount, 0), "Error getting present count!");
+            
+            std::vector<VkPresentModeKHR> presentModes;
+            if (presentModeCount != 0)
+            {
+                VulkanCheckResult(vkGetPhysicalDeviceSurfacePresentModesKHR(device, m_Surface, &presentModeCount, presentModes.data()), "Error getting present modes!");
+            }
+            else
+            {
+                LogInfo(LogChannel::Graphics, "Required swapchain support not present!");
+                return false;
+            }
 
-                VulkanCheckResult(vkEnumerateDeviceExtensionProperties(device, 0, &extensionCount, extensions.data()), "Error getting extensions!");
+            // Check device extensions
+            if (requirements.m_DeviceExtensions.size() > 0)
+            {
+                muint32 extensionCount = 0;
+                VulkanCheckResult(vkEnumerateDeviceExtensionProperties(device, 0, &extensionCount, 0), "Error getting extension count!");
 
-                for (const char* extensionName : requirements.m_DeviceExtensions) 
+                if (extensionCount > 0)
                 {
-                    // mbool isFou = false;;
-                    // for (u32 j = 0; j < available_extension_count; ++j) {
-                    //     if (strings_equal(requirements->device_extension_names[i], available_extensions[j].extensionName)) {
-                    //         found = TRUE;
-                    //         break;
-                    //     }
-                    // }
+                    std::vector<VkExtensionProperties> extensions(extensionCount);
 
-                    // if (!found) {
-                    //     KINFO("Required extension not found: '%s', skipping device.", requirements->device_extension_names[i]);
-                    //     kfree(available_extensions, sizeof(VkExtensionProperties) * available_extension_count, MEMORY_TAG_RENDERER);
-                    //     return FALSE;
-                    // }
+                    VulkanCheckResult(vkEnumerateDeviceExtensionProperties(device, 0, &extensionCount, extensions.data()), "Error getting extensions!");
+
+                    for (const char* extensionName : requirements.m_DeviceExtensions)
+                    {
+                        mbool isFound = false;;
+                        for (const VkExtensionProperties& extensionProperties : extensions)
+                        {
+                            if (std::strcmp(extensionName, extensionProperties.extensionName))
+                            {
+                                isFound = true;
+                                break;
+                            }
+                        }
+
+                        if (!isFound)
+                        {
+                            LogInfo(LogChannel::Graphics, "Required extension not found: '%s'", extensionName);
+                            return false;
+                        }
+                    }
                 }
             }
-        }
 
+            if (requirements.m_HasSamplerAnisotropy && !features.samplerAnisotropy) 
+            {
+                LogInfo(LogChannel::Graphics, "Device does not support samplerAnisotropy.");
+                return false;
+            }
+
+            return true;
+        }
+        return false;
     }
 
     void VulkanRenderer::SelectVPD()
@@ -270,8 +311,6 @@ namespace Graphics
 
             if (CheckDeviceRequerments(vpd, properties, features, memory))
             {
-
-
                 m_VulkanDevice.m_PhysicalDevice = std::move(vpd);
                 m_VulkanDevice.m_Properties = std::move(properties);
                 m_VulkanDevice.m_Features = std::move(features);
@@ -282,6 +321,12 @@ namespace Graphics
             }
         }
         hardAssert(deviceSelected, "No Vulkan device selected!");
+    }
+    
+    void VulkanRenderer::CreateDevice()
+    {
+        SelectVPD();
+
     }
 
 	void VulkanRenderer::Resize(muint32 width, muint32 heigth)
