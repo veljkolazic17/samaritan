@@ -41,6 +41,10 @@ namespace Graphics
 
 		VPDQueues m_QueuesInfo;
 		VPDRequirements m_VPDRequirments;
+
+		VkQueue m_GraphicsQueue;
+		VkQueue m_PresentQueue;
+		VkQueue m_TransferQueue;
 	};
 }
 

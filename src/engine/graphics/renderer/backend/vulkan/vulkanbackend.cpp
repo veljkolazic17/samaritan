@@ -2,6 +2,7 @@
 #include <utils/asserts/assert.hpp>
 #include <utils/logger/log.hpp>
 #include <engine/memory/memory.hpp>
+#include <set>
 
 BEGIN_NAMESPACE
 
@@ -36,8 +37,8 @@ namespace Graphics
         return VK_FALSE;
     }
 
-	void VulkanRenderer::Init()
-	{
+    void VulkanRenderer::Init()
+    {
         // Setup Vulkan instance.
         VkApplicationInfo appInfo = { VK_STRUCTURE_TYPE_APPLICATION_INFO };
         appInfo.apiVersion = VK_API_VERSION_1_2;
@@ -67,7 +68,7 @@ namespace Graphics
         VulkanCheckResult(vkEnumerateInstanceLayerProperties(&availableLayerCount, 0), "Error enumerating layer properties");
         std::vector<VkLayerProperties> availableLayers(availableLayerCount);
         VulkanCheckResult(vkEnumerateInstanceLayerProperties(&availableLayerCount, availableLayers.data()), "Error enumerating layer properties");
-        
+
         for (const char* requiredLayerName : layers)
         {
             mbool isLayerPresent = false;
@@ -112,18 +113,26 @@ namespace Graphics
 
         CreateDevice();
         LogInfo(LogChannel::Graphics, "Vulkan device created!");
-	}
+    }
 
-	void VulkanRenderer::Shutdown()
+    void VulkanRenderer::Shutdown()
     {
-        if (m_DebugMessenger) 
+        DestroyDevice();
+        LogInfo(LogChannel::Graphics, "Vulkan device destroyed!");
+
+        vkDestroySurfaceKHR(m_Instance, m_Surface, m_Allocator);
+        LogInfo(LogChannel::Graphics, "Vulkan surface destroyed!");
+
+        if (m_DebugMessenger)
         {
             PFN_vkDestroyDebugUtilsMessengerEXT procaddr = (PFN_vkDestroyDebugUtilsMessengerEXT)vkGetInstanceProcAddr(m_Instance, "vkDestroyDebugUtilsMessengerEXT");
             procaddr(m_Instance, m_DebugMessenger, m_Allocator);
+            LogInfo(LogChannel::Graphics, "Vulkan debuger destroyed!");
         }
+
         vkDestroyInstance(m_Instance, m_Allocator);
         LogInfo(LogChannel::Graphics, "Vulkan instance destroyed!");
-	}
+    }
 
     mbool VulkanRenderer::CheckDeviceRequerments
     (
@@ -151,23 +160,23 @@ namespace Graphics
             muint8 transferScore = 0;
 
             // Graphics queue?
-            if (familyProperties.queueFlags & VK_QUEUE_GRAPHICS_BIT) 
+            if (familyProperties.queueFlags & VK_QUEUE_GRAPHICS_BIT)
             {
                 m_VulkanDevice.m_QueuesInfo.m_GraphicsIndex = indexCounter;
                 ++transferScore;
             }
 
             // Compute queue?
-            if (familyProperties.queueFlags & VK_QUEUE_COMPUTE_BIT) 
+            if (familyProperties.queueFlags & VK_QUEUE_COMPUTE_BIT)
             {
                 m_VulkanDevice.m_QueuesInfo.m_ComputeIndex = indexCounter;
                 ++transferScore;
             }
 
             // Transfer queue?
-            if (familyProperties.queueFlags & VK_QUEUE_TRANSFER_BIT) 
+            if (familyProperties.queueFlags & VK_QUEUE_TRANSFER_BIT)
             {
-                if (transferScore <= minimumTransferScore) 
+                if (transferScore <= minimumTransferScore)
                 {
                     minimumTransferScore = transferScore;
                     m_VulkanDevice.m_QueuesInfo.m_TransferIndex = indexCounter;
@@ -190,10 +199,10 @@ namespace Graphics
         const VPDQueues& vpdQueues = m_VulkanDevice.m_QueuesInfo;
 
         if (
-        (!requirements.m_HasGraphicsQueue || (requirements.m_HasGraphicsQueue && vpdQueues.m_GraphicsIndex != 0xFFFFFFFF)) &&
-        (!requirements.m_HasPresentQueue || (requirements.m_HasPresentQueue && vpdQueues.m_PresentIndex != 0xFFFFFFFF)) &&
-        (!requirements.m_HasComputeQueue || (requirements.m_HasComputeQueue && vpdQueues.m_ComputeIndex != 0xFFFFFFFF)) &&
-        (!requirements.m_HasTransferQueue || (requirements.m_HasTransferQueue && vpdQueues.m_TransferIndex != 0xFFFFFFFF)))
+            (!requirements.m_HasGraphicsQueue || (requirements.m_HasGraphicsQueue && vpdQueues.m_GraphicsIndex != 0xFFFFFFFF)) &&
+            (!requirements.m_HasPresentQueue || (requirements.m_HasPresentQueue && vpdQueues.m_PresentIndex != 0xFFFFFFFF)) &&
+            (!requirements.m_HasComputeQueue || (requirements.m_HasComputeQueue && vpdQueues.m_ComputeIndex != 0xFFFFFFFF)) &&
+            (!requirements.m_HasTransferQueue || (requirements.m_HasTransferQueue && vpdQueues.m_TransferIndex != 0xFFFFFFFF)))
         {
             LogInfo(LogChannel::Graphics, "Device has met specified requirements!");
 
@@ -219,7 +228,7 @@ namespace Graphics
 
             // Present modes
             VulkanCheckResult(vkGetPhysicalDeviceSurfacePresentModesKHR(device, m_Surface, &presentModeCount, 0), "Error getting present count!");
-            
+
             std::vector<VkPresentModeKHR> presentModes;
             if (presentModeCount != 0)
             {
@@ -264,7 +273,7 @@ namespace Graphics
                 }
             }
 
-            if (requirements.m_HasSamplerAnisotropy && !features.samplerAnisotropy) 
+            if (requirements.m_HasSamplerAnisotropy && !features.samplerAnisotropy)
             {
                 LogInfo(LogChannel::Graphics, "Device does not support samplerAnisotropy.");
                 return false;
@@ -281,7 +290,7 @@ namespace Graphics
         mbool deviceSelected = false;
 
         VulkanCheckResult(vkEnumeratePhysicalDevices(m_Instance, &deviceCount, 0), "Error getting device number!");
-        if (deviceCount == 0) 
+        if (deviceCount == 0)
         {
             hardAssert(false, "No devices support Vulkan!");
         }
@@ -315,18 +324,98 @@ namespace Graphics
                 m_VulkanDevice.m_Properties = std::move(properties);
                 m_VulkanDevice.m_Features = std::move(features);
                 m_VulkanDevice.m_Memory = std::move(memory);
-                
+
                 deviceSelected = true;
                 break;
             }
         }
         hardAssert(deviceSelected, "No Vulkan device selected!");
     }
-    
+
+    void VulkanRenderer::CreateVLD()
+    {
+        muint32 graphicsQueueIndex = m_VulkanDevice.m_QueuesInfo.m_GraphicsIndex;
+        muint32 presentQueueIndex = m_VulkanDevice.m_QueuesInfo.m_PresentIndex;
+        muint32 transferQueueIndex = m_VulkanDevice.m_QueuesInfo.m_TransferIndex;
+
+        std::set<muint32> queueIndecies = { graphicsQueueIndex, presentQueueIndex, transferQueueIndex };
+        
+        std::vector<VkDeviceQueueCreateInfo> queueCreateInfos;
+        for (muint32 queueIndex : queueIndecies) 
+        {
+            VkDeviceQueueCreateInfo queueCreateInfo;
+
+            queueCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
+            queueCreateInfo.queueFamilyIndex = queueIndex;
+            queueCreateInfo.queueCount = 1;
+
+            //TODO : Maybe problematic
+           /* if (queueIndex == graphicsQueueIndex) 
+            {
+                queueCreateInfo.queueCount = 2;
+            }*/
+            queueCreateInfo.flags = 0;
+            queueCreateInfo.pNext = 0;
+
+            //TODO : This may not work
+            mfloat32 queue_priority = 1.0f;
+            queueCreateInfo.pQueuePriorities = &queue_priority;
+
+            queueCreateInfos.emplace_back(queueCreateInfo);
+        }
+
+        // Request device features.
+        VkPhysicalDeviceFeatures deviceFeatures = {};
+        deviceFeatures.samplerAnisotropy = VK_TRUE;
+
+        VkDeviceCreateInfo deviceCreateInfo = { VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO };
+        deviceCreateInfo.queueCreateInfoCount = queueIndecies.size();
+        deviceCreateInfo.pQueueCreateInfos = queueCreateInfos.data();
+        deviceCreateInfo.pEnabledFeatures = &deviceFeatures;
+        deviceCreateInfo.enabledExtensionCount = 1;
+        const char* extensionNames = VK_KHR_SWAPCHAIN_EXTENSION_NAME;
+        deviceCreateInfo.ppEnabledExtensionNames = &extensionNames;
+        
+        VkDevice& logicalDevice = m_VulkanDevice.m_LogicalDevice;
+
+        // Create the device.
+        VulkanCheckResult(vkCreateDevice(m_VulkanDevice.m_PhysicalDevice, &deviceCreateInfo, m_Allocator, &logicalDevice), "Error creating Logical Device!");
+
+        LogInfo(LogChannel::Graphics, "Logical Device created!");
+
+        // Get queues.
+        vkGetDeviceQueue(logicalDevice, graphicsQueueIndex, 0, &m_VulkanDevice.m_GraphicsQueue);
+        vkGetDeviceQueue(logicalDevice, presentQueueIndex, 0, &m_VulkanDevice.m_PresentQueue);
+        vkGetDeviceQueue(logicalDevice, transferQueueIndex, 0, &m_VulkanDevice.m_TransferQueue);
+
+        LogInfo(LogChannel::Graphics, "Queues obtained!");
+    }
+
     void VulkanRenderer::CreateDevice()
     {
         SelectVPD();
+        CreateVLD();
+    }
 
+    void VulkanRenderer::DestroyDevice()
+    {
+        // Destroy logical device
+        vkDestroyDevice(m_VulkanDevice.m_LogicalDevice, m_Allocator);
+        LogInfo(LogChannel::Graphics, "Logical Device destroyed!");
+
+        Zero(&m_Capabilities, sizeof(m_Capabilities));
+        m_VulkanDevice.m_Properties;
+
+        //Don't need to do this!
+        m_VulkanDevice.m_VPDRequirments.m_DeviceExtensions.clear();
+
+        m_VulkanDevice.m_QueuesInfo.m_GraphicsIndex = 0xFFFFFFFF;
+        m_VulkanDevice.m_QueuesInfo.m_PresentIndex = 0xFFFFFFFF;
+        m_VulkanDevice.m_QueuesInfo.m_ComputeIndex = 0xFFFFFFFF;
+        m_VulkanDevice.m_QueuesInfo.m_TransferIndex = 0xFFFFFFFF;
+
+        //WTF should I event do this
+        Memory::mmfree(m_Allocator, false);
     }
 
 	void VulkanRenderer::Resize(muint32 width, muint32 heigth)

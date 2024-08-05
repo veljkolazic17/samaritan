@@ -25,7 +25,9 @@ namespace Graphics
 		void GetPlatformExtensions(std::vector<const char*>& platfromExtensions);
 		void CreatePlatformSurface();
 		void SelectVPD();
+		void CreateVLD();
 		void CreateDevice();
+		void DestroyDevice();
 
 		mbool CheckDeviceRequerments
 		(
