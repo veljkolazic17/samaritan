@@ -13,9 +13,9 @@ namespace Graphics
 	public:
 		virtual RendererType GetRendererType() = 0;
 
-		inline muint64 GetFrameCount() { return m_FrameCount; }
-		inline muint64 SetFrameCount(muint64 frameCount) { m_FrameCount = frameCount; }
-		inline muint64 IncrementFrameCount() { return ++m_FrameCount; }
+		SM_INLINE muint64 GetFrameCount() { return m_FrameCount; }
+		SM_INLINE muint64 SetFrameCount(muint64 frameCount) { m_FrameCount = frameCount; }
+		SM_INLINE muint64 IncrementFrameCount() { return ++m_FrameCount; }
 
 		virtual void Resize(muint32 width, muint32 heigth) = 0;
 		virtual void BeginFrame(Time time) = 0;

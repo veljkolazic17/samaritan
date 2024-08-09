@@ -2,6 +2,8 @@
 #include <utils/asserts/assert.hpp>
 #include <utils/logger/log.hpp>
 #include <engine/memory/memory.hpp>
+#include <engine/graphics/renderer/backend/vulkan/vulkanswapchain.h>
+
 #include <set>
 
 BEGIN_NAMESPACE
@@ -193,7 +195,7 @@ namespace Graphics
 
             ++indexCounter;
         }
-        //TODO : More check here
+        //TODO : More check here 
 
         const VPDRequirements& requirements = m_VulkanDevice.m_VPDRequirments;
         const VPDQueues& vpdQueues = m_VulkanDevice.m_QueuesInfo;
@@ -206,39 +208,14 @@ namespace Graphics
         {
             LogInfo(LogChannel::Graphics, "Device has met specified requirements!");
 
-            //Check swap chain support
-            muint32 formatCount = 0;
-            muint32 presentModeCount = 0;
-
-            // Surface capabilities
-            VulkanCheckResult(vkGetPhysicalDeviceSurfaceCapabilitiesKHR(device, m_Surface, &m_Capabilities), "Error getting Surface Capabilities!");
-
-            // Surface formats
-            VulkanCheckResult(vkGetPhysicalDeviceSurfaceFormatsKHR(device, m_Surface, &formatCount, 0), "Error getting format count");
-
-            std::vector<VkSurfaceFormatKHR> formats;
-            if (formatCount != 0)
-            {
-                VulkanCheckResult(vkGetPhysicalDeviceSurfaceFormatsKHR(device, m_Surface, &formatCount, formats.data()), "Error getting formats");
-            }
-            else
-            {
-                LogInfo(LogChannel::Graphics, "Required swapchain support not present!");
-            }
-
-            // Present modes
-            VulkanCheckResult(vkGetPhysicalDeviceSurfacePresentModesKHR(device, m_Surface, &presentModeCount, 0), "Error getting present count!");
-
-            std::vector<VkPresentModeKHR> presentModes;
-            if (presentModeCount != 0)
-            {
-                VulkanCheckResult(vkGetPhysicalDeviceSurfacePresentModesKHR(device, m_Surface, &presentModeCount, presentModes.data()), "Error getting present modes!");
-            }
-            else
-            {
-                LogInfo(LogChannel::Graphics, "Required swapchain support not present!");
-                return false;
-            }
+            //Fuck this is bad code, needs to be changed
+            VulkanSwapChainArguments arguments;
+            arguments.m_Device = &device;
+            arguments.m_Surface = &m_Surface;
+            arguments.m_SurfaceCapabilities = &m_Capabilities;
+            arguments.m_SurfaceFormats = &m_SurfaceFormats;
+            arguments.m_PresentModes = &m_PresentModes;
+            VulkanSwapChain::QuerySwapChainSupport(arguments);
 
             // Check device extensions
             if (requirements.m_DeviceExtensions.size() > 0)
@@ -418,7 +395,7 @@ namespace Graphics
         Memory::mmfree(m_Allocator, false);
     }
 
-	void VulkanRenderer::Resize(muint32 width, muint32 heigth)
+	void VulkanRenderer::Resize(muint32 width, muint32 height)
 	{
 
 	}

@@ -17,9 +17,19 @@ namespace Graphics
 		void Init() override;
 		void Shutdown() override;
 
-		void Resize(muint32 width, muint32 heigth) override;
+		void Resize(muint32 width, muint32 height) override;
 		void BeginFrame(Time time) override;
 		void EndFrame(Time time) override;
+
+		SM_INLINE VkAllocationCallbacks* GetAllocator() { return m_Allocator; }
+		SM_INLINE VulkanDevice& GetVulkanDevice() { return m_VulkanDevice; }
+		SM_INLINE VkSurfaceKHR& GetSurface() { return m_Surface; }
+		SM_INLINE std::vector<VkSurfaceFormatKHR>& GetSurfaceFormats() { return m_SurfaceFormats; }
+		SM_INLINE std::vector<VkPresentModeKHR>& GetPresentModes() { return m_PresentModes; }
+		SM_INLINE VkSurfaceCapabilitiesKHR& GetCapabilities() { return m_Capabilities; }
+
+		SM_INLINE muint64 GetCurrentFrame() { return m_CurrentFrame; }
+		SM_INLINE void SetCurrentFrame(muint64 frame) { m_CurrentFrame = frame; }
 
 	private:
 		void GetPlatformExtensions(std::vector<const char*>& platfromExtensions);
@@ -41,6 +51,11 @@ namespace Graphics
 		VkAllocationCallbacks* m_Allocator = nullptr;
 		VulkanDevice m_VulkanDevice;
 		VkSurfaceKHR m_Surface;
+
+		muint64 m_CurrentFrame = 0;
+
+		std::vector<VkSurfaceFormatKHR> m_SurfaceFormats;
+		std::vector<VkPresentModeKHR> m_PresentModes;
 		VkSurfaceCapabilitiesKHR m_Capabilities;
 
 #ifdef DEBUG

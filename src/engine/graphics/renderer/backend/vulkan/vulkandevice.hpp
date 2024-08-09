@@ -45,6 +45,9 @@ namespace Graphics
 		VkQueue m_GraphicsQueue;
 		VkQueue m_PresentQueue;
 		VkQueue m_TransferQueue;
+
+		muint32 m_FrameBufferWidth = 0;
+		muint32 m_FrameBufferHeight = 0;
 	};
 }
 

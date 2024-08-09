@@ -31,13 +31,13 @@ namespace Events
     };
 
     template<typename EventType>
-    inline void AddEvent(EventType&& event)
+    SM_INLINE void AddEvent(EventType&& event)
     {
         std::unique_ptr<EventType> pressedEvent = std::move(std::make_unique<EventType>(event));
         EventManager::GetInstance().AddEvent(std::forward<std::unique_ptr<EventType>>(pressedEvent));
     }
 
-    inline void TriggerEvent(const Event& event)
+    SM_INLINE void TriggerEvent(const Event& event)
     {
         EventManager::GetInstance().TriggerEvent(event);
     }

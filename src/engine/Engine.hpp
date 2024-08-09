@@ -37,13 +37,13 @@ namespace Engine
 		void Shutdown(void) override;
 		void Run(void);
 
-		inline EngineState GetEngineState(void) { return m_EngineState; }
+		SM_INLINE EngineState GetEngineState(void) { return m_EngineState; }
 		void SetEngineState(EngineState engineState);
 
 		void LoopPreProcess(void);
 		void LoopPostProcess(void);
 
-		inline const Graphics::Window* const GetWindow() { return m_Window; }
+		SM_INLINE const Graphics::Window* const GetWindow() { return m_Window; }
 	private:
 		void LoopPreProcessPlatformImpl(void);
 

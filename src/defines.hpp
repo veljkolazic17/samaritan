@@ -9,3 +9,5 @@ namespace samaritan { enum { isInsamaritanNamespace = true }; }
 
 #define BEGIN_NAMESPACE                             STATIC_ASSERT_MESSAGE(!isInsamaritanNamespace, "samaritan namespace is not previously closed"); namespace samaritan {
 #define END_NAMESPACE                               } STATIC_ASSERT_MESSAGE(!isInsamaritanNamespace, "samaritan namespace is not previously opened");
+
+#define SM_INLINE inline

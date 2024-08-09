@@ -34,16 +34,16 @@ namespace Graphics
 			m_WindowName(windowName){}
 		Window(){}
 
-		inline muint64 GetWidth() { return m_Width; }
-		inline muint64 GetHeight() { return m_Height; }
+		SM_INLINE muint64 GetWidth() { return m_Width; }
+		SM_INLINE muint64 GetHeight() { return m_Height; }
 
-		inline void SetWidth(muint64 width) { m_Width = width; }
-		inline void SetHeight(muint64 height) { m_Height = height; }
+		SM_INLINE void SetWidth(muint64 width) { m_Width = width; }
+		SM_INLINE void SetHeight(muint64 height) { m_Height = height; }
 
 		void Init() override;
 		void Shutdown() override;
 
-		inline const WindowState* const GetWindowState() const { return m_WindowState; }
+		SM_INLINE const WindowState* const GetWindowState() const { return m_WindowState; }
 
 	private:
 		muint64 m_Width = 0;

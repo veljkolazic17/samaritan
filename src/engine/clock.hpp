@@ -12,8 +12,8 @@ namespace Engine
 		SINGLETON_CONSTRUCTOR(Clock);
 	public:
 		void Init(void);
-		inline Time GetStartTime() { return m_StartTime; }
-		inline Time GetElapsed() { return m_Elapsed; }
+		SM_INLINE Time GetStartTime() { return m_StartTime; }
+		SM_INLINE Time GetElapsed() { return m_Elapsed; }
 
 		// Platform specific
 		Time GetTime();

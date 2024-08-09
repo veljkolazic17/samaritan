@@ -15,7 +15,7 @@ BEGIN_NAMESPACE
 namespace Graphics
 {
 
-    inline void ProcessWindowResize(LPARAM l_param)
+    SM_INLINE void ProcessWindowResize(LPARAM l_param)
     {
         WindowResizedEvent windowResizedEvent;
 
@@ -26,7 +26,7 @@ namespace Graphics
         LogInfo(LogChannel::Inputs, "Window resized to: Width %d Height %d", windowResizedEvent.m_Width, windowResizedEvent.m_Height);
     }
 
-    inline void ProcessWindowClose()
+    SM_INLINE void ProcessWindowClose()
     {
         Events::AddEvent<WindowClosedEvent>({});
     }

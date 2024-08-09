@@ -12,8 +12,8 @@ namespace Memory
 		virtual void* Allocate(muint64 size) = 0;
 		virtual void Deallocate(void* memory) = 0;
 
-		virtual inline MemoryTag GetMemoryTag() { return m_MemoryTag; }
-		virtual inline void SetMemoryTag(const MemoryTag& memoryTag) { m_MemoryTag = memoryTag; }
+		virtual SM_INLINE MemoryTag GetMemoryTag() { return m_MemoryTag; }
+		virtual SM_INLINE void SetMemoryTag(const MemoryTag& memoryTag) { m_MemoryTag = memoryTag; }
 
 	protected:
 		MemoryTag m_MemoryTag = MemoryTag::MEM_UNKNOW;

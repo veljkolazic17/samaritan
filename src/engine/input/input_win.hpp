@@ -11,7 +11,7 @@ BEGIN_NAMESPACE
 
 namespace Input::Win
 {
-    inline void ProcessMouseButtons(muint32 msg)
+    SM_INLINE void ProcessMouseButtons(muint32 msg)
 	{
         mbool isPressed = msg == WM_LBUTTONDOWN || msg == WM_RBUTTONDOWN || msg == WM_MBUTTONDOWN;
         switch (msg)
@@ -37,18 +37,18 @@ namespace Input::Win
 		}
 	}
 
-    inline void ProcessKeyboardButtons(muint32 msg, WPARAM w_param)
+    SM_INLINE void ProcessKeyboardButtons(muint32 msg, WPARAM w_param)
     {
         mbool isPressed = msg == WM_KEYDOWN || msg == WM_SYSKEYDOWN;
         InputManager::GetInstance().ProcessKey((Input::Key)w_param, isPressed);
     }
 
-    inline void ProcessMouseMove(LPARAM l_param)
+    SM_INLINE void ProcessMouseMove(LPARAM l_param)
     {
         InputManager::GetInstance().ProcessMouseMovement(GET_X_LPARAM(l_param), GET_Y_LPARAM(l_param));
     }
 
-    inline void ProcessMouseWheel(muint32 msg)
+    SM_INLINE void ProcessMouseWheel(muint32 msg)
     {
 
     }
