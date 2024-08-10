@@ -3,6 +3,8 @@
 #include <engine/graphics/renderer/backend/vulkan/vulkantypes.inl>
 #include <engine/graphics/renderer/backend/rendererbackend.hpp>
 #include <engine/graphics/renderer/backend/vulkan/vulkandevice.hpp>
+#include <engine/graphics/renderer/backend/vulkan/vulkanswapchain.h>
+
 #include <vector>
 
 BEGIN_NAMESPACE
@@ -57,6 +59,8 @@ namespace Graphics
 		std::vector<VkSurfaceFormatKHR> m_SurfaceFormats;
 		std::vector<VkPresentModeKHR> m_PresentModes;
 		VkSurfaceCapabilitiesKHR m_Capabilities;
+
+		VulkanSwapChain m_SwapChain;
 
 #ifdef DEBUG
 		VkDebugUtilsMessengerEXT m_DebugMessenger;

@@ -3,6 +3,10 @@
 #include <engine/graphics/renderer/backend/vulkan/vulkantypes.inl>
 
 #include <engine/graphics/renderer/backend/vulkan/vulkandevice.hpp>
+#include <engine/graphics/renderer/backend/vulkan/vulkanimage.hpp>
+
+class VulkanImage;
+
 BEGIN_NAMESPACE
 
 namespace Graphics
@@ -40,6 +44,9 @@ namespace Graphics
 
 		SM_INLINE void SetVulkanRenderer(VulkanRenderer* renderer) { m_Renderer = renderer; }
 		static void QuerySwapChainSupport(VulkanSwapChainArguments& queryArguments);
+
+		mbool GetDeviceDepthFormat();
+
 	private:
 		void CreateInternal(muint32 width, muint32 height);
 		void DestroyInternal();
@@ -52,6 +59,7 @@ namespace Graphics
 		std::vector<VkImageView> m_ImageViews;
 
 		VulkanRenderer* m_Renderer;
+		VulkanImage m_DepthBufferImage;
 	};
 }
 

@@ -26,8 +26,10 @@ namespace Graphics
 		// Surface formats
 		VulkanCheckResult(vkGetPhysicalDeviceSurfaceFormatsKHR(*queryArguments.m_Device, *queryArguments.m_Surface, &formatCount, 0), "Error getting format count");
 
+		queryArguments.m_SurfaceFormats->clear();
 		if (formatCount != 0)
 		{
+			queryArguments.m_SurfaceFormats->resize(formatCount);
 			VulkanCheckResult(vkGetPhysicalDeviceSurfaceFormatsKHR(*queryArguments.m_Device, *queryArguments.m_Surface, &formatCount, queryArguments.m_SurfaceFormats->data()), "Error getting formats");
 		}
 		else
@@ -38,8 +40,10 @@ namespace Graphics
 		// Present modes
 		VulkanCheckResult(vkGetPhysicalDeviceSurfacePresentModesKHR(*queryArguments.m_Device, *queryArguments.m_Surface, &presentModeCount, 0), "Error getting present count!");
 
+		queryArguments.m_PresentModes->clear();
 		if (presentModeCount != 0)
 		{
+			queryArguments.m_PresentModes->resize(presentModeCount);
 			VulkanCheckResult(vkGetPhysicalDeviceSurfacePresentModesKHR(*queryArguments.m_Device, *queryArguments.m_Surface, &presentModeCount, queryArguments.m_PresentModes->data()), "Error getting present modes!");
 		}
 		else
@@ -50,13 +54,13 @@ namespace Graphics
 
 	void VulkanSwapChain::Create(muint32 width, muint32 height)
 	{
-		//CreateInternal(width, height);
+		CreateInternal(width, height);
 	}
 
 	void VulkanSwapChain::Recreate(muint32 width, muint32 height)
 	{
 		DestroyInternal();
-		//CreateInternal(width, height);
+		CreateInternal(width, height);
 	}
 
 	void VulkanSwapChain::Destroy()
@@ -133,7 +137,7 @@ namespace Graphics
 		}
 		if (!found) 
 		{
-			m_ImageFormat =  (m_Renderer->GetSurfaceFormats())[0];
+			m_ImageFormat = (m_Renderer->GetSurfaceFormats())[0];
 		}
 
 		found = false;
@@ -255,14 +259,74 @@ namespace Graphics
 			m_ImageViews.emplace_back(imageView);
 		}
 
-		//TODO : Create depth buffer (needed only for 3D!)
-
+		//ONLY FOR 3D
+		if (!GetDeviceDepthFormat())
+		{
+			m_Renderer->GetVulkanDevice().m_DepthFormat = VK_FORMAT_UNDEFINED;
+			softAssert(false, "Error getting device depth format!");
+		}
+		//Create image
+		VulkanImage::CreateImage
+		(
+			m_Renderer->GetVulkanDevice().m_PhysicalDevice,
+			m_Renderer->GetVulkanDevice().m_LogicalDevice,
+			m_Renderer->GetAllocator(),
+			VK_IMAGE_TYPE_2D,
+			swapchainExtent.width,
+			swapchainExtent.height,
+			m_Renderer->GetVulkanDevice().m_DepthFormat,
+			VK_IMAGE_TILING_OPTIMAL,
+			VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT,
+			VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
+			true,
+			VK_IMAGE_ASPECT_DEPTH_BIT,
+			&m_DepthBufferImage
+		);
+		
+		//ONLY FOR 3D
 		LogInfo(LogChannel::Graphics, "Swapchain created!");
+	}
+
+	mbool VulkanSwapChain::GetDeviceDepthFormat()
+	{
+		// Format candidates
+		constexpr muint64 cancidatesSize = 3;
+		VkFormat candidates[cancidatesSize] =
+		{
+			VK_FORMAT_D32_SFLOAT,
+			VK_FORMAT_D32_SFLOAT_S8_UINT,
+			VK_FORMAT_D24_UNORM_S8_UINT 
+		};
+
+		muint32 flags = VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT;
+		for (const VkFormat& candidate : candidates) 
+		{
+			VkFormatProperties properties;
+			vkGetPhysicalDeviceFormatProperties(m_Renderer->GetVulkanDevice().m_PhysicalDevice, candidate, &properties);
+
+			if ((properties.linearTilingFeatures & flags) == flags) 
+			{
+				m_Renderer->GetVulkanDevice().m_DepthFormat = candidate;
+				return true;
+			}
+			else if ((properties.optimalTilingFeatures & flags) == flags) 
+			{
+				m_Renderer->GetVulkanDevice().m_DepthFormat = candidate;
+				return true;
+			}
+		}
+		return false;
 	}
 
 	void VulkanSwapChain::DestroyInternal()
 	{
+		VulkanImage::DeleteImage(m_Renderer->GetVulkanDevice().m_LogicalDevice, m_Renderer->GetAllocator(), m_DepthBufferImage);
 
+		for (const VkImageView& image : m_ImageViews) 
+		{
+			vkDestroyImageView(m_Renderer->GetVulkanDevice().m_LogicalDevice, image, m_Renderer->GetAllocator());
+		}
+		vkDestroySwapchainKHR(m_Renderer->GetVulkanDevice().m_LogicalDevice, m_Handle, m_Renderer->GetAllocator());
 	}
 }
 

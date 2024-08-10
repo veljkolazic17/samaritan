@@ -115,10 +115,17 @@ namespace Graphics
 
         CreateDevice();
         LogInfo(LogChannel::Graphics, "Vulkan device created!");
+
+        //Bad boy code
+        m_SwapChain.SetVulkanRenderer(this);
+        m_SwapChain.Create(m_VulkanDevice.m_FrameBufferWidth, m_VulkanDevice.m_FrameBufferHeight);
+        LogInfo(LogChannel::Graphics, "Vulkan swap chain created!");
     }
 
     void VulkanRenderer::Shutdown()
     {
+        m_SwapChain.Destroy();
+
         DestroyDevice();
         LogInfo(LogChannel::Graphics, "Vulkan device destroyed!");
 
