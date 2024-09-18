@@ -4,6 +4,8 @@
 #include <engine/graphics/renderer/backend/rendererbackend.hpp>
 #include <engine/graphics/renderer/backend/vulkan/vulkandevice.hpp>
 #include <engine/graphics/renderer/backend/vulkan/vulkanswapchain.h>
+#include <engine/graphics/renderer/backend/vulkan/vulkanrenderpass.hpp>
+#include <engine/graphics/renderer/backend/vulkan/vulkancommandbuffer.hpp>
 
 #include <vector>
 
@@ -33,7 +35,6 @@ namespace Graphics
 
 		SM_INLINE muint64 GetCurrentFrame() { return m_CurrentFrame; }
 		SM_INLINE void SetCurrentFrame(muint64 frame) { m_CurrentFrame = frame; }
-
 	private:
 		void GetPlatformExtensions(std::vector<const char*>& platfromExtensions);
 		void CreatePlatformSurface();
@@ -41,6 +42,10 @@ namespace Graphics
 		void CreateVLD();
 		void CreateDevice();
 		void DestroyDevice();
+		void CreateCommandBuffers();
+		void DestroyCommandBuffers();
+		void CreateCommandPool();
+		void DestroyCommandPool();
 
 		mbool CheckDeviceRequerments
 		(
@@ -61,7 +66,10 @@ namespace Graphics
 		std::vector<VkPresentModeKHR> m_PresentModes;
 		VkSurfaceCapabilitiesKHR m_Capabilities;
 
+		std::vector<VulkanCommandBuffer> m_GraphicsCommandBuffers;
+
 		VulkanSwapChain m_SwapChain;
+		VulkanRenderpass m_MainRenderPass;
 
 #ifdef DEBUG
 		VkDebugUtilsMessengerEXT m_DebugMessenger;

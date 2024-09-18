@@ -50,6 +50,8 @@ namespace Graphics
 
 		muint32 m_FrameBufferWidth = 0;
 		muint32 m_FrameBufferHeight = 0;
+
+		VkCommandPool m_GraphicsCommandPool;
 	};
 }
 

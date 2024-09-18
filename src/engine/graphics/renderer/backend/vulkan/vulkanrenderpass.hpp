@@ -25,7 +25,7 @@ namespace Graphics
 	class VulkanRenderpass
 	{
 	public:
-		void Create(smVec4& renderArea, smVec4& color, mfloat32 depth, mfloat32 stencil);
+		void Create(smVec4 renderArea, smVec4 color, mfloat32 depth, mfloat32 stencil);
 		void Destroy();
 
 		void Begin(VulkanCommandBuffer& commandBuffer, VkFramebuffer frameBuffer);

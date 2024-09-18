@@ -120,10 +120,25 @@ namespace Graphics
         m_SwapChain.SetVulkanRenderer(this);
         m_SwapChain.Create(m_VulkanDevice.m_FrameBufferWidth, m_VulkanDevice.m_FrameBufferHeight);
         LogInfo(LogChannel::Graphics, "Vulkan swap chain created!");
+
+        m_MainRenderPass.SetVulkanRenderer(this);
+        m_MainRenderPass.Create
+        (
+            smVec4(0.f, 0.f, (mfloat32)m_VulkanDevice.m_FrameBufferWidth, (mfloat32)m_VulkanDevice.m_FrameBufferHeight),
+            smVec4(0.f, 0.f, 0.2f, 0.1f),
+            1.f,
+            0.f
+        );
+
+        CreateCommandBuffers();
     }
 
     void VulkanRenderer::Shutdown()
     {
+        DestroyCommandBuffers();
+
+        m_MainRenderPass.Destroy();
+
         m_SwapChain.Destroy();
 
         DestroyDevice();
@@ -373,6 +388,8 @@ namespace Graphics
         vkGetDeviceQueue(logicalDevice, transferQueueIndex, 0, &m_VulkanDevice.m_TransferQueue);
 
         LogInfo(LogChannel::Graphics, "Queues obtained!");
+
+        CreateCommandPool();
     }
 
     void VulkanRenderer::CreateDevice()
@@ -384,6 +401,8 @@ namespace Graphics
     void VulkanRenderer::DestroyDevice()
     {
         // Destroy logical device
+        DestroyCommandPool();
+
         vkDestroyDevice(m_VulkanDevice.m_LogicalDevice, m_Allocator);
         LogInfo(LogChannel::Graphics, "Logical Device destroyed!");
 
@@ -400,6 +419,54 @@ namespace Graphics
 
         //WTF should I event do this
         Memory::mmfree(m_Allocator, false);
+    }
+
+    void VulkanRenderer::CreateCommandBuffers()
+    {
+        constexpr mbool isPrimary = true;
+
+        if(m_GraphicsCommandBuffers.size())
+        {
+            m_GraphicsCommandBuffers.resize(m_SwapChain.GetImages().size());
+        }
+
+        for (VulkanCommandBuffer& commandBuffer : m_GraphicsCommandBuffers)
+        {
+            if (commandBuffer.GetCommandBuffer())
+            {
+                commandBuffer.FreeBuffer(m_VulkanDevice.m_LogicalDevice, m_VulkanDevice.m_GraphicsCommandPool);
+            }
+
+            commandBuffer.AllocateBuffer(m_VulkanDevice.m_LogicalDevice, m_VulkanDevice.m_GraphicsCommandPool, isPrimary);
+        }
+        LogDebug(LogChannel::Graphics, "Created command buffers");
+    }
+
+    void VulkanRenderer::DestroyCommandBuffers()
+    {
+        for (VulkanCommandBuffer& commandBuffer : m_GraphicsCommandBuffers)
+        {
+            if (commandBuffer.GetCommandBuffer())
+            {
+                commandBuffer.FreeBuffer(m_VulkanDevice.m_LogicalDevice, m_VulkanDevice.m_GraphicsCommandPool);
+            }
+        }
+        m_GraphicsCommandBuffers.clear();
+    }
+
+    void VulkanRenderer::CreateCommandPool()
+    {
+        VkCommandPoolCreateInfo poolCcreateInfo = { VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO };
+        poolCcreateInfo.queueFamilyIndex = m_VulkanDevice.m_QueuesInfo.m_GraphicsIndex;
+        poolCcreateInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
+        VulkanCheckResult(vkCreateCommandPool(m_VulkanDevice.m_LogicalDevice, &poolCcreateInfo, m_Allocator, &m_VulkanDevice.m_GraphicsCommandPool), "Failed to create Graphics Command Pool!");
+        LogInfo(LogChannel::Graphics, "Graphics command pool created.");
+    }
+
+    void VulkanRenderer::DestroyCommandPool()
+    {
+        vkDestroyCommandPool(m_VulkanDevice.m_LogicalDevice, m_VulkanDevice.m_GraphicsCommandPool, m_Allocator);
+        LogInfo(LogChannel::Graphics, "Destroying command pools.");
     }
 
 	void VulkanRenderer::Resize(muint32 width, muint32 height)

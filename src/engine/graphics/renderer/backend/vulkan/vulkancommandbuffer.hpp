@@ -22,11 +22,26 @@ namespace Graphics
 	{
 	public:
 		SM_INLINE VkCommandBuffer& GetCommandBuffer() { return m_Handle; }
-		SM_INLINE VulkanCommandBufferState& SetState(VulkanCommandBufferState state) { m_State = state; }
+		SM_INLINE void SetState(VulkanCommandBufferState state) { m_State = state; }
 		SM_INLINE VulkanCommandBufferState& GetState() { return m_State; }
+
+		void AllocateBuffer(VkDevice device, VkCommandPool commandPool, mbool isPrimary);
+		void FreeBuffer(VkDevice device, VkCommandPool commandPool);
+		void BeginBuffer(mbool isSingleUse, mbool isRenderpassContinue, mbool isSimultaneousUse);
+		void EndBuffer();
+		void BeginSingleUseBuffer(VkDevice device, VkCommandPool commandPool);
+		void EndSingleUseBuffer(VkDevice device, VkCommandPool commandPool, VkQueue queue);
+		SM_INLINE void ResetBuffer()
+		{
+			m_State = VulkanCommandBufferState::COMMAND_BUFFER_STATE_READY;
+		}
+		SM_INLINE void Submit()
+		{
+			m_State = VulkanCommandBufferState::COMMAND_BUFFER_STATE_READY;
+		}
 	private:
 		VkCommandBuffer m_Handle;
-		VulkanCommandBufferState m_State;
+		VulkanCommandBufferState m_State = VulkanCommandBufferState::COMMAND_BUFFER_STATE_NOT_ALLOCATED;
 	};
 }
 

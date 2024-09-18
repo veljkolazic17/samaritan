@@ -9,7 +9,7 @@ BEGIN_NAMESPACE
 
 namespace Graphics
 {
-	void VulkanRenderpass::Create(smVec4& renderArea, smVec4& color, mfloat32 depth, mfloat32 stencil)
+	void VulkanRenderpass::Create(smVec4 renderArea, smVec4 color, mfloat32 depth, mfloat32 stencil)
 	{
 		hardAssert(m_Renderer != nullptr, "Renderer not set for renderpass!");
 
