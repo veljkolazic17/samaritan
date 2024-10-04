@@ -2,7 +2,6 @@
 #include <utils/asserts/assert.hpp>
 #include <utils/logger/log.hpp>
 #include <engine/memory/memory.hpp>
-#include <engine/graphics/renderer/backend/vulkan/vulkanswapchain.h>
 
 #include <set>
 
@@ -130,7 +129,13 @@ namespace Graphics
             0.f
         );
 
+        // Regenerate framebuffers
+        m_SwapChain.RegenerateFramebuffers();
+        LogInfo(LogChannel::Graphics, "Creating framebuffers for the first time!");
+
         CreateCommandBuffers();
+
+        CreateSyncObjects();
     }
 
     void VulkanRenderer::Shutdown()
@@ -461,6 +466,11 @@ namespace Graphics
         poolCcreateInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
         VulkanCheckResult(vkCreateCommandPool(m_VulkanDevice.m_LogicalDevice, &poolCcreateInfo, m_Allocator, &m_VulkanDevice.m_GraphicsCommandPool), "Failed to create Graphics Command Pool!");
         LogInfo(LogChannel::Graphics, "Graphics command pool created.");
+    }
+
+    void VulkanRenderer::CreateSyncObjects()
+    {
+        
     }
 
     void VulkanRenderer::DestroyCommandPool()

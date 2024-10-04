@@ -31,6 +31,7 @@ namespace Graphics
 		void Begin(VulkanCommandBuffer& commandBuffer, VkFramebuffer frameBuffer);
 		void End(VulkanCommandBuffer& commandBuffer);
 
+		SM_INLINE VkRenderPass GetHandle() { return m_Handle; }
 		SM_INLINE void SetVulkanRenderer(VulkanRenderer* renderer) { m_Renderer = renderer; }
 	private:
 		smVec4 m_RenderArea;

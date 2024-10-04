@@ -32,6 +32,7 @@ namespace Graphics
 		SM_INLINE std::vector<VkPresentModeKHR>& GetPresentModes() { return m_PresentModes; }
 		SM_INLINE VkSurfaceCapabilitiesKHR& GetCapabilities() { return m_Capabilities; }
 		SM_INLINE VulkanSwapChain& GetVulkanSwapChain() { return m_SwapChain; }
+		SM_INLINE VulkanRenderpass& GetMainRenderpass() { return m_MainRenderPass; }
 
 		SM_INLINE muint64 GetCurrentFrame() { return m_CurrentFrame; }
 		SM_INLINE void SetCurrentFrame(muint64 frame) { m_CurrentFrame = frame; }
@@ -46,6 +47,7 @@ namespace Graphics
 		void DestroyCommandBuffers();
 		void CreateCommandPool();
 		void DestroyCommandPool();
+		void CreateSyncObjects();
 
 		mbool CheckDeviceRequerments
 		(

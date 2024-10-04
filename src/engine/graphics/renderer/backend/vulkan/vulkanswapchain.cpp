@@ -282,7 +282,9 @@ namespace Graphics
 			VK_IMAGE_ASPECT_DEPTH_BIT,
 			&m_DepthBufferImage
 		);
-		
+
+		//Set framebuffer for every image
+		m_Framebuffers.reserve(m_Images.size());
 		//ONLY FOR 3D
 		LogInfo(LogChannel::Graphics, "Swapchain created!");
 	}
@@ -327,6 +329,41 @@ namespace Graphics
 			vkDestroyImageView(m_Renderer->GetVulkanDevice().m_LogicalDevice, image, m_Renderer->GetAllocator());
 		}
 		vkDestroySwapchainKHR(m_Renderer->GetVulkanDevice().m_LogicalDevice, m_Handle, m_Renderer->GetAllocator());
+
+		//This is shit
+		for (VulkanFramebuffer& framebuffer : m_Framebuffers)
+		{
+			const VulkanCreateArguments arguments = { m_Renderer->GetVulkanDevice().m_LogicalDevice, m_Renderer->GetAllocator() };
+			framebuffer.Shutdown(arguments);
+		}
+	}
+
+	void VulkanSwapChain::RegenerateFramebuffers()
+	{
+		constexpr muint32 attachmentCount = 2;
+
+		if (m_Renderer == nullptr)
+		{
+			hardAssert(false, "Renderer is not set for swap chain!");
+		}
+
+		for (const VkImageView& imageViews : m_ImageViews)
+		{
+			//TODO : make this dynamic based on the currently configured attachments
+			const VkImageView attachments[] = {imageViews, m_DepthBufferImage.GetImageView()};
+			const VulkanCreateArguments arguments = { m_Renderer->GetVulkanDevice().m_LogicalDevice, m_Renderer->GetAllocator() };
+
+			VulkanFramebuffer framebuffer;
+			framebuffer.Init(
+				arguments, 
+				&m_Renderer->GetMainRenderpass(), 
+				m_Renderer->GetVulkanDevice().m_FrameBufferHeight,
+				m_Renderer->GetVulkanDevice().m_FrameBufferWidth,
+				attachmentCount, 
+				attachments
+			);
+			m_Framebuffers.emplace_back(framebuffer);
+		}
 	}
 }
 
