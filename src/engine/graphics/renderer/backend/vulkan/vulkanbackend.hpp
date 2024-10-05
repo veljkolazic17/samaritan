@@ -6,6 +6,7 @@
 #include <engine/graphics/renderer/backend/vulkan/vulkanswapchain.h>
 #include <engine/graphics/renderer/backend/vulkan/vulkanrenderpass.hpp>
 #include <engine/graphics/renderer/backend/vulkan/vulkancommandbuffer.hpp>
+#include <engine/graphics/renderer/backend/vulkan/vulkanfence.hpp>
 
 #include <vector>
 
@@ -48,6 +49,7 @@ namespace Graphics
 		void CreateCommandPool();
 		void DestroyCommandPool();
 		void CreateSyncObjects();
+		void DestroySyncObjects();
 
 		mbool CheckDeviceRequerments
 		(
@@ -57,6 +59,7 @@ namespace Graphics
 			const VkPhysicalDeviceMemoryProperties& memory
 		);
 
+		//TODO : Sort fields by size for better memory structure!
 		VkInstance m_Instance;
 		VkAllocationCallbacks* m_Allocator = nullptr;
 		VulkanDevice m_VulkanDevice;
@@ -72,6 +75,11 @@ namespace Graphics
 
 		VulkanSwapChain m_SwapChain;
 		VulkanRenderpass m_MainRenderPass;
+
+		std::vector<VkSemaphore> m_ImageAvailableSemaphores;
+		std::vector<VkSemaphore> m_RenderFinishedSemaphores;
+		std::vector<VulkanFence> m_InFlightFences;
+		std::vector<VulkanFence*> m_ImagesInFlight;
 
 #ifdef DEBUG
 		VkDebugUtilsMessengerEXT m_DebugMessenger;

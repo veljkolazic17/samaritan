@@ -9,6 +9,8 @@ if (result != VK_SUCCESS) {									\
 hardAssert(false, message);									\
 }
 
+#define SM_MAX_FRAMES_IN_FLIGHT								2
+
 BEGIN_NAMESPACE
 
 namespace Graphics

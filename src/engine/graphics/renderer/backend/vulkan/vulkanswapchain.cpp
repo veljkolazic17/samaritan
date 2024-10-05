@@ -115,13 +115,16 @@ namespace Graphics
 	}
 
 
+	// Too much magic numbers used
 	// This fucking queryArguments is passed from vulkanbackend and it is set of beckend fields
 	void VulkanSwapChain::CreateInternal(muint32 width, muint32 height)
 	{
+		constexpr muint32 imageArrayLayers = 1;
+		constexpr muint32 queueCount = 2;
+
 		hardAssert(m_Renderer != nullptr, "Renderer not set for surface!");
 
 		VkExtent2D swapchainExtent = { width, height };
-		m_MaxFrames = 2;
 
 		// Choose a swap surface format.
 		mbool found = false;
@@ -199,7 +202,7 @@ namespace Graphics
 		swapchainCreateInfo.imageFormat = m_ImageFormat.format;
 		swapchainCreateInfo.imageColorSpace = m_ImageFormat.colorSpace;
 		swapchainCreateInfo.imageExtent = swapchainExtent;
-		swapchainCreateInfo.imageArrayLayers = 1;
+		swapchainCreateInfo.imageArrayLayers = imageArrayLayers;
 		swapchainCreateInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
 
 		//TODO : Too much same stuff
@@ -209,14 +212,14 @@ namespace Graphics
 		// Setup the queue family indices
 		if (graphicsQueueIndex != presentQueueIndex)
 		{
-			muint32 queueFamilyIndices[2] = 
+			muint32 queueFamilyIndices[queueCount] =
 			{
 				graphicsQueueIndex,
 				presentQueueIndex
 			};
 
 			swapchainCreateInfo.imageSharingMode = VK_SHARING_MODE_CONCURRENT;
-			swapchainCreateInfo.queueFamilyIndexCount = 2;
+			swapchainCreateInfo.queueFamilyIndexCount = queueCount;
 			swapchainCreateInfo.pQueueFamilyIndices = queueFamilyIndices;
 		}
 		else 

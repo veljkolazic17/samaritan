@@ -56,7 +56,6 @@ namespace Graphics
 
 		VkSurfaceFormatKHR m_ImageFormat;
 		VkPresentModeKHR m_PresentMode;
-		muint8 m_MaxFrames = 0;
 		VkSwapchainKHR m_Handle;
 		std::vector<VkImage> m_Images;
 		std::vector<VkImageView> m_ImageViews;

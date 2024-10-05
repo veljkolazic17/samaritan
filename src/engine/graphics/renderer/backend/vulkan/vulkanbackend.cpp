@@ -140,6 +140,8 @@ namespace Graphics
 
     void VulkanRenderer::Shutdown()
     {
+        DestroySyncObjects();
+
         DestroyCommandBuffers();
 
         m_MainRenderPass.Destroy();
@@ -468,9 +470,46 @@ namespace Graphics
         LogInfo(LogChannel::Graphics, "Graphics command pool created.");
     }
 
+    // proting from C code
     void VulkanRenderer::CreateSyncObjects()
     {
-        
+        // We want to create signaled because our application will wait for fence first time it is created
+        // so we just marked it as "rendered"
+        constexpr mbool isSignaled = true;
+
+        m_ImageAvailableSemaphores.resize(SM_MAX_FRAMES_IN_FLIGHT);
+        m_RenderFinishedSemaphores.resize(SM_MAX_FRAMES_IN_FLIGHT);
+        m_InFlightFences.reserve(SM_MAX_FRAMES_IN_FLIGHT);
+
+        for (muint8 index = 0; index < SM_MAX_FRAMES_IN_FLIGHT; ++index)
+        {
+            VkSemaphoreCreateInfo semaphoreCreateInfo = { VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO };
+            VulkanCheckResult(vkCreateSemaphore(m_VulkanDevice.m_LogicalDevice, &semaphoreCreateInfo, m_Allocator, &m_ImageAvailableSemaphores[index]), "Cannot create vksemaphore!");
+            VulkanCheckResult(vkCreateSemaphore(m_VulkanDevice.m_LogicalDevice, &semaphoreCreateInfo, m_Allocator, &m_RenderFinishedSemaphores[index]), "Cannot create vksemaphore!");
+            VulkanFence fence;
+            fence.Create(m_VulkanDevice.m_LogicalDevice, isSignaled, m_Allocator);
+            m_InFlightFences.emplace_back(fence);
+        }
+
+        //TODO : Check if every pointer is null
+        m_ImagesInFlight.resize(m_SwapChain.GetImages().size());
+        LogInfo(LogChannel::Graphics, "Created sync objects.");
+    }
+
+    void VulkanRenderer::DestroySyncObjects()
+    {
+        for (muint8 index = 0; index < SM_MAX_FRAMES_IN_FLIGHT; ++index)
+        {
+            vkDestroySemaphore(m_VulkanDevice.m_LogicalDevice, m_ImageAvailableSemaphores[index], m_Allocator);
+            vkDestroySemaphore(m_VulkanDevice.m_LogicalDevice, m_RenderFinishedSemaphores[index], m_Allocator);
+
+            VulkanFence& fence = m_InFlightFences[index];
+            fence.Destroy(m_VulkanDevice.m_LogicalDevice, m_Allocator);
+        }
+        m_ImageAvailableSemaphores.clear();
+        m_RenderFinishedSemaphores.clear();
+        m_ImagesInFlight.clear();
+        LogInfo(LogChannel::Graphics, "Destroyed sync objects.");
     }
 
     void VulkanRenderer::DestroyCommandPool()
