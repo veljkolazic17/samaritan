@@ -2,6 +2,7 @@
 #include <engine/graphics/renderer/backend/vulkan/vulkanswapchain.h>
 
 #include <engine/graphics/renderer/backend/vulkan/vulkanbackend.hpp>
+#include <engine/memory/memory.hpp>
 
 #include <math/math.hpp>
 #include <utils/asserts/assert.hpp>
@@ -356,6 +357,7 @@ namespace Graphics
 		{
 			hardAssert(false, "Renderer is not set for swap chain!");
 		}
+		//Zero(m_Framebuffers.data(), m_Framebuffers.size() * sizeof(VulkanFramebuffer));
 		m_Framebuffers.clear();
 		for (const VkImageView& imageViews : m_ImageViews)
 		{

@@ -7,6 +7,7 @@
 #include <engine/input/input_win.hpp>
 #include <engine/events/eventmanager.hpp>
 #include <engine/graphics/events/windowevents.hpp>
+#include <engine/graphics/renderer/frontend/rendererfrontend.hpp>
 
 #include <utils/logger/log.hpp>
 
@@ -21,8 +22,10 @@ namespace Graphics
 
         windowResizedEvent.m_Width = LOWORD(l_param);
         windowResizedEvent.m_Height = HIWORD(l_param);
-        
-        Events::AddEvent<WindowResizedEvent>(std::move(windowResizedEvent));
+        //FUCKED : There should be pre and post event dispacher.'
+        //Vulkan:: In this case surface will have 0 0, but framebuffer W and H will change at the end of frame after Draw call
+        Renderer::GetInstance().Resize(LOWORD(l_param), HIWORD(l_param));
+        //Events::AddEvent<WindowResizedEvent>(std::move(windowResizedEvent));
         LogInfo(LogChannel::Inputs, "Window resized to: Width %d Height %d", windowResizedEvent.m_Width, windowResizedEvent.m_Height);
     }
 
