@@ -23,8 +23,8 @@ namespace Graphics
 		void Shutdown() override;
 
 		void Resize(muint32 width, muint32 height) override;
-		void BeginFrame(Time time) override;
-		void EndFrame(Time time) override;
+		mbool BeginFrame(Time time) override;
+		mbool EndFrame(Time time) override;
 
 		SM_INLINE VkAllocationCallbacks* GetAllocator() { return m_Allocator; }
 		SM_INLINE VulkanDevice& GetVulkanDevice() { return m_VulkanDevice; }
@@ -50,6 +50,7 @@ namespace Graphics
 		void DestroyCommandPool();
 		void CreateSyncObjects();
 		void DestroySyncObjects();
+		mbool RecreateSwapchain();
 
 		mbool CheckDeviceRequerments
 		(
@@ -66,6 +67,10 @@ namespace Graphics
 		VkSurfaceKHR m_Surface;
 
 		muint64 m_CurrentFrame = 0;
+		muint64 m_FrameBuffferGeneration = 0;
+		muint64 m_FrameBuffferLastGeneration = 0;
+		muint32 m_ImageIndex = 0;
+		mbool m_IsRecreatingSwapchain = false;
 
 		std::vector<VkSurfaceFormatKHR> m_SurfaceFormats;
 		std::vector<VkPresentModeKHR> m_PresentModes;
@@ -80,7 +85,6 @@ namespace Graphics
 		std::vector<VkSemaphore> m_RenderFinishedSemaphores;
 		std::vector<VulkanFence> m_InFlightFences;
 		std::vector<VulkanFence*> m_ImagesInFlight;
-
 #ifdef DEBUG
 		VkDebugUtilsMessengerEXT m_DebugMessenger;
 #endif

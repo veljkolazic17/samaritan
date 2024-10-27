@@ -86,7 +86,7 @@ namespace Graphics
         if (m_IsSignaled) 
         {
             VulkanCheckResult(vkResetFences(device, fenceCount, &m_Handle), "Could not reset fence!");
-            m_IsSignaled = true;
+            m_IsSignaled = false;
         }
 	}
 }

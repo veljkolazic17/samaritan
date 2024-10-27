@@ -21,6 +21,7 @@ namespace Graphics
 	class VulkanCommandBuffer
 	{
 	public:
+		//TODO : Rename every getter for handles as GetHandle
 		SM_INLINE VkCommandBuffer& GetCommandBuffer() { return m_Handle; }
 		SM_INLINE void SetState(VulkanCommandBufferState state) { m_State = state; }
 		SM_INLINE VulkanCommandBufferState& GetState() { return m_State; }

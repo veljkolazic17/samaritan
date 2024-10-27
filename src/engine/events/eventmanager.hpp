@@ -31,6 +31,20 @@ namespace Events
     };
 
     template<typename EventType>
+    inline void Subscribe(const EventHandler<EventType>& callback)
+    {
+        std::unique_ptr<EventHandlerWrapperInterface> handler = std::make_unique<EventHandlerWrapper<EventType>>(callback);
+        EventManager::GetInstance().Subscribe(EventType::GetStaticEventType(), std::move(handler));
+    }
+
+    template<typename EventType>
+    inline void Unsubscribe(const EventHandler<EventType>& callback)
+    {
+        const std::string handlerName = callback.target_type().name();
+        EventManager::GetInstance().Unsubscribe(EventType::GetStaticEventType(), handlerName);
+    }
+
+    template<typename EventType>
     SM_INLINE void AddEvent(EventType&& event)
     {
         std::unique_ptr<EventType> pressedEvent = std::move(std::make_unique<EventType>(event));

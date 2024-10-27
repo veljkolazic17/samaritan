@@ -18,4 +18,8 @@ END_NAMESPACE
 const std::string GetEventType() const override	\
 {                                           	\
 	return eventType;            				\
+}												\
+static const std::string GetStaticEventType()	\
+{												\
+	return eventType;							\
 }

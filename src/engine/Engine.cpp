@@ -43,11 +43,25 @@ namespace Engine
 		m_EngineState = engineState;
 	}
 
+	void Engine::HandleOnWindowResizedEvent(const Graphics::WindowResizedEvent& event)
+	{
+		// TODO : Handle Minimization of window
+		if (m_Window != nullptr)
+		{
+			m_Window->SetWidth(event.m_Width);
+			m_Window->SetHeight(event.m_Height);
+		}
+		Graphics::Renderer::GetInstance().Resize(event.m_Width, event.m_Height);
+	}
+
 	void Engine::Init(void)
 	{
 #ifdef REMOTE_LOGGING
 		samaritan::Logger::RedisLogger::GetInstance().Start("127.0.0.1", 6379);
 #endif
+		m_WindowResizedEventHandler = [this](const Graphics::WindowResizedEvent& event) { HandleOnWindowResizedEvent(event); };
+		Events::Subscribe<Graphics::WindowResizedEvent>(m_WindowResizedEventHandler);
+
 		Clock::GetInstance().Init();
 		// TODO : Not good way of doing this ! Don't use copy constructor
 		// What theee fuuuuuck is this?

@@ -68,7 +68,6 @@ namespace Graphics
 		DestroyInternal();
 	}
 
-
 	mbool VulkanSwapChain::AcquireNextImageIndex
 	(
 		VulkanDevice& device,
@@ -78,7 +77,7 @@ namespace Graphics
 		muint32* outImageIndex
 	)
 	{
-		VkResult result  = vkAcquireNextImageKHR(device.m_LogicalDevice, m_Handle, timeout, semaphore, fence, outImageIndex);
+		VkResult result  = vkAcquireNextImageKHR(device.m_LogicalDevice, m_Handle, timeout, semaphore, 0, outImageIndex);
 		if (result == VK_ERROR_OUT_OF_DATE_KHR)
 		{
 			Recreate(device.m_FrameBufferWidth, device.m_FrameBufferHeight);
@@ -112,6 +111,9 @@ namespace Graphics
 		{
 			hardAssert(false, "Failed to present swap chain image!");
 		}
+
+		const muint64 nextFrame = (m_Renderer->GetCurrentFrame() + 1) % SM_MAX_FRAMES_IN_FLIGHT;
+		m_Renderer->SetCurrentFrame(nextFrame);
 	}
 
 
@@ -240,8 +242,11 @@ namespace Graphics
 		m_Renderer->SetCurrentFrame(0);
 
 		// Images
+		m_Images.clear();
+		m_ImageViews.clear();
 		muint32 imageCount = 0;
 		VulkanCheckResult(vkGetSwapchainImagesKHR(m_Renderer->GetVulkanDevice().m_LogicalDevice, m_Handle, &imageCount, 0), "Error getting swapchain image count!");
+		m_Images.resize(imageCount);
 		VulkanCheckResult(vkGetSwapchainImagesKHR(m_Renderer->GetVulkanDevice().m_LogicalDevice, m_Handle, &imageCount, m_Images.data()), "Error creating swapchain images!");
 
 		// Views
@@ -325,6 +330,8 @@ namespace Graphics
 
 	void VulkanSwapChain::DestroyInternal()
 	{
+		hardAssert(m_Renderer != nullptr, "Renderer not set for swapchain!");
+		vkDeviceWaitIdle(m_Renderer->GetVulkanDevice().m_LogicalDevice);
 		VulkanImage::DeleteImage(m_Renderer->GetVulkanDevice().m_LogicalDevice, m_Renderer->GetAllocator(), m_DepthBufferImage);
 
 		for (const VkImageView& image : m_ImageViews) 
@@ -349,7 +356,7 @@ namespace Graphics
 		{
 			hardAssert(false, "Renderer is not set for swap chain!");
 		}
-
+		m_Framebuffers.clear();
 		for (const VkImageView& imageViews : m_ImageViews)
 		{
 			//TODO : make this dynamic based on the currently configured attachments
@@ -360,8 +367,8 @@ namespace Graphics
 			framebuffer.Init(
 				arguments, 
 				&m_Renderer->GetMainRenderpass(), 
-				m_Renderer->GetVulkanDevice().m_FrameBufferHeight,
 				m_Renderer->GetVulkanDevice().m_FrameBufferWidth,
+				m_Renderer->GetVulkanDevice().m_FrameBufferHeight,
 				attachmentCount, 
 				attachments
 			);

@@ -2,6 +2,8 @@
 #include <defines.hpp>
 #include <engine/graphics/window.hpp>
 #include <engine/graphics/renderer/renderertype.inl>
+#include <engine/events/eventhandlerwrapper.hpp>
+#include <engine/graphics/events/windowevents.hpp>
 
 #include <objecttemplates/singleton.hpp>
 #include <objecttemplates/shutdownable.hpp>
@@ -60,6 +62,9 @@ namespace Engine
 		mbool m_IsFrameLimitActive = false;
 
 		Graphics::RendererType m_DeafualtRenderer = Graphics::RendererType::Vulkan;
+
+		void HandleOnWindowResizedEvent(const Graphics::WindowResizedEvent& event);
+		Events::EventHandler<Graphics::WindowResizedEvent> m_WindowResizedEventHandler;
 	};
 
 }

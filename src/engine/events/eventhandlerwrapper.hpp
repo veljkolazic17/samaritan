@@ -15,6 +15,7 @@ namespace Events
     class EventHandlerWrapperInterface
     {
     public:
+        EventHandlerWrapperInterface() = default;
         virtual ~EventHandlerWrapperInterface() = default;
         EventHandlerWrapperInterface(EventHandlerWrapperInterface&&) = default;
         EventHandlerWrapperInterface& operator=(EventHandlerWrapperInterface&&) = default;
@@ -42,7 +43,7 @@ namespace Events
         void Call(const Event& e) override
         {
             if (e.GetEventType() == EventType::GetStaticEventType()) {
-                m_handler(static_cast<const EventType&>(e));
+                m_Handler(static_cast<const EventType&>(e));
             }
         }
 

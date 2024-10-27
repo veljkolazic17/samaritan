@@ -18,8 +18,8 @@ namespace Graphics
 		SM_INLINE muint64 IncrementFrameCount() { return ++m_FrameCount; }
 
 		virtual void Resize(muint32 width, muint32 heigth) = 0;
-		virtual void BeginFrame(Time time) = 0;
-		virtual void EndFrame(Time time) = 0;
+		virtual mbool BeginFrame(Time time) = 0;
+		virtual mbool EndFrame(Time time) = 0;
 	protected:
 		RendererType m_RendererType;
 		mbool m_Initialized = false;

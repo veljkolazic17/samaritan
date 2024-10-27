@@ -13,6 +13,8 @@ namespace Graphics
 	{
 		hardAssert(m_Renderer != nullptr, "Renderer not set for renderpass!");
 
+		m_RenderArea = renderArea;
+
 		// Main subpass
 		VkSubpassDescription subpass = {};
 		subpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
@@ -106,7 +108,7 @@ namespace Graphics
 		vkDestroyRenderPass(m_Renderer->GetVulkanDevice().m_LogicalDevice, m_Handle, m_Renderer->GetAllocator());
 	}
 
-	void VulkanRenderpass::Begin(VulkanCommandBuffer& commandBuffer, VkFramebuffer frameBuffer)
+	void VulkanRenderpass::Begin(smVec4 renderArea, VulkanCommandBuffer& commandBuffer, VkFramebuffer frameBuffer)
 	{
 		VkRenderPassBeginInfo beginInfo = { VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO };
 		beginInfo.renderPass = m_Handle;

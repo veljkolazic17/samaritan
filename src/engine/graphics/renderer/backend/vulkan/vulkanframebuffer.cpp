@@ -19,15 +19,16 @@ namespace Graphics
 	{
 		constexpr muint32 numberOfLayers = 1;
 
-		m_Renderpass = renderpass;
-		m_AttachmentCount = attachmentCount;
-
 		if (renderpass == nullptr)
 		{
 			return;
 		}
 
+		m_Renderpass = renderpass;
+		m_AttachmentCount = attachmentCount;
+
 		//TODO : Change how this is done!
+		m_Attachments.clear();
 		for (muint16 index = 0; index < attachmentCount; ++index)
 		{
 			m_Attachments.emplace_back(attachments[index]);

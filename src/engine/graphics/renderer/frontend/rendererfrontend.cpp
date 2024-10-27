@@ -2,6 +2,7 @@
 #include <engine/graphics/renderer/backend/vulkan/vulkanbackend.hpp>
 
 #include<engine/memory/memory.hpp>
+#include <engine/events/eventmanager.hpp>
 
 BEGIN_NAMESPACE
 
@@ -55,16 +56,26 @@ namespace Graphics
 	{
 		if (m_RendererBackend)
 		{
-			m_RendererBackend->BeginFrame(renderData.m_Time);
-
-			// here
-
-			m_RendererBackend->EndFrame(renderData.m_Time);
-			m_RendererBackend->IncrementFrameCount();
+			if (m_RendererBackend->BeginFrame(renderData.m_Time))
+			{
+				if (!m_RendererBackend->EndFrame(renderData.m_Time))
+				{
+					softAssert(false, "Error ending frame!");
+				}
+				m_RendererBackend->IncrementFrameCount();
+			}			
 		}
 		else
 		{
 			hardAssert(false, "Renderer not initialized!");
+		}
+	}
+
+	void Renderer::Resize(muint32 width, muint32 heigth)
+	{
+		if (m_RendererBackend)
+		{
+			m_RendererBackend->Resize(width, heigth);
 		}
 	}
 }

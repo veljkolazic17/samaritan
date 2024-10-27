@@ -115,6 +115,9 @@ namespace Graphics
         CreateDevice();
         LogInfo(LogChannel::Graphics, "Vulkan device created!");
 
+        m_VulkanDevice.m_FrameBufferWidth = 1280;
+        m_VulkanDevice.m_FrameBufferHeight = 720;
+
         //Bad boy code
         m_SwapChain.SetVulkanRenderer(this);
         m_SwapChain.Create(m_VulkanDevice.m_FrameBufferWidth, m_VulkanDevice.m_FrameBufferHeight);
@@ -124,7 +127,7 @@ namespace Graphics
         m_MainRenderPass.Create
         (
             smVec4(0.f, 0.f, (mfloat32)m_VulkanDevice.m_FrameBufferWidth, (mfloat32)m_VulkanDevice.m_FrameBufferHeight),
-            smVec4(0.f, 0.f, 0.2f, 0.1f),
+            smVec4(0.2f, 0.2f, 0.2f, 1.0f),
             1.f,
             0.f
         );
@@ -237,7 +240,7 @@ namespace Graphics
         {
             LogInfo(LogChannel::Graphics, "Device has met specified requirements!");
 
-            //Fuck this is bad code, needs to be changed
+            //TODO : Fuck this is bad code, needs to be changed
             VulkanSwapChainArguments arguments;
             arguments.m_Device = &device;
             arguments.m_Surface = &m_Surface;
@@ -432,7 +435,7 @@ namespace Graphics
     {
         constexpr mbool isPrimary = true;
 
-        if(m_GraphicsCommandBuffers.size())
+        if(m_GraphicsCommandBuffers.size() == 0)
         {
             m_GraphicsCommandBuffers.resize(m_SwapChain.GetImages().size());
         }
@@ -520,18 +523,210 @@ namespace Graphics
 
 	void VulkanRenderer::Resize(muint32 width, muint32 height)
 	{
-
+        m_VulkanDevice.m_FrameBufferWidth = width;
+        m_VulkanDevice.m_FrameBufferHeight = height;
+        ++m_FrameBuffferGeneration;
 	}
 
-	void VulkanRenderer::BeginFrame(Time time)
+	mbool VulkanRenderer::BeginFrame(Time time)
 	{
+        constexpr mbool isSingleUse = false;
+        constexpr mbool isRenderpassContinue = false;
+        constexpr mbool isSimultaneousUse = false;
 
+        // Check if recreating swapchain
+        if (m_IsRecreatingSwapchain) 
+        {
+            VkResult result = vkDeviceWaitIdle(m_VulkanDevice.m_LogicalDevice);
+            if (!Vulkan::Utils::IsResultSuccess(result))
+            {
+                softAssert(false, "VulkanRenderer::BeginFrame vkDeviceWaitIdle failed: '%s'", Vulkan::Utils::ResultToString(result));
+                return false;
+            }
+            LogInfo(LogChannel::Graphics,"Recreating swapchain!");
+            return false;
+        }
+
+        //Check if there was a resize event; if so recreate swapchain
+        if (m_FrameBuffferLastGeneration != m_FrameBuffferGeneration)
+        {
+            VkResult result = vkDeviceWaitIdle(m_VulkanDevice.m_LogicalDevice);
+            if (!Vulkan::Utils::IsResultSuccess(result))
+            {
+                softAssert(false, "VulkanRenderer::BeginFrame vkDeviceWaitIdle failed: '%s'", Vulkan::Utils::ResultToString(result));
+                return false;
+            }
+
+            // If the swapchain recreation failed (because, for example, the window was minimized),
+            // boot out before unsetting the flag.
+            if (!RecreateSwapchain())
+            {
+                //softAssert(false, "Could not recreate swapchain!");
+                return false;
+            }
+
+            LogInfo(LogChannel::Graphics, "Resized!");
+            return false;
+        }
+
+        // Wait for the execution of the current frame to complete. The fence being free will allow this one to move on.   
+        VulkanFence& fence = m_InFlightFences[m_CurrentFrame];
+        if (!fence.Wait(m_VulkanDevice.m_LogicalDevice, UINT64_MAX))
+        {
+            softAssert(false, "In flight fence wait failure!");
+            return false;
+        }
+
+        if (!m_SwapChain.AcquireNextImageIndex(m_VulkanDevice, UINT64_MAX, m_ImageAvailableSemaphores[m_CurrentFrame], m_InFlightFences[m_CurrentFrame].GetHandle(), &m_ImageIndex))
+        {
+            softAssert(false, "Could not get next image index!");
+            return false;
+        }
+
+        VulkanCommandBuffer& commandBuffer = m_GraphicsCommandBuffers[m_ImageIndex];
+        commandBuffer.ResetBuffer();
+        commandBuffer.BeginBuffer(isSingleUse, isRenderpassContinue, isSimultaneousUse);
+
+        smVec4 renderArea(0.f, 0.f, m_VulkanDevice.m_FrameBufferWidth , m_VulkanDevice.m_FrameBufferHeight);
+
+        VkViewport viewport;
+        viewport.x = renderArea.m_X;
+        viewport.y = renderArea.m_Y;
+        viewport.width = renderArea.m_Z;
+        viewport.height = renderArea.m_W;
+        viewport.minDepth = 0.0f;
+        viewport.maxDepth = 1.0f;
+
+        VkRect2D scissor;
+        scissor.offset.x = 0;
+        scissor.offset.y = 0;
+        scissor.extent.width = m_VulkanDevice.m_FrameBufferWidth;
+        scissor.extent.height = m_VulkanDevice.m_FrameBufferHeight;
+
+        vkCmdSetViewport(commandBuffer.GetCommandBuffer(), 0, 1, &viewport);
+        vkCmdSetScissor(commandBuffer.GetCommandBuffer(), 0, 1, &scissor);
+
+        m_MainRenderPass.Begin(renderArea, commandBuffer, m_SwapChain.GetFrameBuffers()[m_ImageIndex].GetHandle());
+
+        return true;
 	}
 
-	void VulkanRenderer::EndFrame(Time time)
-	{
+    mbool VulkanRenderer::EndFrame(Time time)
+    {
+        constexpr muint32 submitCount = 1;
 
-	}
+        VulkanCommandBuffer& commandBuffer = m_GraphicsCommandBuffers[m_ImageIndex];
+
+        m_MainRenderPass.End(commandBuffer);
+
+        commandBuffer.EndBuffer();
+
+        if (VulkanFence* fence = m_ImagesInFlight[m_ImageIndex])
+        {
+            if (fence->GetHandle() != VK_NULL_HANDLE)
+            {
+                fence->Wait(m_VulkanDevice.m_LogicalDevice, UINT64_MAX);
+            }
+        }
+
+        VulkanFence& inFlightFence = m_InFlightFences[m_ImageIndex];
+        m_ImagesInFlight[m_ImageIndex] = &inFlightFence;
+
+        inFlightFence.Reset(m_VulkanDevice.m_LogicalDevice);
+
+        // Submit the queue and wait for the operation to complete.
+        // Begin queue submission
+        VkSubmitInfo submitInfo = { VK_STRUCTURE_TYPE_SUBMIT_INFO };
+
+        // Command buffer(s) to be executed.
+        submitInfo.commandBufferCount = 1;
+        submitInfo.pCommandBuffers = &commandBuffer.GetCommandBuffer();
+
+        // The semaphore(s) to be signaled when the queue is complete.
+        submitInfo.signalSemaphoreCount = 1;
+        submitInfo.pSignalSemaphores = &m_RenderFinishedSemaphores[m_CurrentFrame];
+
+        // Wait semaphore ensures that the operation cannot begin until the image is available.
+        submitInfo.waitSemaphoreCount = 1;
+        submitInfo.pWaitSemaphores = &m_ImageAvailableSemaphores[m_CurrentFrame];
+
+        // Each semaphore waits on the corresponding pipeline stage to complete. 1:1 ratio.
+        // VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT prevents subsequent colour attachment
+        // writes from executing until the semaphore signals (i.e. one frame is presented at a time)
+        VkPipelineStageFlags flags[1] = { VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
+        submitInfo.pWaitDstStageMask = flags;
+
+        VkResult result = vkQueueSubmit(m_VulkanDevice.m_GraphicsQueue, submitCount, &submitInfo, m_InFlightFences[m_CurrentFrame].GetHandle());
+
+        if (result != VK_SUCCESS)
+        {
+            softAssert(false, "Could not submit to a queue! %s", Vulkan::Utils::ResultToString(result));
+        }
+
+        commandBuffer.Submit();
+
+        m_SwapChain.Present(m_VulkanDevice, m_RenderFinishedSemaphores[m_CurrentFrame], m_ImageIndex);
+
+        return true;
+    }
+
+    mbool VulkanRenderer::RecreateSwapchain()
+    {
+        // If already being recreated, do not try again.
+        if (m_IsRecreatingSwapchain) 
+        {
+            softAssert(false, "Already recreating swapchaing!");
+            return false;
+        }
+        // Detect if the window is too small to be drawn to
+        if (m_VulkanDevice.m_FrameBufferWidth == 0 || m_VulkanDevice.m_FrameBufferHeight == 0) 
+        {
+            //softAssert(false, "Recreating swapchaing with window dimension 0!");
+            return false;
+        }
+        m_IsRecreatingSwapchain = true;
+        vkDeviceWaitIdle(m_VulkanDevice.m_LogicalDevice);
+        Zero(m_ImagesInFlight.data(), m_ImagesInFlight.size() * sizeof(VulkanFence));
+
+        VulkanSwapChainArguments arguments;
+        arguments.m_Device = &m_VulkanDevice.m_PhysicalDevice;
+        arguments.m_Surface = &m_Surface;
+        arguments.m_SurfaceCapabilities = &m_Capabilities;
+        arguments.m_SurfaceFormats = &m_SurfaceFormats;
+        arguments.m_PresentModes = &m_PresentModes;
+        VulkanSwapChain::QuerySwapChainSupport(arguments);
+
+        //TODO : Change this GetDeviceDepthFormat.
+        //It looks like a getter function but it changes the swap chain!
+        if (!m_SwapChain.GetDeviceDepthFormat())
+        {
+            GetVulkanDevice().m_DepthFormat = VK_FORMAT_UNDEFINED;
+            softAssert(false, "Error getting device depth format!");
+            return false;
+        }
+
+        m_SwapChain.Recreate(m_VulkanDevice.m_FrameBufferWidth, m_VulkanDevice.m_FrameBufferHeight);
+        m_FrameBuffferLastGeneration = m_FrameBuffferGeneration;
+
+        for (VulkanCommandBuffer& commandBuffer : m_GraphicsCommandBuffers)
+        {
+            commandBuffer.FreeBuffer(m_VulkanDevice.m_LogicalDevice, m_VulkanDevice.m_GraphicsCommandPool);
+        }
+
+        for (VulkanFramebuffer& framebuffer : m_SwapChain.GetFrameBuffers())
+        {
+            framebuffer.Shutdown({m_VulkanDevice.m_LogicalDevice, m_Allocator});
+        }
+
+        // Regenerate framebuffers
+        m_SwapChain.RegenerateFramebuffers();
+
+        CreateCommandBuffers();
+
+        m_IsRecreatingSwapchain = false;
+        
+        return true;
+    }
 }
 
 END_NAMESPACE

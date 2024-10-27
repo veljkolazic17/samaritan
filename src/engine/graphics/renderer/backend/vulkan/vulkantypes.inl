@@ -25,6 +25,12 @@ namespace Graphics
 		const VkDevice& m_LogicalDevice;
 		const VkAllocationCallbacks* m_Allocator;
 	};
+
+    namespace Vulkan::Utils
+    {
+        mbool IsResultSuccess(VkResult result);
+		const char* ResultToString(VkResult result);
+    }
 }
 
 END_NAMESPACE
