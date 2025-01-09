@@ -2,7 +2,7 @@
 # project specific logic here.
 cmake_minimum_required (VERSION 3.8)
 
-project(Chapter1)
+project(Samaritan)
 
 include(./CommonMacros.cmake)
 

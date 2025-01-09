@@ -1,3 +1,4 @@
+#pragma once
 #include <defines.hpp>
 
 #include <engine/graphics/renderer/backend/vulkan/vulkantypes.inl>

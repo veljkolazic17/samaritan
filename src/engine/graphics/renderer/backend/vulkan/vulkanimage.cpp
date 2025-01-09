@@ -1,3 +1,4 @@
+#include <engine/graphics/renderer/backend/vulkan/vulkandevice.hpp>
 #include <engine/graphics/renderer/backend/vulkan/vulkanimage.hpp>
 #include <engine/graphics/renderer/backend/vulkan/vulkantypes.inl>
 
@@ -51,18 +52,8 @@ namespace Graphics
 
         VkPhysicalDeviceMemoryProperties memoryProperties;
         vkGetPhysicalDeviceMemoryProperties(physicalDevice, &memoryProperties);
-        
-        //SUS
-        mint32 memtype = -1;
-        for (muint32 i = 0; i < memoryProperties.memoryTypeCount; ++i)
-        {
-            // Check each memory type to see if its bit is set to 1.
-            if (memoryReq.memoryTypeBits & (1 << i) && (memoryProperties.memoryTypes[i].propertyFlags & memoryFlags) == memoryFlags)
-            {
-                memtype = i;
-                break;
-            }
-        }
+
+        mint32 memtype = VulkanDevice::FindMemoryIndex(physicalDevice, memoryReq.memoryTypeBits, memoryFlags);
         if (memtype == -1)
         {
             hardAssert(false, "Required memory type not found.");

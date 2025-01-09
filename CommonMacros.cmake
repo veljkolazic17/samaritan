@@ -86,4 +86,6 @@ macro(SETUP_APP projname graphics_api target_platform user_remote_logging window
 
   endif()
 
+  add_custom_command(TARGET ${projname} POST_BUILD COMMAND cmd /c ${CMAKE_CURRENT_SOURCE_DIR}/shadercompile.bat ${CMAKE_CURRENT_SOURCE_DIR})
+
 endmacro()

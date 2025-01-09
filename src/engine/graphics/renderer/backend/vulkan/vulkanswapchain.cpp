@@ -12,7 +12,6 @@ BEGIN_NAMESPACE
 
 namespace Graphics
 {
-
 	void VulkanSwapChain::QuerySwapChainSupport(VulkanSwapChainArguments& queryArguments)
 	{
 		// ???? not sure if this should be done like this
@@ -347,6 +346,7 @@ namespace Graphics
 			const VulkanCreateArguments arguments = { m_Renderer->GetVulkanDevice().m_LogicalDevice, m_Renderer->GetAllocator() };
 			framebuffer.Shutdown(arguments);
 		}
+		m_Framebuffers.clear();
 	}
 
 	void VulkanSwapChain::RegenerateFramebuffers()
@@ -357,8 +357,6 @@ namespace Graphics
 		{
 			hardAssert(false, "Renderer is not set for swap chain!");
 		}
-		//Zero(m_Framebuffers.data(), m_Framebuffers.size() * sizeof(VulkanFramebuffer));
-		m_Framebuffers.clear();
 		for (const VkImageView& imageViews : m_ImageViews)
 		{
 			//TODO : make this dynamic based on the currently configured attachments

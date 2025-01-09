@@ -52,6 +52,21 @@ namespace Graphics
 		muint32 m_FrameBufferHeight = 0;
 
 		VkCommandPool m_GraphicsCommandPool;
+
+		//SUS
+		static SM_INLINE muint32 FindMemoryIndex(VkPhysicalDevice physicalDevice, muint32 typeFilter, muint32 propertyFlags)
+		{
+			VkPhysicalDeviceMemoryProperties memoryProperties;
+			vkGetPhysicalDeviceMemoryProperties(physicalDevice, &memoryProperties);
+			for (muint32 i = 0; i < memoryProperties.memoryTypeCount; ++i)
+			{
+				if (typeFilter & (1 << i) && (memoryProperties.memoryTypes[i].propertyFlags & typeFilter) == propertyFlags)
+				{
+					return i;
+				}
+			}
+			return -1;
+		}
 	};
 }
 

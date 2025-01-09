@@ -14,6 +14,9 @@ namespace Graphics
 		hardAssert(m_Renderer != nullptr, "Renderer not set for renderpass!");
 
 		m_RenderArea = renderArea;
+		m_Color = color;
+		m_Depth = depth;
+		m_Stencil = stencil;
 
 		// Main subpass
 		VkSubpassDescription subpass = {};

@@ -2,11 +2,13 @@
 #include <defines.hpp>
 #include <engine/graphics/renderer/backend/vulkan/vulkantypes.inl>
 #include <engine/graphics/renderer/backend/rendererbackend.hpp>
+#include <engine/graphics/renderer/backend/vulkan/vulkanbuffer.hpp>
 #include <engine/graphics/renderer/backend/vulkan/vulkandevice.hpp>
 #include <engine/graphics/renderer/backend/vulkan/vulkanswapchain.h>
 #include <engine/graphics/renderer/backend/vulkan/vulkanrenderpass.hpp>
 #include <engine/graphics/renderer/backend/vulkan/vulkancommandbuffer.hpp>
 #include <engine/graphics/renderer/backend/vulkan/vulkanfence.hpp>
+#include <engine/graphics/renderer/backend/vulkan/vulkanobjectshader.hpp>
 
 #include <vector>
 
@@ -51,6 +53,9 @@ namespace Graphics
 		void CreateSyncObjects();
 		void DestroySyncObjects();
 		mbool RecreateSwapchain();
+		void CreateBuffers();
+		void DestroyBuffers();
+		void UploadData(VkCommandPool pool, VkFence fence, VkQueue queue, VulkanBuffer* buffer, muint64 offset, muint64 size, void* data);
 
 		mbool CheckDeviceRequerments
 		(
@@ -61,6 +66,24 @@ namespace Graphics
 		);
 
 		//TODO : Sort fields by size for better memory structure!
+		std::vector<VkSurfaceFormatKHR> m_SurfaceFormats;
+		std::vector<VkPresentModeKHR> m_PresentModes;
+
+		std::vector<VulkanCommandBuffer> m_GraphicsCommandBuffers;
+
+		std::vector<VkSemaphore> m_ImageAvailableSemaphores;
+		std::vector<VkSemaphore> m_RenderFinishedSemaphores;
+		std::vector<VulkanFence> m_InFlightFences;
+		std::vector<VulkanFence*> m_ImagesInFlight;
+
+		VulkanSwapChain m_SwapChain;
+		VulkanRenderpass m_MainRenderPass;
+		VkSurfaceCapabilitiesKHR m_Capabilities;
+
+		VulkanObjectShader m_ObjectShader;
+		VulkanBuffer m_IndexBuffer;
+		VulkanBuffer m_VertexBuffer;
+
 		VkInstance m_Instance;
 		VkAllocationCallbacks* m_Allocator = nullptr;
 		VulkanDevice m_VulkanDevice;
@@ -69,22 +92,10 @@ namespace Graphics
 		muint64 m_CurrentFrame = 0;
 		muint64 m_FrameBuffferGeneration = 0;
 		muint64 m_FrameBuffferLastGeneration = 0;
+		muint64 m_GeometryIndexOffset = 0;
+		muint64 m_GeometryVertexOffset = 0;
 		muint32 m_ImageIndex = 0;
 		mbool m_IsRecreatingSwapchain = false;
-
-		std::vector<VkSurfaceFormatKHR> m_SurfaceFormats;
-		std::vector<VkPresentModeKHR> m_PresentModes;
-		VkSurfaceCapabilitiesKHR m_Capabilities;
-
-		std::vector<VulkanCommandBuffer> m_GraphicsCommandBuffers;
-
-		VulkanSwapChain m_SwapChain;
-		VulkanRenderpass m_MainRenderPass;
-
-		std::vector<VkSemaphore> m_ImageAvailableSemaphores;
-		std::vector<VkSemaphore> m_RenderFinishedSemaphores;
-		std::vector<VulkanFence> m_InFlightFences;
-		std::vector<VulkanFence*> m_ImagesInFlight;
 #ifdef DEBUG
 		VkDebugUtilsMessengerEXT m_DebugMessenger;
 #endif

@@ -127,7 +127,7 @@ namespace Graphics
         m_MainRenderPass.Create
         (
             smVec4(0.f, 0.f, (mfloat32)m_VulkanDevice.m_FrameBufferWidth, (mfloat32)m_VulkanDevice.m_FrameBufferHeight),
-            smVec4(0.2f, 0.2f, 0.2f, 1.0f),
+            smVec4(1.0f, 0.0f, 0.0f, 1.0f),
             1.f,
             0.f
         );
@@ -139,10 +139,43 @@ namespace Graphics
         CreateCommandBuffers();
 
         CreateSyncObjects();
+
+        //TODO : Why is renderpass pointer argument???
+        m_ObjectShader.Create(&m_MainRenderPass, m_VulkanDevice.m_LogicalDevice, m_Allocator, m_VulkanDevice.m_FrameBufferWidth, m_VulkanDevice.m_FrameBufferHeight);
+
+        CreateBuffers();
+
+
+        const muint32 vert_count = 4;
+        smVec3 verts[vert_count];
+        Zero(verts, sizeof(smVec3) * vert_count);
+
+        verts[0].m_X = 0.0;
+        verts[0].m_Y = -0.5;
+
+        verts[1].m_X = 0.5;
+        verts[1].m_Y = 0.5;
+
+        verts[2].m_X = 0;
+        verts[2].m_Y = 0.5;
+
+        verts[3].m_X = 0.5;
+        verts[3].m_Y = -0.5;
+
+        const muint32 index_count = 6;
+        muint32 indices[index_count] = { 0, 1, 2, 0, 3, 1 };
+
+        UploadData(m_VulkanDevice.m_GraphicsCommandPool, 0, m_VulkanDevice.m_GraphicsQueue, &m_VertexBuffer, 0, sizeof(smVec3) * vert_count, verts);
+        UploadData(m_VulkanDevice.m_GraphicsCommandPool, 0, m_VulkanDevice.m_GraphicsQueue, &m_IndexBuffer, 0, sizeof(muint32) * index_count, indices);
     }
+
 
     void VulkanRenderer::Shutdown()
     {
+        DestroyBuffers();
+
+        m_ObjectShader.Destroy(m_VulkanDevice.m_LogicalDevice, m_Allocator);
+
         DestroySyncObjects();
 
         DestroyCommandBuffers();
@@ -608,6 +641,19 @@ namespace Graphics
 
         m_MainRenderPass.Begin(renderArea, commandBuffer, m_SwapChain.GetFrameBuffers()[m_ImageIndex].GetHandle());
 
+
+        m_ObjectShader.Use(&m_GraphicsCommandBuffers[m_ImageIndex]);
+
+        // Bind vertex buffer at offset.
+        VkDeviceSize offsets[1] = { 0 };
+        vkCmdBindVertexBuffers(m_GraphicsCommandBuffers[m_ImageIndex].GetCommandBuffer(), 0, 1, &(m_VertexBuffer.GetHandle()), (VkDeviceSize*)offsets);
+
+        // Bind index buffer at offset.
+        vkCmdBindIndexBuffer(m_GraphicsCommandBuffers[m_ImageIndex].GetCommandBuffer(), m_IndexBuffer.GetHandle(), 0, VK_INDEX_TYPE_UINT32);
+
+        // Issue the draw.
+        vkCmdDrawIndexed(m_GraphicsCommandBuffers[m_ImageIndex].GetCommandBuffer(), 6, 1, 0, 0, 0);
+
         return true;
 	}
 
@@ -724,9 +770,46 @@ namespace Graphics
         CreateCommandBuffers();
 
         m_IsRecreatingSwapchain = false;
-        
+
         return true;
     }
+
+    void VulkanRenderer::CreateBuffers()
+    {
+        VkMemoryPropertyFlagBits memoryPropertyFlags = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT;
+
+        const muint64 vertexBufferSize = sizeof(smVec3) * 1024 * 1024;
+        m_VertexBuffer.Create(this, vertexBufferSize, (VkBufferUsageFlagBits)(VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_TRANSFER_SRC_BIT), memoryPropertyFlags,true);
+        m_GeometryVertexOffset = 0;
+
+        const muint64 indexBufferSize = sizeof(muint32) * 1024 * 1024;
+        m_IndexBuffer.Create(this, indexBufferSize, (VkBufferUsageFlagBits)(VK_BUFFER_USAGE_INDEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_TRANSFER_SRC_BIT), memoryPropertyFlags, true);
+        m_GeometryIndexOffset = 0;
+
+        LogInfo(LogChannel::Graphics, "Created Vulkan Buffers!");
+    }
+
+    void VulkanRenderer::DestroyBuffers()
+    {
+        m_IndexBuffer.Destroy();
+        m_VertexBuffer.Destroy();
+    }
+
+    void VulkanRenderer::UploadData(VkCommandPool pool, VkFence fence, VkQueue queue, VulkanBuffer* buffer, muint64 offset, muint64 size, void* data)
+    {
+        // Create a host-visible staging buffer to upload to. Mark it as the source of the transfer.
+        VkBufferUsageFlags flags = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT;
+        VulkanBuffer staging;
+        staging.Create(this, size, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, flags, true);
+        staging.LoadData(0, size, 0, data);
+
+        // Perform the copy from staging to the device local buffer.
+        staging.CopyTo(pool, fence, queue, buffer->GetHandle(), 0, offset, size);
+
+        // Clean up the staging buffer.
+        staging.Destroy();
+    }
+
 }
 
 END_NAMESPACE
