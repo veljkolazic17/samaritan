@@ -45,7 +45,6 @@ namespace Graphics
 		SM_INLINE std::vector<VkImageView>& GetImageViews() { return m_ImageViews; }
 		SM_INLINE std::vector<VulkanFramebuffer>& GetFrameBuffers() { return m_Framebuffers; }
 
-		SM_INLINE void SetVulkanRenderer(VulkanRenderer* renderer) { m_Renderer = renderer; }
 		static void QuerySwapChainSupport(VulkanSwapChainArguments& queryArguments);
 
 		mbool GetDeviceDepthFormat();
@@ -61,9 +60,6 @@ namespace Graphics
 		std::vector<VkImageView> m_ImageViews;
 		std::vector<VulkanFramebuffer> m_Framebuffers;
 
-		//This is terrible
-		VulkanRenderer* m_Renderer;
-		//TODO : Check if this fucking makes sense
 		VulkanImage m_DepthBufferImage;
 	};
 }

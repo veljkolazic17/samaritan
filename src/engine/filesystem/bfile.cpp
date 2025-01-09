@@ -9,7 +9,7 @@ BEGIN_NAMESPACE
 
 void BFile::Open(const mint8* filepath, smfilemode filemode)
 {
-	m_FileHandle.open(filepath, filemode);
+	m_FileHandle.open(filepath, filemode | std::ios::binary);
 }
 
 void BFile::Close()

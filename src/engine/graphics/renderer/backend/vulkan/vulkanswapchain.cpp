@@ -112,8 +112,8 @@ namespace Graphics
 			hardAssert(false, "Failed to present swap chain image!");
 		}
 
-		const muint64 nextFrame = (m_Renderer->GetCurrentFrame() + 1) % SM_MAX_FRAMES_IN_FLIGHT;
-		m_Renderer->SetCurrentFrame(nextFrame);
+		const muint64 nextFrame = (g_VulkanRenderer->GetCurrentFrame() + 1) % SM_MAX_FRAMES_IN_FLIGHT;
+		g_VulkanRenderer->SetCurrentFrame(nextFrame);
 	}
 
 
@@ -124,13 +124,13 @@ namespace Graphics
 		constexpr muint32 imageArrayLayers = 1;
 		constexpr muint32 queueCount = 2;
 
-		hardAssert(m_Renderer != nullptr, "Renderer not set for surface!");
+		hardAssert(g_VulkanRenderer != nullptr, "Renderer not set for surface!");
 
 		VkExtent2D swapchainExtent = { width, height };
 
 		// Choose a swap surface format.
 		mbool found = false;
-		for (const VkSurfaceFormatKHR& supportedFormat : m_Renderer->GetSurfaceFormats())
+		for (const VkSurfaceFormatKHR& supportedFormat : g_VulkanRenderer->GetSurfaceFormats())
 		{
 			// Preferred formats
 			if (supportedFormat.format == VK_FORMAT_B8G8R8A8_UNORM && supportedFormat.colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR)
@@ -142,11 +142,11 @@ namespace Graphics
 		}
 		if (!found) 
 		{
-			m_ImageFormat = (m_Renderer->GetSurfaceFormats())[0];
+			m_ImageFormat = (g_VulkanRenderer->GetSurfaceFormats())[0];
 		}
 
 		found = false;
-		for (const VkPresentModeKHR& presnetMode : m_Renderer->GetPresentModes())
+		for (const VkPresentModeKHR& presnetMode : g_VulkanRenderer->GetPresentModes())
 		{
 			if (presnetMode == VK_PRESENT_MODE_MAILBOX_KHR)
 			{
@@ -162,11 +162,11 @@ namespace Graphics
 
 		//Query SwapChain Support
 		VulkanSwapChainArguments queryArguments;
-		queryArguments.m_Device = &(m_Renderer->GetVulkanDevice().m_PhysicalDevice);
-		queryArguments.m_Surface = &(m_Renderer->GetSurface());
-		queryArguments.m_SurfaceCapabilities = &(m_Renderer->GetCapabilities());
-		queryArguments.m_SurfaceFormats = &(m_Renderer->GetSurfaceFormats());
-		queryArguments.m_PresentModes = &(m_Renderer->GetPresentModes());
+		queryArguments.m_Device = &(g_VulkanRenderer->GetVulkanDevice().m_PhysicalDevice);
+		queryArguments.m_Surface = &(g_VulkanRenderer->GetSurface());
+		queryArguments.m_SurfaceCapabilities = &(g_VulkanRenderer->GetCapabilities());
+		queryArguments.m_SurfaceFormats = &(g_VulkanRenderer->GetSurfaceFormats());
+		queryArguments.m_PresentModes = &(g_VulkanRenderer->GetPresentModes());
 		VulkanSwapChain::QuerySwapChainSupport(queryArguments);
 
 		// Swapchain extent
@@ -207,9 +207,9 @@ namespace Graphics
 		swapchainCreateInfo.imageArrayLayers = imageArrayLayers;
 		swapchainCreateInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
 
-		//TODO : Too much same stuff
-		muint32 graphicsQueueIndex = m_Renderer->GetVulkanDevice().m_QueuesInfo.m_GraphicsIndex;
-		muint32 presentQueueIndex = m_Renderer->GetVulkanDevice().m_QueuesInfo.m_PresentIndex;
+		const VPDQueues& queuesInfo = g_VulkanRenderer->GetVulkanDevice().m_QueuesInfo;
+		muint32 graphicsQueueIndex = queuesInfo.m_GraphicsIndex;
+		muint32 presentQueueIndex = queuesInfo.m_PresentIndex;
 
 		// Setup the queue family indices
 		if (graphicsQueueIndex != presentQueueIndex)
@@ -231,23 +231,23 @@ namespace Graphics
 			swapchainCreateInfo.pQueueFamilyIndices = 0;
 		}
 
-		swapchainCreateInfo.preTransform = m_Renderer->GetCapabilities().currentTransform;
+		swapchainCreateInfo.preTransform = g_VulkanRenderer->GetCapabilities().currentTransform;
 		swapchainCreateInfo.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
 		swapchainCreateInfo.presentMode = m_PresentMode;
 		swapchainCreateInfo.clipped = VK_TRUE;
 		swapchainCreateInfo.oldSwapchain = 0;
 
-		VulkanCheckResult(vkCreateSwapchainKHR(m_Renderer->GetVulkanDevice().m_LogicalDevice, &swapchainCreateInfo, m_Renderer->GetAllocator(), &m_Handle), "Error creating Swapchain!");
+		VulkanCheckResult(vkCreateSwapchainKHR(g_VulkanRenderer->GetVulkanDevice().m_LogicalDevice, &swapchainCreateInfo, g_VulkanRenderer->GetAllocator(), &m_Handle), "Error creating Swapchain!");
 
-		m_Renderer->SetCurrentFrame(0);
+		g_VulkanRenderer->SetCurrentFrame(0);
 
 		// Images
 		m_Images.clear();
 		m_ImageViews.clear();
 		muint32 imageCount = 0;
-		VulkanCheckResult(vkGetSwapchainImagesKHR(m_Renderer->GetVulkanDevice().m_LogicalDevice, m_Handle, &imageCount, 0), "Error getting swapchain image count!");
+		VulkanCheckResult(vkGetSwapchainImagesKHR(g_VulkanRenderer->GetVulkanDevice().m_LogicalDevice, m_Handle, &imageCount, 0), "Error getting swapchain image count!");
 		m_Images.resize(imageCount);
-		VulkanCheckResult(vkGetSwapchainImagesKHR(m_Renderer->GetVulkanDevice().m_LogicalDevice, m_Handle, &imageCount, m_Images.data()), "Error creating swapchain images!");
+		VulkanCheckResult(vkGetSwapchainImagesKHR(g_VulkanRenderer->GetVulkanDevice().m_LogicalDevice, m_Handle, &imageCount, m_Images.data()), "Error creating swapchain images!");
 
 		// Views
 		for (const VkImage& image : m_Images) 
@@ -263,26 +263,26 @@ namespace Graphics
 			viewInfo.subresourceRange.layerCount = 1;
 
 			VkImageView imageView;
-			VulkanCheckResult(vkCreateImageView(m_Renderer->GetVulkanDevice().m_LogicalDevice, &viewInfo, m_Renderer->GetAllocator(), &imageView), "Error creating image view!");
+			VulkanCheckResult(vkCreateImageView(g_VulkanRenderer->GetVulkanDevice().m_LogicalDevice, &viewInfo, g_VulkanRenderer->GetAllocator(), &imageView), "Error creating image view!");
 			m_ImageViews.emplace_back(imageView);
 		}
 
 		//ONLY FOR 3D
 		if (!GetDeviceDepthFormat())
 		{
-			m_Renderer->GetVulkanDevice().m_DepthFormat = VK_FORMAT_UNDEFINED;
+			g_VulkanRenderer->GetVulkanDevice().m_DepthFormat = VK_FORMAT_UNDEFINED;
 			softAssert(false, "Error getting device depth format!");
 		}
 		//Create image
 		VulkanImage::CreateImage
 		(
-			m_Renderer->GetVulkanDevice().m_PhysicalDevice,
-			m_Renderer->GetVulkanDevice().m_LogicalDevice,
-			m_Renderer->GetAllocator(),
+			g_VulkanRenderer->GetVulkanDevice().m_PhysicalDevice,
+			g_VulkanRenderer->GetVulkanDevice().m_LogicalDevice,
+			g_VulkanRenderer->GetAllocator(),
 			VK_IMAGE_TYPE_2D,
 			swapchainExtent.width,
 			swapchainExtent.height,
-			m_Renderer->GetVulkanDevice().m_DepthFormat,
+			g_VulkanRenderer->GetVulkanDevice().m_DepthFormat,
 			VK_IMAGE_TILING_OPTIMAL,
 			VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT,
 			VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
@@ -312,16 +312,16 @@ namespace Graphics
 		for (const VkFormat& candidate : candidates) 
 		{
 			VkFormatProperties properties;
-			vkGetPhysicalDeviceFormatProperties(m_Renderer->GetVulkanDevice().m_PhysicalDevice, candidate, &properties);
+			vkGetPhysicalDeviceFormatProperties(g_VulkanRenderer->GetVulkanDevice().m_PhysicalDevice, candidate, &properties);
 
 			if ((properties.linearTilingFeatures & flags) == flags) 
 			{
-				m_Renderer->GetVulkanDevice().m_DepthFormat = candidate;
+				g_VulkanRenderer->GetVulkanDevice().m_DepthFormat = candidate;
 				return true;
 			}
 			else if ((properties.optimalTilingFeatures & flags) == flags) 
 			{
-				m_Renderer->GetVulkanDevice().m_DepthFormat = candidate;
+				g_VulkanRenderer->GetVulkanDevice().m_DepthFormat = candidate;
 				return true;
 			}
 		}
@@ -330,20 +330,20 @@ namespace Graphics
 
 	void VulkanSwapChain::DestroyInternal()
 	{
-		hardAssert(m_Renderer != nullptr, "Renderer not set for swapchain!");
-		vkDeviceWaitIdle(m_Renderer->GetVulkanDevice().m_LogicalDevice);
-		VulkanImage::DeleteImage(m_Renderer->GetVulkanDevice().m_LogicalDevice, m_Renderer->GetAllocator(), m_DepthBufferImage);
+		hardAssert(g_VulkanRenderer != nullptr, "Renderer not set for swapchain!");
+		vkDeviceWaitIdle(g_VulkanRenderer->GetVulkanDevice().m_LogicalDevice);
+		VulkanImage::DeleteImage(g_VulkanRenderer->GetVulkanDevice().m_LogicalDevice, g_VulkanRenderer->GetAllocator(), m_DepthBufferImage);
 
 		for (const VkImageView& image : m_ImageViews) 
 		{
-			vkDestroyImageView(m_Renderer->GetVulkanDevice().m_LogicalDevice, image, m_Renderer->GetAllocator());
+			vkDestroyImageView(g_VulkanRenderer->GetVulkanDevice().m_LogicalDevice, image, g_VulkanRenderer->GetAllocator());
 		}
-		vkDestroySwapchainKHR(m_Renderer->GetVulkanDevice().m_LogicalDevice, m_Handle, m_Renderer->GetAllocator());
+		vkDestroySwapchainKHR(g_VulkanRenderer->GetVulkanDevice().m_LogicalDevice, m_Handle, g_VulkanRenderer->GetAllocator());
 
 		//This is shit
 		for (VulkanFramebuffer& framebuffer : m_Framebuffers)
 		{
-			const VulkanCreateArguments arguments = { m_Renderer->GetVulkanDevice().m_LogicalDevice, m_Renderer->GetAllocator() };
+			const VulkanCreateArguments arguments = { g_VulkanRenderer->GetVulkanDevice().m_LogicalDevice, g_VulkanRenderer->GetAllocator() };
 			framebuffer.Shutdown(arguments);
 		}
 		m_Framebuffers.clear();
@@ -353,7 +353,7 @@ namespace Graphics
 	{
 		constexpr muint32 attachmentCount = 2;
 
-		if (m_Renderer == nullptr)
+		if (g_VulkanRenderer == nullptr)
 		{
 			hardAssert(false, "Renderer is not set for swap chain!");
 		}
@@ -361,14 +361,14 @@ namespace Graphics
 		{
 			//TODO : make this dynamic based on the currently configured attachments
 			const VkImageView attachments[] = {imageViews, m_DepthBufferImage.GetImageView()};
-			const VulkanCreateArguments arguments = { m_Renderer->GetVulkanDevice().m_LogicalDevice, m_Renderer->GetAllocator() };
+			const VulkanCreateArguments arguments = { g_VulkanRenderer->GetVulkanDevice().m_LogicalDevice, g_VulkanRenderer->GetAllocator() };
 
 			VulkanFramebuffer framebuffer;
 			framebuffer.Init(
 				arguments, 
-				&m_Renderer->GetMainRenderpass(), 
-				m_Renderer->GetVulkanDevice().m_FrameBufferWidth,
-				m_Renderer->GetVulkanDevice().m_FrameBufferHeight,
+				&g_VulkanRenderer->GetMainRenderpass(),
+				g_VulkanRenderer->GetVulkanDevice().m_FrameBufferWidth,
+				g_VulkanRenderer->GetVulkanDevice().m_FrameBufferHeight,
 				attachmentCount, 
 				attachments
 			);

@@ -11,7 +11,7 @@ namespace Graphics
 {
 	void VulkanRenderpass::Create(smVec4 renderArea, smVec4 color, mfloat32 depth, mfloat32 stencil)
 	{
-		hardAssert(m_Renderer != nullptr, "Renderer not set for renderpass!");
+		hardAssert(g_VulkanRenderer != nullptr, "Renderer is not set!");
 
 		m_RenderArea = renderArea;
 		m_Color = color;
@@ -24,7 +24,7 @@ namespace Graphics
 
 		// Color attachment
 		VkAttachmentDescription colorAttachment;
-		colorAttachment.format = m_Renderer->GetVulkanSwapChain().GetImageFormat().format;
+		colorAttachment.format = g_VulkanRenderer->GetVulkanSwapChain().GetImageFormat().format;
 		colorAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
 		colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
 		colorAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
@@ -43,7 +43,7 @@ namespace Graphics
 
 		// Depth attachment, if there is one
 		VkAttachmentDescription depthAttachment = {};
-		depthAttachment.format = m_Renderer->GetVulkanDevice().m_DepthFormat;
+		depthAttachment.format = g_VulkanRenderer->GetVulkanDevice().m_DepthFormat;
 		depthAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
 		depthAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
 		depthAttachment.storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
@@ -102,13 +102,13 @@ namespace Graphics
 		renderPassCreateInfo.pNext = 0;
 		renderPassCreateInfo.flags = 0;
 
-		VulkanCheckResult(vkCreateRenderPass(m_Renderer->GetVulkanDevice().m_LogicalDevice, &renderPassCreateInfo, m_Renderer->GetAllocator(), &m_Handle), "Error creating renderpass!");
+		VulkanCheckResult(vkCreateRenderPass(g_VulkanRenderer->GetVulkanDevice().m_LogicalDevice, &renderPassCreateInfo, g_VulkanRenderer->GetAllocator(), &m_Handle), "Error creating renderpass!");
 	}
 
 	void VulkanRenderpass::Destroy()
 	{
-		hardAssert(m_Renderer != nullptr, "Renderer not set for renderpass!");
-		vkDestroyRenderPass(m_Renderer->GetVulkanDevice().m_LogicalDevice, m_Handle, m_Renderer->GetAllocator());
+		hardAssert(g_VulkanRenderer != nullptr, "Renderer not set!");
+		vkDestroyRenderPass(g_VulkanRenderer->GetVulkanDevice().m_LogicalDevice, m_Handle, g_VulkanRenderer->GetAllocator());
 	}
 
 	void VulkanRenderpass::Begin(smVec4 renderArea, VulkanCommandBuffer& commandBuffer, VkFramebuffer frameBuffer)
@@ -132,13 +132,13 @@ namespace Graphics
 		beginInfo.clearValueCount = 2;
 		beginInfo.pClearValues = clearValues;
 
-		vkCmdBeginRenderPass(commandBuffer.GetCommandBuffer(), &beginInfo, VK_SUBPASS_CONTENTS_INLINE);
+		vkCmdBeginRenderPass(commandBuffer.GetHandle(), &beginInfo, VK_SUBPASS_CONTENTS_INLINE);
 		commandBuffer.SetState(VulkanCommandBufferState::COMMAND_BUFFER_STATE_IN_RENDER_PASS);
 	}
 
 	void VulkanRenderpass::End(VulkanCommandBuffer& commandBuffer)
 	{
-		vkCmdEndRenderPass(commandBuffer.GetCommandBuffer());
+		vkCmdEndRenderPass(commandBuffer.GetHandle());
 		commandBuffer.SetState(VulkanCommandBufferState::COMMAND_BUFFER_STATE_RECORDING);
 	}
 }

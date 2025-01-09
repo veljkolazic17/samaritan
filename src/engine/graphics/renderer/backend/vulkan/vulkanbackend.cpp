@@ -9,6 +9,8 @@ BEGIN_NAMESPACE
 
 namespace Graphics
 {
+    VulkanRenderer* g_VulkanRenderer = nullptr;
+
     VKAPI_ATTR VkBool32 VKAPI_CALL vkDebugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity, VkDebugUtilsMessageTypeFlagsEXT messageTypes, const VkDebugUtilsMessengerCallbackDataEXT* callbackData, void* userData)
     {
         switch (messageSeverity)
@@ -40,6 +42,8 @@ namespace Graphics
 
     void VulkanRenderer::Init()
     {
+        g_VulkanRenderer = this;
+
         // Setup Vulkan instance.
         VkApplicationInfo appInfo = { VK_STRUCTURE_TYPE_APPLICATION_INFO };
         appInfo.apiVersion = VK_API_VERSION_1_2;
@@ -118,12 +122,9 @@ namespace Graphics
         m_VulkanDevice.m_FrameBufferWidth = 1280;
         m_VulkanDevice.m_FrameBufferHeight = 720;
 
-        //Bad boy code
-        m_SwapChain.SetVulkanRenderer(this);
         m_SwapChain.Create(m_VulkanDevice.m_FrameBufferWidth, m_VulkanDevice.m_FrameBufferHeight);
         LogInfo(LogChannel::Graphics, "Vulkan swap chain created!");
 
-        m_MainRenderPass.SetVulkanRenderer(this);
         m_MainRenderPass.Create
         (
             smVec4(0.f, 0.f, (mfloat32)m_VulkanDevice.m_FrameBufferWidth, (mfloat32)m_VulkanDevice.m_FrameBufferHeight),
@@ -475,7 +476,7 @@ namespace Graphics
 
         for (VulkanCommandBuffer& commandBuffer : m_GraphicsCommandBuffers)
         {
-            if (commandBuffer.GetCommandBuffer())
+            if (commandBuffer.GetHandle())
             {
                 commandBuffer.FreeBuffer(m_VulkanDevice.m_LogicalDevice, m_VulkanDevice.m_GraphicsCommandPool);
             }
@@ -489,7 +490,7 @@ namespace Graphics
     {
         for (VulkanCommandBuffer& commandBuffer : m_GraphicsCommandBuffers)
         {
-            if (commandBuffer.GetCommandBuffer())
+            if (commandBuffer.GetHandle())
             {
                 commandBuffer.FreeBuffer(m_VulkanDevice.m_LogicalDevice, m_VulkanDevice.m_GraphicsCommandPool);
             }
@@ -636,8 +637,8 @@ namespace Graphics
         scissor.extent.width = m_VulkanDevice.m_FrameBufferWidth;
         scissor.extent.height = m_VulkanDevice.m_FrameBufferHeight;
 
-        vkCmdSetViewport(commandBuffer.GetCommandBuffer(), 0, 1, &viewport);
-        vkCmdSetScissor(commandBuffer.GetCommandBuffer(), 0, 1, &scissor);
+        vkCmdSetViewport(commandBuffer.GetHandle(), 0, 1, &viewport);
+        vkCmdSetScissor(commandBuffer.GetHandle(), 0, 1, &scissor);
 
         m_MainRenderPass.Begin(renderArea, commandBuffer, m_SwapChain.GetFrameBuffers()[m_ImageIndex].GetHandle());
 
@@ -646,13 +647,13 @@ namespace Graphics
 
         // Bind vertex buffer at offset.
         VkDeviceSize offsets[1] = { 0 };
-        vkCmdBindVertexBuffers(m_GraphicsCommandBuffers[m_ImageIndex].GetCommandBuffer(), 0, 1, &(m_VertexBuffer.GetHandle()), (VkDeviceSize*)offsets);
+        vkCmdBindVertexBuffers(m_GraphicsCommandBuffers[m_ImageIndex].GetHandle(), 0, 1, &(m_VertexBuffer.GetHandle()), (VkDeviceSize*)offsets);
 
         // Bind index buffer at offset.
-        vkCmdBindIndexBuffer(m_GraphicsCommandBuffers[m_ImageIndex].GetCommandBuffer(), m_IndexBuffer.GetHandle(), 0, VK_INDEX_TYPE_UINT32);
+        vkCmdBindIndexBuffer(m_GraphicsCommandBuffers[m_ImageIndex].GetHandle(), m_IndexBuffer.GetHandle(), 0, VK_INDEX_TYPE_UINT32);
 
         // Issue the draw.
-        vkCmdDrawIndexed(m_GraphicsCommandBuffers[m_ImageIndex].GetCommandBuffer(), 6, 1, 0, 0, 0);
+        vkCmdDrawIndexed(m_GraphicsCommandBuffers[m_ImageIndex].GetHandle(), 6, 1, 0, 0, 0);
 
         return true;
 	}
@@ -686,7 +687,7 @@ namespace Graphics
 
         // Command buffer(s) to be executed.
         submitInfo.commandBufferCount = 1;
-        submitInfo.pCommandBuffers = &commandBuffer.GetCommandBuffer();
+        submitInfo.pCommandBuffers = &commandBuffer.GetHandle();
 
         // The semaphore(s) to be signaled when the queue is complete.
         submitInfo.signalSemaphoreCount = 1;
@@ -779,11 +780,11 @@ namespace Graphics
         VkMemoryPropertyFlagBits memoryPropertyFlags = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT;
 
         const muint64 vertexBufferSize = sizeof(smVec3) * 1024 * 1024;
-        m_VertexBuffer.Create(this, vertexBufferSize, (VkBufferUsageFlagBits)(VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_TRANSFER_SRC_BIT), memoryPropertyFlags,true);
+        m_VertexBuffer.Create(vertexBufferSize, (VkBufferUsageFlagBits)(VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_TRANSFER_SRC_BIT), memoryPropertyFlags,true);
         m_GeometryVertexOffset = 0;
 
         const muint64 indexBufferSize = sizeof(muint32) * 1024 * 1024;
-        m_IndexBuffer.Create(this, indexBufferSize, (VkBufferUsageFlagBits)(VK_BUFFER_USAGE_INDEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_TRANSFER_SRC_BIT), memoryPropertyFlags, true);
+        m_IndexBuffer.Create(indexBufferSize, (VkBufferUsageFlagBits)(VK_BUFFER_USAGE_INDEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_TRANSFER_SRC_BIT), memoryPropertyFlags, true);
         m_GeometryIndexOffset = 0;
 
         LogInfo(LogChannel::Graphics, "Created Vulkan Buffers!");
@@ -800,7 +801,7 @@ namespace Graphics
         // Create a host-visible staging buffer to upload to. Mark it as the source of the transfer.
         VkBufferUsageFlags flags = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT;
         VulkanBuffer staging;
-        staging.Create(this, size, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, flags, true);
+        staging.Create(size, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, flags, true);
         staging.LoadData(0, size, 0, data);
 
         // Perform the copy from staging to the device local buffer.

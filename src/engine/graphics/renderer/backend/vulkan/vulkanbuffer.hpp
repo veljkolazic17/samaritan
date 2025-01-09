@@ -17,7 +17,7 @@ namespace Graphics
     public:
         SM_INLINE VkBuffer& GetHandle() { return m_Handle; }
 
-        void Create(VulkanRenderer* renderer, muint32 size, VkBufferUsageFlagBits usage,muint32 memoryPropertyFlags, mbool bindOnCreate);
+        void Create(muint32 size, VkBufferUsageFlagBits usage,muint32 memoryPropertyFlags, mbool bindOnCreate);
         void Destroy();
         mbool Resize(muint32 size, VkQueue queue, VkCommandPool pool);
         void Bind(muint64 offset);
@@ -34,8 +34,6 @@ namespace Graphics
         VkDeviceMemory m_Memory;
         mint32 m_MemoryIndex;
         muint32 m_MemoryPropertyFlags;
-
-        VulkanRenderer* m_Renderer;
 	};
 }
 

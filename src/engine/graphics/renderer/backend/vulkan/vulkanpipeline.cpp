@@ -195,7 +195,7 @@ namespace Graphics
     void VulkanPipeline::Bind(VulkanCommandBuffer* commandBuffer, VkPipelineBindPoint bindPoint)
     {
         hardAssert(commandBuffer != nullptr, "Command buffer is nullptr!");
-        vkCmdBindPipeline(commandBuffer->GetCommandBuffer(), bindPoint, m_Handle);
+        vkCmdBindPipeline(commandBuffer->GetHandle(), bindPoint, m_Handle);
     }
 }
 

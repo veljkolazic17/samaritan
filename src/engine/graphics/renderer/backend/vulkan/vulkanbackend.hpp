@@ -100,6 +100,8 @@ namespace Graphics
 		VkDebugUtilsMessengerEXT m_DebugMessenger;
 #endif
 	};
+
+	extern VulkanRenderer* g_VulkanRenderer;
 }
 
 END_NAMESPACE

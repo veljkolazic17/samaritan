@@ -6,6 +6,8 @@
 #include <engine/graphics/renderer/backend/vulkan/vulkanobjectshader.hpp>
 #include <engine/filesystem/bfile.hpp>
 
+#include <format>
+
 BEGIN_NAMESPACE
 
 namespace Graphics
@@ -22,17 +24,14 @@ namespace Graphics
         VkAllocationCallbacks* allocator
 	)
 	{
-        //TODO : Change this
-        std::string fileName = "C:/Users/veljk/source/repos/DoomerBoomer/DoomerBoomer/MeowEngine/bin/assets/shaders/" + std::string(name) + "." + std::string(type) + ".spv";
+        std::string fileName = std::format("{}/{}.{}.spv", BUILTIN_SHADERS_PATH ,name, type);
 
-        //Zero(&shaderStages[stageIndex].m_CrateInfo, sizeof(VkShaderModuleCreateInfo));
         shaderStages[stageIndex].m_CrateInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
 
         // Obtain file handle.
         //TODO : Should Open return bool?
         BFile file;
-        //FUCKED : Why do I need to add binary when using binary files :|
-        file.Open(fileName.c_str(), std::ios::in | std::ios::binary);
+        file.Open(fileName.c_str(), std::ios::in);
         muint64 fileLength = file.Length();
 
         // Read the entire file as binary.
