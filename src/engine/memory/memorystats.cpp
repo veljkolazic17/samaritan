@@ -30,7 +30,6 @@ namespace Memory
 
 	void MemoryStats::MemoryStatsLog()
 	{
-		// TODO : Fucking stupid way of doing this ! :D
 		constexpr muint8 sizeOfMemoryTagString = 8;
 		muint8 memoryTagStrings[(muint16)MemoryTag::SIZE][(muint16)sizeOfMemoryTagString] =
 		{

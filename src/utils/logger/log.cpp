@@ -1,8 +1,10 @@
+#include <defines.hpp>
 #include <utils/logger/log.hpp>
 #include <utils/logger/remotelogger/redislogger.hpp>
-#include <defines.hpp>
+
 #include <cstring>
 #include <iostream>
+#include <format>
 
 void LogOutput(LogType logType, const char* message, ...)
 {
@@ -43,8 +45,7 @@ void LogOutput(LogType logType, const char* message, ...)
     vsnprintf(outputMessage, 32000, message, arguments);
     va_end(arguments);
 
-    // TODO : Better way of doing this
-    std::string ttyMessage = std::string(logMessageHeader) + std::string(outputMessage) + "\n";
+    std::string ttyMessage = std::format("{}{}\n", logMessageHeader, outputMessage);
     TTYOutput(ttyMessage.data());
 }
 
@@ -87,8 +88,7 @@ void LogOutput(LogType logType, LogChannel channel, const char* message, ...)
     vsnprintf(outputMessage, 32000, message, arguments);
     va_end(arguments);
 
-    // TODO : Better way of doing this
-    std::string ttyMessage = std::string(logMessageHeader) + std::string(outputMessage) + "\n";
+    std::string ttyMessage = std::format("{}{}\n", logMessageHeader, outputMessage);
     TTYOutput(ttyMessage.data());
 
 #ifdef REMOTE_LOGGING

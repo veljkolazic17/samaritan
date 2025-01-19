@@ -401,8 +401,8 @@ namespace Graphics
             queueCreateInfo.pNext = 0;
 
             //TODO : This may not work
-            mfloat32 queue_priority = 1.0f;
-            queueCreateInfo.pQueuePriorities = &queue_priority;
+            mfloat32 queuePriority = 1.0f;
+            queueCreateInfo.pQueuePriorities = &queuePriority;
 
             queueCreateInfos.emplace_back(queueCreateInfo);
         }
@@ -528,7 +528,6 @@ namespace Graphics
             m_InFlightFences.emplace_back(fence);
         }
 
-        //TODO : Check if every pointer is null
         m_ImagesInFlight.resize(m_SwapChain.GetImages().size());
         LogInfo(LogChannel::Graphics, "Created sync objects.");
     }
@@ -641,19 +640,6 @@ namespace Graphics
         vkCmdSetScissor(commandBuffer.GetHandle(), 0, 1, &scissor);
 
         m_MainRenderPass.Begin(renderArea, commandBuffer, m_SwapChain.GetFrameBuffers()[m_ImageIndex].GetHandle());
-
-
-        m_ObjectShader.Use(&m_GraphicsCommandBuffers[m_ImageIndex]);
-
-        // Bind vertex buffer at offset.
-        VkDeviceSize offsets[1] = { 0 };
-        vkCmdBindVertexBuffers(m_GraphicsCommandBuffers[m_ImageIndex].GetHandle(), 0, 1, &(m_VertexBuffer.GetHandle()), (VkDeviceSize*)offsets);
-
-        // Bind index buffer at offset.
-        vkCmdBindIndexBuffer(m_GraphicsCommandBuffers[m_ImageIndex].GetHandle(), m_IndexBuffer.GetHandle(), 0, VK_INDEX_TYPE_UINT32);
-
-        // Issue the draw.
-        vkCmdDrawIndexed(m_GraphicsCommandBuffers[m_ImageIndex].GetHandle(), 6, 1, 0, 0, 0);
 
         return true;
 	}
@@ -809,6 +795,35 @@ namespace Graphics
 
         // Clean up the staging buffer.
         staging.Destroy();
+    }
+
+    void VulkanRenderer::UpdateGlobalState(smMat4 projection, smMat4 view, smVec3 viewPosition, smVec4 ambientColor, mint32 mode)
+    {
+        VulkanCommandBuffer* commandBuffer = &g_VulkanRenderer->GetGraphicsCommandBuffers()[g_VulkanRenderer->GetImageIndex()];
+
+        m_ObjectShader.Use(commandBuffer);
+
+        m_ObjectShader.GetGlobalUniformObject().m_Projection = projection;
+        m_ObjectShader.GetGlobalUniformObject().m_View = view;
+
+        // TODO: other ubo properties
+
+        m_ObjectShader.UpdateGlobalState();
+
+#ifdef TEST_CODE_ENBALED
+        m_ObjectShader.Use(&m_GraphicsCommandBuffers[m_ImageIndex]);
+
+        // Bind vertex buffer at offset.
+        VkDeviceSize offsets[1] = { 0 };
+        vkCmdBindVertexBuffers(m_GraphicsCommandBuffers[m_ImageIndex].GetHandle(), 0, 1, &(m_VertexBuffer.GetHandle()), (VkDeviceSize*)offsets);
+
+        // Bind index buffer at offset.
+        vkCmdBindIndexBuffer(m_GraphicsCommandBuffers[m_ImageIndex].GetHandle(), m_IndexBuffer.GetHandle(), 0, VK_INDEX_TYPE_UINT32);
+
+        // Issue the draw.
+        vkCmdDrawIndexed(m_GraphicsCommandBuffers[m_ImageIndex].GetHandle(), 6, 1, 0, 0, 0);
+#endif
+
     }
 
 }

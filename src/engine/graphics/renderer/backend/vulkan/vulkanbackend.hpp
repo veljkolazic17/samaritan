@@ -27,6 +27,7 @@ namespace Graphics
 		void Resize(muint32 width, muint32 height) override;
 		mbool BeginFrame(Time time) override;
 		mbool EndFrame(Time time) override;
+		void UpdateGlobalState(smMat4 projection, smMat4 view, smVec3 viewPosition, smVec4 ambientColor, mint32 mode) override;
 
 		SM_INLINE VkAllocationCallbacks* GetAllocator() { return m_Allocator; }
 		SM_INLINE VulkanDevice& GetVulkanDevice() { return m_VulkanDevice; }
@@ -36,6 +37,8 @@ namespace Graphics
 		SM_INLINE VkSurfaceCapabilitiesKHR& GetCapabilities() { return m_Capabilities; }
 		SM_INLINE VulkanSwapChain& GetVulkanSwapChain() { return m_SwapChain; }
 		SM_INLINE VulkanRenderpass& GetMainRenderpass() { return m_MainRenderPass; }
+		SM_INLINE std::vector<VulkanCommandBuffer>& GetGraphicsCommandBuffers() { return m_GraphicsCommandBuffers; }
+		SM_INLINE muint32 GetImageIndex() { return m_ImageIndex; }
 
 		SM_INLINE muint64 GetCurrentFrame() { return m_CurrentFrame; }
 		SM_INLINE void SetCurrentFrame(muint64 frame) { m_CurrentFrame = frame; }

@@ -1,13 +1,17 @@
 #pragma once
 #include <defines.hpp>
+#include <engine/graphics/renderer/renderertype.inl>
+
+#include <math/matrix.hpp>
+#include <math/vector.hpp>
 #include <objecttemplates/singleton.hpp>
 #include <objecttemplates/shutdownable.hpp>
-#include <engine/graphics/renderer/renderertype.inl>
 
 BEGIN_NAMESPACE
 
 namespace Graphics
 {
+	//TODO : [GRAPHICS][RENDERER] Make this compile time polymorphic
 	class RendererBackend : public Shutdownable
 	{
 	public:
@@ -20,6 +24,8 @@ namespace Graphics
 		virtual void Resize(muint32 width, muint32 heigth) = 0;
 		virtual mbool BeginFrame(Time time) = 0;
 		virtual mbool EndFrame(Time time) = 0;
+		virtual void UpdateGlobalState(smMat4 projection, smMat4 view, smVec3 viewPosition, smVec4 ambientColor, mint32 mode) = 0;
+
 	protected:
 		RendererType m_RendererType;
 		mbool m_Initialized = false;

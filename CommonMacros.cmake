@@ -10,7 +10,7 @@ endmacro()
 
 
 # Macro for setting up projects
-macro(SETUP_APP projname graphics_api target_platform user_remote_logging window_api memstats)
+macro(SETUP_APP projname graphics_api target_platform user_remote_logging window_api memstats test_code_enabled)
   set(PROJ_NAME ${projname})
   project(${PROJ_NAME})
 
@@ -32,9 +32,14 @@ macro(SETUP_APP projname graphics_api target_platform user_remote_logging window
     list(APPEND CXX_COMPILE_FLAGS PUBLIC TARGET_LINUX)
   endif()
 
+   # Enable Memory stats logging
+  if(${test_code_enabled} MATCHES true)
+    list(APPEND CXX_COMPILE_FLAGS PUBLIC MEM_STATS_ENABLED)
+  endif()
+
   # Enable Memory stats logging
   if(${memstats} MATCHES true)
-    list(APPEND CXX_COMPILE_FLAGS PUBLIC MEM_STATS_ENABLED)
+    list(APPEND CXX_COMPILE_FLAGS PUBLIC TEST_CODE_ENBALED)
   endif()
 
     # Remote logging (Redis)

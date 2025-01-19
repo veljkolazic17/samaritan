@@ -41,6 +41,7 @@ namespace Graphics
 		SM_INLINE VkSurfaceFormatKHR& GetImageFormat() { return m_ImageFormat; }
 		SM_INLINE VkPresentModeKHR& GetPresentMode() { return m_PresentMode; }
 		SM_INLINE VkSwapchainKHR& GetSwapChainHandle() { return m_Handle; }
+		SM_INLINE muint8 GetImageCount() { return m_ImageCount; }
 		SM_INLINE std::vector<VkImage>& GetImages() { return m_Images; }
 		SM_INLINE std::vector<VkImageView>& GetImageViews() { return m_ImageViews; }
 		SM_INLINE std::vector<VulkanFramebuffer>& GetFrameBuffers() { return m_Framebuffers; }
@@ -56,6 +57,7 @@ namespace Graphics
 		VkSurfaceFormatKHR m_ImageFormat;
 		VkPresentModeKHR m_PresentMode;
 		VkSwapchainKHR m_Handle;
+		muint8 m_ImageCount = 0;
 		std::vector<VkImage> m_Images;
 		std::vector<VkImageView> m_ImageViews;
 		std::vector<VulkanFramebuffer> m_Framebuffers;

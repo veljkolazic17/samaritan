@@ -249,6 +249,8 @@ namespace Graphics
 		m_Images.resize(imageCount);
 		VulkanCheckResult(vkGetSwapchainImagesKHR(g_VulkanRenderer->GetVulkanDevice().m_LogicalDevice, m_Handle, &imageCount, m_Images.data()), "Error creating swapchain images!");
 
+		m_ImageCount = imageCount;
+
 		// Views
 		for (const VkImage& image : m_Images) 
 		{

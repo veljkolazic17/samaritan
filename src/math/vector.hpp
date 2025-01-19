@@ -50,6 +50,9 @@ struct smVec4
 	mfloat32 m_W;
 };
 
+#define smVec4_zero	smVec4{0, 0, 0, 0}
+#define smVec4_one	smVec4{1, 1, 1, 1}
+
 SM_INLINE void smVec4::Set(const mfloat32 x, const mfloat32 y, const mfloat32 z, const mfloat32 w)
 {
 	m_X = x;
@@ -226,6 +229,9 @@ struct smVec3
 	mfloat32 m_Y;
 	mfloat32 m_Z;
 };
+
+#define smVec3_zero	smVec3{0, 0, 0}
+#define smVec3_one	smVec3{1, 1, 1}
 
 SM_INLINE void smVec3::Set(const mfloat32 x, const mfloat32 y, const mfloat32 z)
 {

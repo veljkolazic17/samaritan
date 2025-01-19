@@ -63,8 +63,6 @@ namespace Engine
 		Events::Subscribe<Graphics::WindowResizedEvent>(m_WindowResizedEventHandler);
 
 		Clock::GetInstance().Init();
-		// TODO : Not good way of doing this ! Don't use copy constructor
-		// What theee fuuuuuck is this?
 		m_Window = Memory::mnew<Graphics::Window>(Memory::MemoryTag::MEM_RENDERER, 1280, 720, 100, 100, "My first win window :)");
 		m_Window->Init();
 
@@ -115,7 +113,7 @@ namespace Engine
 
 			LoopPostProcess();
 			eventManager.DispatchEvents();
-			inputManager.Update(0);
+			inputManager.Update(deltaTime);
 
 			m_LastLoopTime = clock.GetElapsed();
 		}
