@@ -17,7 +17,7 @@ namespace Memory
 		free(memoryBlock);
 	}
 
-	void* mmzero(void* memoryBlock, muint64 size)
+	void* mmsmZero(void* memoryBlock, muint64 size)
 	{
 		return memset(memoryBlock, 0, size);
 	}

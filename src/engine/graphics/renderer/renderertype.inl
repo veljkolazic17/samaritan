@@ -25,7 +25,7 @@ namespace Graphics
 	{
 		smMat4 m_Projection;
 		smMat4 m_View;
-		mbyte m_Reserved[NVIDIA_GBO_PADDING];
+		muint8 m_Reserved[NVIDIA_GBO_PADDING];
 	};
 }
 

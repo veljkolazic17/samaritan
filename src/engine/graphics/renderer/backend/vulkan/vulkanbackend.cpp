@@ -146,28 +146,31 @@ namespace Graphics
 
         CreateBuffers();
 
-
+#ifdef TEST_CODE_ENABLED
         const muint32 vert_count = 4;
         smVec3 verts[vert_count];
-        Zero(verts, sizeof(smVec3) * vert_count);
+        smZero(verts, sizeof(smVec3) * vert_count);
 
-        verts[0].m_X = 0.0;
-        verts[0].m_Y = -0.5;
+        constexpr muint32 f = 10;
 
-        verts[1].m_X = 0.5;
-        verts[1].m_Y = 0.5;
+        verts[0].m_X = -0.5 * f;
+        verts[0].m_Y = -0.5 * f;
 
-        verts[2].m_X = 0;
-        verts[2].m_Y = 0.5;
+        verts[1].m_X = 0.5 * f;
+        verts[1].m_Y = 0.5 * f;
 
-        verts[3].m_X = 0.5;
-        verts[3].m_Y = -0.5;
+        verts[2].m_X = -0.5 * f;
+        verts[2].m_Y = 0.5 * f;
+
+        verts[3].m_X = 0.5 * f;
+        verts[3].m_Y = -0.5 * f;
 
         const muint32 index_count = 6;
         muint32 indices[index_count] = { 0, 1, 2, 0, 3, 1 };
 
         UploadData(m_VulkanDevice.m_GraphicsCommandPool, 0, m_VulkanDevice.m_GraphicsQueue, &m_VertexBuffer, 0, sizeof(smVec3) * vert_count, verts);
         UploadData(m_VulkanDevice.m_GraphicsCommandPool, 0, m_VulkanDevice.m_GraphicsQueue, &m_IndexBuffer, 0, sizeof(muint32) * index_count, indices);
+#endif
     }
 
 
@@ -450,7 +453,7 @@ namespace Graphics
         vkDestroyDevice(m_VulkanDevice.m_LogicalDevice, m_Allocator);
         LogInfo(LogChannel::Graphics, "Logical Device destroyed!");
 
-        Zero(&m_Capabilities, sizeof(m_Capabilities));
+        smZero(&m_Capabilities, sizeof(m_Capabilities));
         m_VulkanDevice.m_Properties;
 
         //Don't need to do this!
@@ -719,7 +722,7 @@ namespace Graphics
         }
         m_IsRecreatingSwapchain = true;
         vkDeviceWaitIdle(m_VulkanDevice.m_LogicalDevice);
-        Zero(m_ImagesInFlight.data(), m_ImagesInFlight.size() * sizeof(VulkanFence));
+        smZero(m_ImagesInFlight.data(), m_ImagesInFlight.size() * sizeof(VulkanFence));
 
         VulkanSwapChainArguments arguments;
         arguments.m_Device = &m_VulkanDevice.m_PhysicalDevice;
@@ -810,7 +813,7 @@ namespace Graphics
 
         m_ObjectShader.UpdateGlobalState();
 
-#ifdef TEST_CODE_ENBALED
+#ifdef TEST_CODE_ENABLED
         m_ObjectShader.Use(&m_GraphicsCommandBuffers[m_ImageIndex]);
 
         // Bind vertex buffer at offset.

@@ -35,7 +35,7 @@ void TFile::Read(void* buffer)
 	
 	const std::string& tstring = stringbuffer.str();
 
-	Copy(tstring.c_str(), buffer, tstring.size());
+	smCopy(tstring.c_str(), buffer, tstring.size());
 }
 
 void TFile::Write(const void* buffer, muint32 size)

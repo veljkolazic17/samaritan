@@ -32,6 +32,8 @@ namespace Graphics
 		}
         //Descriptors used for creating global ubo
 
+        const muint32 imageCount = g_VulkanRenderer->GetVulkanSwapChain().GetImageCount();
+
         VkDescriptorSetLayoutBinding globalUboLayoutBinding;
         globalUboLayoutBinding.binding = 0;
         globalUboLayoutBinding.descriptorCount = 1;
@@ -52,12 +54,12 @@ namespace Graphics
         // Global descriptor pool used for global items such as view and projection matrix.
         VkDescriptorPoolSize globalPoolSize;
         globalPoolSize.type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-        globalPoolSize.descriptorCount = g_VulkanRenderer->GetVulkanSwapChain().GetImageCount();
+        globalPoolSize.descriptorCount = imageCount;
 
         VkDescriptorPoolCreateInfo globalPoolInfo = { VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO };
         globalPoolInfo.poolSizeCount = 1;
         globalPoolInfo.pPoolSizes = &globalPoolSize;
-        globalPoolInfo.maxSets = g_VulkanRenderer->GetVulkanSwapChain().GetImageCount();
+        globalPoolInfo.maxSets = imageCount;
 
         VulkanCheckResult
         (
@@ -114,7 +116,7 @@ namespace Graphics
         // Stages
         // NOTE: Should match the number of shader->stages.
         VkPipelineShaderStageCreateInfo stageCreateInfos[OBJECT_SHADER_STAGE_COUNT];
-        Zero(stageCreateInfos, sizeof(stageCreateInfos));
+        smZero(stageCreateInfos, sizeof(stageCreateInfos));
 
         for (muint32 i = 0; i < OBJECT_SHADER_STAGE_COUNT; ++i) 
         {
@@ -155,16 +157,17 @@ namespace Graphics
         );
 
         // Allocate global descriptor sets. We use 3 same here because we want to put same layout
-        VkDescriptorSetLayout globalLayouts[3] = 
+        constexpr muint32 maxImageCount = 3;
+        VkDescriptorSetLayout globalLayouts[maxImageCount];
+        smZero(globalLayouts, maxImageCount * sizeof(VkDescriptorSetLayout));
+        for (muint8 i = 0; i < imageCount; ++i)
         {
-            m_GlobalDescriptorSetLayout,
-            m_GlobalDescriptorSetLayout,
-            m_GlobalDescriptorSetLayout
-        };
+            globalLayouts[i] = m_GlobalDescriptorSetLayout;
+        }
 
         VkDescriptorSetAllocateInfo allocInfo = { VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO };
         allocInfo.descriptorPool = m_GlobalDescriptorPool;
-        allocInfo.descriptorSetCount = 3;
+        allocInfo.descriptorSetCount = imageCount;
         allocInfo.pSetLayouts = globalLayouts;
         VulkanCheckResult
         (
@@ -205,9 +208,6 @@ namespace Graphics
         VkCommandBuffer& commandBuffer = g_VulkanRenderer->GetGraphicsCommandBuffers()[g_VulkanRenderer->GetImageIndex()].GetHandle();
         VkDescriptorSet globalDescriptor = m_GlobalDescriptorSets[g_VulkanRenderer->GetImageIndex()];
 
-        // Bind the global descriptor set to be updated.
-        vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_VulkanPipeline.GetPipelineLayout(), 0, 1, &globalDescriptor, 0, 0);
-
         // Configure the descriptors for the given index.
         muint32 range = sizeof(GlobalUniformObject);
         muint64 offset = 0;
@@ -230,6 +230,9 @@ namespace Graphics
         descriptorWrite.pBufferInfo = &bufferInfo;
 
         vkUpdateDescriptorSets(g_VulkanRenderer->GetVulkanDevice().m_LogicalDevice, 1, &descriptorWrite, 0, 0);
+
+        // Bind the global descriptor set to be updated.
+        vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_VulkanPipeline.GetPipelineLayout(), 0, 1, &globalDescriptor, 0, 0);
     }
 }
 

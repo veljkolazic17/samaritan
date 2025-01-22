@@ -146,7 +146,7 @@ namespace Graphics
     {
         void* mdata;
         VulkanCheckResult(vkMapMemory(g_VulkanRenderer->GetVulkanDevice().m_LogicalDevice, m_Memory, offset, size, flags, &mdata), "Could not load data!");
-        Copy(data, mdata, size);
+        smCopy(data, mdata, size);
         vkUnmapMemory(g_VulkanRenderer->GetVulkanDevice().m_LogicalDevice, m_Memory);
     }
 

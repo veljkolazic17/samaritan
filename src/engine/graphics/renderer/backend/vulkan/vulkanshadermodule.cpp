@@ -58,7 +58,7 @@ namespace Graphics
         );
 
         // Shader stage info
-        Zero(&shaderStages[stageIndex].m_ShaderStageCreateInfo, sizeof(VkPipelineShaderStageCreateInfo));
+        smZero(&shaderStages[stageIndex].m_ShaderStageCreateInfo, sizeof(VkPipelineShaderStageCreateInfo));
         shaderStages[stageIndex].m_ShaderStageCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
         shaderStages[stageIndex].m_ShaderStageCreateInfo.stage = stageFlags;
         shaderStages[stageIndex].m_ShaderStageCreateInfo.module = shaderStages[stageIndex].m_Handle;

@@ -3,6 +3,7 @@
 #include <math/vector.hpp>
 #include <math/math.hpp>
 #include <utils/asserts/assert.hpp>
+#include <engine/memory/memory.hpp>
 
 #define MATRIX_INVERSE_EPSILON		1e-14
 #define MATRIX_EPSILON				1e-6
@@ -45,7 +46,9 @@ public:
 	mbool			operator==(const smMat4& a) const;					// exact compare, no epsilon
 	mbool			operator!=(const smMat4& a) const;					// exact compare, no epsilon
 
-	void			Zero(void);
+	void Zero(void);
+
+	//void			smZero(void);
 	void			Identity(void);
 	mbool			IsIdentity(const mfloat32 epsilon = MATRIX_EPSILON) const;
 	mbool			IsSymmetric(const mfloat32 epsilon = MATRIX_EPSILON) const;
@@ -81,9 +84,9 @@ private:
 SM_INLINE smMat4 smMat4Translation(smVec3 position) 
 {
 	smMat4 outMatrix = smMat4_identity;
-	outMatrix[2][3] = position.m_X;	//12
-	outMatrix[3][0] = position.m_Y;	//13
-	outMatrix[3][1] = position.m_Z;	//14
+	outMatrix[3][0] = position.m_X;
+	outMatrix[3][1] = position.m_Y;
+	outMatrix[3][2] = position.m_Z;
 	return outMatrix;
 }
 
@@ -126,8 +129,9 @@ SM_INLINE smMat4::smMat4(const mfloat32 xx, const mfloat32 xy, const mfloat32 xz
 //	mat[3][3] = 1.0f;
 //}
 
-SM_INLINE smMat4::smMat4(const mfloat32 src[4][4]) {
-	memcpy(mat, src, 4 * 4 * sizeof(mfloat32));
+SM_INLINE smMat4::smMat4(const mfloat32 src[4][4])
+{
+	smCopy(mat, (void*)src, 4 * 4 * sizeof(mfloat32));
 }
 
 SM_INLINE const smVec4& smMat4::operator[](int index) const {
@@ -292,19 +296,23 @@ SM_INLINE mbool smMat4::Compare(const smMat4& a, const mfloat32 epsilon) const {
 	return true;
 }
 
-SM_INLINE mbool smMat4::operator==(const smMat4& a) const {
+SM_INLINE mbool smMat4::operator==(const smMat4& a) const
+{
 	return Compare(a);
 }
 
-SM_INLINE mbool smMat4::operator!=(const smMat4& a) const {
+SM_INLINE mbool smMat4::operator!=(const smMat4& a) const
+{
 	return !Compare(a);
 }
 
-SM_INLINE void smMat4::Zero(void) {
-	memset(mat, 0, sizeof(smMat4));
+SM_INLINE void smMat4::Zero(void)
+{
+	smZero(mat, 0, sizeof(smMat4));
 }
 
-SM_INLINE void smMat4::Identity(void) {
+SM_INLINE void smMat4::Identity(void)
+{
 	*this = smMat4_identity;
 }
 

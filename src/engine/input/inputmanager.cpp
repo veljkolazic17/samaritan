@@ -17,7 +17,7 @@ namespace Input
 {
     void InputManager::Init()
     {
-        Zero(&m_InputStates, sizeof(m_InputStates));
+        smZero(&m_InputStates, sizeof(m_InputStates));
         m_IsInitialized = true;
     }
 
@@ -33,13 +33,13 @@ namespace Input
             return;
         }
 
-        Copy(
+        smCopy(
             &m_InputStates.m_CurrentKeyboardState, 
             &m_InputStates.m_PrevoiusKeyboardState, 
             (unsigned long)sizeof(Key)
         );
 
-        Copy(
+        smCopy(
             &m_InputStates.m_CurrentMouseState, 
             &m_InputStates.m_PreviousMousetate, 
             (unsigned long)sizeof(MouseButton)

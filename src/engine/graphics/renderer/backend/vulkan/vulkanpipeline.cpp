@@ -63,7 +63,7 @@ namespace Graphics
         depthStencil.stencilTestEnable = VK_FALSE;
 
         VkPipelineColorBlendAttachmentState colorBlendAttachmentState;
-        Zero(&colorBlendAttachmentState, sizeof(VkPipelineColorBlendAttachmentState));
+        smZero(&colorBlendAttachmentState, sizeof(VkPipelineColorBlendAttachmentState));
         colorBlendAttachmentState.blendEnable = VK_TRUE;
         colorBlendAttachmentState.srcColorBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA;
         colorBlendAttachmentState.dstColorBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;

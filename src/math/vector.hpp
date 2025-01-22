@@ -61,7 +61,7 @@ SM_INLINE void smVec4::Set(const mfloat32 x, const mfloat32 y, const mfloat32 z,
 	m_W = w;
 }
 
-SM_INLINE void smVec4::Zero() 
+SM_INLINE void smVec4::Zero()
 {
 	m_X = m_Y = m_Z = m_W = 0.0f;
 }

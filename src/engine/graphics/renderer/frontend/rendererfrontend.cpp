@@ -7,6 +7,7 @@
 #ifdef TEST_CODE_ENABLED
 #include <math/matrix.hpp>
 #include <math/math.hpp>
+#include <math/vector.hpp>
 #endif
 
 BEGIN_NAMESPACE
@@ -66,7 +67,7 @@ namespace Graphics
 #ifdef TEST_CODE_ENABLED
 				smMat4 projection = smMat4::Perspective(Math::Deg2Rad(45.0f), 1280 / 720.0f, 0.1f, 1000.0f);
 				static mfloat32 z = -1.0f;
-				z -= 0.005f;
+				z -= 0.05f;
 				smMat4 view = smMat4Translation(smVec3{ 0, 0, z });
 				m_RendererBackend->UpdateGlobalState(projection, view, smVec3_zero, smVec4_one, 0);
 #endif
@@ -76,7 +77,7 @@ namespace Graphics
 					softAssert(false, "Error ending frame!");
 				}
 				m_RendererBackend->IncrementFrameCount();
-			}			
+			}
 		}
 		else
 		{

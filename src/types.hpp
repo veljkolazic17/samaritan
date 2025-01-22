@@ -13,7 +13,6 @@ typedef unsigned short  muint16;
 typedef short           mint16;
 typedef unsigned char   muint8;
 typedef char            mint8;
-typedef char			mbyte;
 
 typedef unsigned int	mflags;
 

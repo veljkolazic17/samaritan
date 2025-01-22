@@ -39,7 +39,7 @@ macro(SETUP_APP projname graphics_api target_platform user_remote_logging window
 
   # Enable Memory stats logging
   if(${memstats} MATCHES true)
-    list(APPEND CXX_COMPILE_FLAGS PUBLIC TEST_CODE_ENBALED)
+    list(APPEND CXX_COMPILE_FLAGS PUBLIC TEST_CODE_ENABLED)
   endif()
 
     # Remote logging (Redis)

@@ -220,11 +220,11 @@ smMat4 smMat4::Perspective(mfloat32 fovRadius, mfloat32 aspectRation, mfloat32 n
 	mfloat32 halfTanFov = Math::Tan(fovRadius * 0.5f);
 	smMat4 outMatrix = smMat4_zero;
 
-	outMatrix[0][0] = 1.0f / (aspectRation * halfTanFov);						//0
-	outMatrix[1][0] = 1.0f / halfTanFov;										//5
-	outMatrix[2][1] = -((farClip + nearClip) / (farClip - nearClip));			//10
-	outMatrix[2][2] = -1.0f;													//11
-	outMatrix[3][1] = -((2.0f * farClip * nearClip) / (farClip - nearClip));	//14
+	outMatrix[0][0] = 1.0f / (aspectRation * halfTanFov);
+	outMatrix[1][1] = 1.0f / halfTanFov;
+	outMatrix[2][2] = -(farClip + nearClip) / (farClip - nearClip);
+	outMatrix[2][3] = -1;
+	outMatrix[3][2] = - 2 * nearClip * farClip / (farClip - nearClip);;
 	return outMatrix;
 }
 

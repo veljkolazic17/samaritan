@@ -30,7 +30,7 @@ namespace Memory
 	// GP C style memory allocation
 	void* mmaloc(muint64 size, mbool isAligned);
 	void mmfree(void* memoryBlock, mbool isAligned);
-	void* mmzero(void* memoryBlock, muint64 size);
+	void* mmsmZero(void* memoryBlock, muint64 size);
 	void* mmcpy(const void* source, void* destination, muint64 size);
 	void* mmset(void* destination, muint32 value, muint64 size);
 
@@ -45,9 +45,9 @@ namespace Memory
 
 END_NAMESPACE
 
-#define Zero(memoryBlock, size)			samaritan::Memory::mmzero(memoryBlock, size)
-#define Copy(source, destination, size)	samaritan::Memory::mmcpy(source, destination, size)
-#define Set(destination, value, size)	samaritan::Memory::mmset(destination, value, size)
+#define smZero(memoryBlock, size)			samaritan::Memory::mmsmZero(memoryBlock, size)
+#define smCopy(source, destination, size)	samaritan::Memory::mmcpy(source, destination, size)
+#define smSet(destination, value, size)	samaritan::Memory::mmset(destination, value, size)
 
 // Heap style general purpose allocator macros
 #define gpAllocArray(size)				samaritan::Memory::GPAllocate(size, samaritan::Memory::MemoryTag::MEM_ARRAY);
