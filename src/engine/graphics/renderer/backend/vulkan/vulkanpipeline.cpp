@@ -2,6 +2,7 @@
 
 #include <engine/memory/memory.hpp>
 #include <math/vector.hpp>
+#include <math/matrix.hpp>
 #include <utils/asserts/assert.hpp>
 #include <utils/logger/log.hpp>
 
@@ -113,6 +114,14 @@ namespace Graphics
 
         // Pipeline layout
         VkPipelineLayoutCreateInfo pipelineLayoutCreateInfo = { VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO };
+
+        // Push constants
+        VkPushConstantRange pushConstant;
+        pushConstant.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+        pushConstant.offset = sizeof(smMat4) * 0;
+        pushConstant.size = sizeof(smMat4) * 2;
+        pipelineLayoutCreateInfo.pushConstantRangeCount = 1;
+        pipelineLayoutCreateInfo.pPushConstantRanges = &pushConstant;
 
         // Descriptor set layouts
         pipelineLayoutCreateInfo.setLayoutCount = descriptorSetLayoutCount;

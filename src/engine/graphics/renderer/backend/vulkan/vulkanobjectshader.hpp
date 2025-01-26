@@ -33,11 +33,13 @@ namespace Graphics
 	public:
 		SM_INLINE void SetGlobalUniformObject(const GlobalUniformObject& globalUbo) { m_GlobalUbo = globalUbo; }
 		SM_INLINE GlobalUniformObject& GetGlobalUniformObject() { return m_GlobalUbo; }
+		SM_INLINE VulkanPipeline& GetVulkanPipeline() { return m_VulkanPipeline; }
 		
 		void Create(VulkanRenderpass* renderpass, VkDevice logicalDevice, VkAllocationCallbacks* allocator, mfloat32 framebufferWidth, mfloat32 framebufferHeight);
 		void Destroy(VkDevice logicalDevice, VkAllocationCallbacks* allocator);
 		void Use(VulkanCommandBuffer* commandBuffer);
 		void UpdateGlobalState();
+		void UpdateModel(smMat4 model);
 	private:
 		VulkanShaderStage m_Stages[OBJECT_SHADER_STAGE_COUNT];
 

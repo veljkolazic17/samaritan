@@ -68,7 +68,18 @@ public:
 	mbool			InverseFastSelf(void);	// returns false if determinant is zero
 	//smMat4			TransposeMultiply(const smMat4& b) const;
 
-	static smMat4 Perspective(mfloat32 fovRadius, mfloat32 aspectRation, mfloat32 nearClip, mfloat32 farClip);
+	smVec3			Up();
+	smVec3			Down();
+	smVec3			Left();
+	smVec3			Right();
+	smVec3			Forward();
+	smVec3			Backward();
+
+	static smMat4	Perspective(mfloat32 fovRadius, mfloat32 aspectRation, mfloat32 nearClip, mfloat32 farClip);
+	static smMat4	RotationEulerX(mfloat32 angle);
+	static smMat4	RotationEulerY(mfloat32 angle);
+	static smMat4	RotationEulerZ(mfloat32 angle);
+	static smMat4	RotationEuler(mfloat32 x, mfloat32 y, mfloat32 z);
 
 	int				GetDimension(void) const;
 
@@ -395,6 +406,96 @@ SM_INLINE smMat4 smMat4::InverseFast(void) const {
 SM_INLINE int smMat4::GetDimension(void) const {
 	return 16;
 }
+
+SM_INLINE smMat4 smMat4::RotationEulerX(mfloat32 angle)
+{
+	smMat4 out = smMat4_identity;
+	mfloat32 c = Math::Cos(angle);
+	mfloat32 s = Math::Sin(angle);
+	out[1][1] = c;
+	out[1][2] = s;
+	out[2][1] = -s;
+	out[2][2] = c;
+	return out;
+}
+
+SM_INLINE smMat4 smMat4::RotationEulerY(mfloat32 angle)
+{
+	smMat4 out = smMat4_identity;
+	mfloat32 c = Math::Cos(angle);
+	mfloat32 s = Math::Sin(angle);
+	out[0][0] = c;
+	out[0][2] = s;
+	out[2][0] = -s;
+	out[2][2] = c;
+	return out;
+}
+
+SM_INLINE smMat4 smMat4::RotationEulerZ(mfloat32 angle)
+{
+	smMat4 out = smMat4_identity;
+	mfloat32 c = Math::Cos(angle);
+	mfloat32 s = Math::Sin(angle);
+	out[0][0] = c;
+	out[0][1] = s;
+	out[1][0] = -s;
+	out[1][1] = c;
+	return out;
+}
+
+SM_INLINE smMat4 smMat4::RotationEuler(mfloat32 x, mfloat32 y, mfloat32 z)
+{
+	smMat4 rotationX = smMat4::RotationEulerX(x);
+	smMat4 rotationY = smMat4::RotationEulerY(y);
+	smMat4 rotationZ = smMat4::RotationEulerZ(z);
+	smMat4 out = rotationX * rotationY;
+	out *= rotationZ;
+	return out;
+}
+
+SM_INLINE smVec3 smMat4::Up()
+{
+	smVec3 retVec = smVec3{ mat[0][1], mat[1][1], mat[2][1] };
+	retVec.Normalize();
+	return retVec;
+}
+
+SM_INLINE smVec3 smMat4::Down()
+{
+	smVec3 retVec = smVec3{ -mat[0][1], -mat[1][1], -mat[2][1] };
+	retVec.Normalize();
+	return retVec;
+}
+
+SM_INLINE smVec3 smMat4::Left()
+{
+	smVec3 retVec = smVec3{ -mat[0][0], -mat[1][0], -mat[2][0] };
+	retVec.Normalize();
+	return retVec;
+}
+
+SM_INLINE smVec3 smMat4::Right()
+{
+	smVec3 retVec = smVec3{ mat[0][0], mat[1][0], mat[2][0] };
+	retVec.Normalize();
+	return retVec;
+}
+
+SM_INLINE smVec3 smMat4::Forward()
+{
+	smVec3 retVec = smVec3{ -mat[0][2], -mat[1][2], -mat[2][2] };
+	retVec.Normalize();
+	return retVec;
+}
+
+SM_INLINE smVec3 smMat4::Backward()
+{
+	smVec3 retVec =  smVec3{ mat[0][2], mat[1][2], mat[2][2] };
+	retVec.Normalize();
+	return retVec;
+}
+
+
 
 //END Definition: smMat4
 

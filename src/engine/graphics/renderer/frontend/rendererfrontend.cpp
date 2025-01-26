@@ -18,6 +18,12 @@ namespace Graphics
 	{
 		if (m_RendererBackend)
 		{
+			m_NearClip = 0.1f;
+			m_FarClip = 1000.0f;
+			m_Projection = smMat4::Perspective(Math::Deg2Rad(45.0f), 1280 / 720.0f, 0.1f, 1000.0f);
+			m_View = smMat4Translation(smVec3{ 0, 0, 30.0f });
+			m_View.InverseFastSelf();
+
 			m_RendererBackend->Init();
 		}
 		else
@@ -65,11 +71,8 @@ namespace Graphics
 			if (m_RendererBackend->BeginFrame(renderData.m_Time))
 			{
 #ifdef TEST_CODE_ENABLED
-				smMat4 projection = smMat4::Perspective(Math::Deg2Rad(45.0f), 1280 / 720.0f, 0.1f, 1000.0f);
-				static mfloat32 z = -1.0f;
-				z -= 0.05f;
-				smMat4 view = smMat4Translation(smVec3{ 0, 0, z });
-				m_RendererBackend->UpdateGlobalState(projection, view, smVec3_zero, smVec4_one, 0);
+				m_RendererBackend->UpdateGlobalState(m_Projection, m_View, smVec3_zero, smVec4_one, 0);
+				m_RendererBackend->UpdateObject(smMat4_zero);
 #endif
 
 				if (!m_RendererBackend->EndFrame(renderData.m_Time))
@@ -87,8 +90,10 @@ namespace Graphics
 
 	void Renderer::Resize(muint32 width, muint32 heigth)
 	{
-		if (m_RendererBackend)
+		if (m_RendererBackend and heigth != 0 and width != 0)
 		{
+			m_Projection = smMat4::Perspective(Math::Deg2Rad(45.0f), width / heigth, m_NearClip, m_FarClip);
+
 			m_RendererBackend->Resize(width, heigth);
 		}
 	}

@@ -25,6 +25,7 @@ namespace Graphics
 		virtual mbool BeginFrame(Time time) = 0;
 		virtual mbool EndFrame(Time time) = 0;
 		virtual void UpdateGlobalState(smMat4 projection, smMat4 view, smVec3 viewPosition, smVec4 ambientColor, mint32 mode) = 0;
+		virtual void UpdateObject(smMat4 model) = 0;
 
 	protected:
 		RendererType m_RendererType;

@@ -28,6 +28,7 @@ namespace Graphics
 		mbool BeginFrame(Time time) override;
 		mbool EndFrame(Time time) override;
 		void UpdateGlobalState(smMat4 projection, smMat4 view, smVec3 viewPosition, smVec4 ambientColor, mint32 mode) override;
+		void UpdateObject(smMat4 model) override;
 
 		SM_INLINE VkAllocationCallbacks* GetAllocator() { return m_Allocator; }
 		SM_INLINE VulkanDevice& GetVulkanDevice() { return m_VulkanDevice; }

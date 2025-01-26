@@ -9,9 +9,12 @@
 //TODO : this should be changed to be in another folder
 #include <engine/memory/containers/singleframeallocator.hpp>
 
-BEGIN_NAMESPACE
+#ifdef SM_TOOL
+#include "camera/tool/toolcamerainputhandler.hpp"
+#endif
 
-namespace Engine
+BEGIN_NAMESPACE
+	namespace Engine
 {
 	void Engine::SetEngineState(EngineState engineState)
 	{
@@ -80,21 +83,24 @@ namespace Engine
 		Input::InputManager& inputManager = Input::InputManager::GetInstance();
 		Graphics::Renderer& renderer = Graphics::Renderer::GetInstance();
 		Clock& clock = Clock::GetInstance();
-
-
+#ifdef SM_TOOL
+#if HACKS_ENABLED
+		SM_INVOKE_SINGLETON_INIT(ToolCameraInputHandler);
+#endif
+#endif
 		clock.Start();
-		clock.Update();
 		ENGINE_RUN();
+		// TODO : THIS CODE NEEDS TO BE REFACTORED WTF IS THIS
 		while (IS_ENGINE_RUNNING())
 		{
-			// TODO : THIS CODE NEEDS TO BE REFACTORED WTF IS THIS
+			clock.Update();
+			m_DeltaTime = clock.GetElapsed() - m_LastLoopTime;
 			singleFrameAllocator.Clear();
 			LoopPreProcess();
 			// Process Loop
-			Time deltaTime = clock.GetElapsed() - m_LastLoopTime;
 			m_FrameTimeStart = clock.GetTime();
 			Graphics::RenderData data;
-			data.m_Time = deltaTime;
+			data.m_Time = m_DeltaTime;
 			renderer.DrawFrame(data);
 			//End of loop
 			m_FrameTimeEnd = clock.GetTime();
@@ -113,7 +119,7 @@ namespace Engine
 
 			LoopPostProcess();
 			eventManager.DispatchEvents();
-			inputManager.Update(deltaTime);
+			inputManager.Update(m_DeltaTime);
 
 			m_LastLoopTime = clock.GetElapsed();
 		}

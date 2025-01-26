@@ -17,6 +17,8 @@
 #define IS_ENGINE_SUSPENDED()	EngineState::SUSPENDED == GetEngineState()
 #define IS_ENGINE_SHUTDOWN()	EngineState::CLEANUP == GetEngineState()
 
+#define smEngine()				::samaritan::Engine::Engine::GetInstance()
+
 BEGIN_NAMESPACE
 
 namespace Engine
@@ -42,6 +44,8 @@ namespace Engine
 		SM_INLINE EngineState GetEngineState(void) { return m_EngineState; }
 		void SetEngineState(EngineState engineState);
 
+		SM_INLINE Time GetDeltaTime() { return m_DeltaTime; }
+
 		void LoopPreProcess(void);
 		void LoopPostProcess(void);
 
@@ -58,6 +62,7 @@ namespace Engine
 		Time m_FrameTimeStart = 0;
 		Time m_FrameTimeEnd = 0;
 		Time m_LastLoopTime = 0;
+		Time m_DeltaTime = 0;
 
 		mbool m_IsFrameLimitActive = false;
 

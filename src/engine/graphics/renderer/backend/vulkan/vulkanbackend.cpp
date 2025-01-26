@@ -812,6 +812,11 @@ namespace Graphics
         // TODO: other ubo properties
 
         m_ObjectShader.UpdateGlobalState();
+    }
+
+    void VulkanRenderer::UpdateObject(smMat4 model)
+    {
+        m_ObjectShader.UpdateModel(model);
 
 #ifdef TEST_CODE_ENABLED
         m_ObjectShader.Use(&m_GraphicsCommandBuffers[m_ImageIndex]);
@@ -826,7 +831,6 @@ namespace Graphics
         // Issue the draw.
         vkCmdDrawIndexed(m_GraphicsCommandBuffers[m_ImageIndex].GetHandle(), 6, 1, 0, 0, 0);
 #endif
-
     }
 
 }

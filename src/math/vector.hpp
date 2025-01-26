@@ -1,9 +1,10 @@
 #pragma once
 #include <defines.hpp>
 
-BEGIN_NAMESPACE
+#include <math/math.hpp>
 
-//START Definition: smVec4
+BEGIN_NAMESPACE
+	//START Definition: smVec4
 struct smVec4 
 {
 	smVec4(){}
@@ -219,7 +220,6 @@ struct smVec3
 	mfloat32 Length() const;
 	mfloat32 LengthSqr() const;
 	mfloat32 Normalize();			// returns length
-	mfloat32 NormalizeFast();		// returns length
 
 	muint8 GetDimension() const;
 
@@ -356,6 +356,20 @@ SM_INLINE muint8 smVec3::GetDimension(void) const
 {
 	return 4;
 }
+
+SM_INLINE mfloat32 smVec3::Normalize()
+{
+	mfloat32 sqrLength, invLength;
+
+	sqrLength = m_X * m_X + m_Y * m_Y + m_Z * m_Z;
+	invLength = Math::DOOM_InvSqrt(sqrLength);
+	m_X *= invLength;
+	m_Y *= invLength;
+	m_Z *= invLength;
+	return invLength * sqrLength;
+}
+
+
 //END Definition smVec3
 
 

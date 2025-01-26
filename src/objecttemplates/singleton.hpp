@@ -8,7 +8,7 @@ BEGIN_NAMESPACE
 	class Singleton
 	{
 	public:
-		static T& GetInstance() 
+		inline static T& GetInstance() 
 		{ 
 			static T instance;
 			return instance;
@@ -20,9 +20,14 @@ BEGIN_NAMESPACE
 		Singleton& operator = (const Singleton&) = delete;
 		Singleton& operator = (Singleton&&) = delete;
 		~Singleton() = default;
+		virtual void SingletonInit() {}
 	};
 
 END_NAMESPACE
+
+#if HACKS_ENABLED
+#define SM_INVOKE_SINGLETON_INIT(T) T::GetInstance();
+#endif
 
 #define SINGLETON(T) final : public Singleton<T>
 #define SINGLETON_CLASS(C) class C SINGLETON(C)
@@ -31,3 +36,4 @@ END_NAMESPACE
 
 // Must exists in private section of singleton class
 #define SINGLETON_CONSTRUCTOR(T) SINGLETON_FRIEND(T); T(){}
+#define SINGLETON_CONSTRUCTOR_INIT(T) SINGLETON_FRIEND(T); T(){SingletonInit();}

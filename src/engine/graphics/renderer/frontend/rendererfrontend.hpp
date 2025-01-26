@@ -1,9 +1,14 @@
 #pragma once
 #include <defines.hpp>
-#include <objecttemplates/singleton.hpp>
-#include <objecttemplates/shutdownable.hpp>
+
 #include <engine/graphics/renderer/renderertype.inl>
 #include <engine/graphics/renderer/backend/rendererbackend.hpp>
+
+#include <objecttemplates/singleton.hpp>
+#include <objecttemplates/shutdownable.hpp>
+#include <math/matrix.hpp>
+
+#define smRenderer()	::samaritan::Graphics::Renderer::GetInstance()
 
 BEGIN_NAMESPACE
 
@@ -22,8 +27,18 @@ namespace Graphics
 		void Resize(muint32 width, muint32 heigth);
 		void DrawFrame(RenderData& renderData);
 
+		SM_INLINE smMat4& GetProjection() { return m_Projection; }
+		SM_INLINE smMat4& GetView() { return m_View; }
+
+		SM_INLINE void SetProjection(const smMat4& projection) { m_Projection = projection; }
+		SM_INLINE void SetView(const smMat4& view) { m_View = view; }
+
 	private:
+		smMat4 m_Projection;
+		smMat4 m_View;
 		RendererBackend* m_RendererBackend = nullptr;
+		mfloat32 m_NearClip;
+		mfloat32 m_FarClip;
 	};
 }
 

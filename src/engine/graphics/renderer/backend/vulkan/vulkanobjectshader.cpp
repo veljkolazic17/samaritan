@@ -234,6 +234,12 @@ namespace Graphics
         // Bind the global descriptor set to be updated.
         vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_VulkanPipeline.GetPipelineLayout(), 0, 1, &globalDescriptor, 0, 0);
     }
+
+    void VulkanObjectShader::UpdateModel(smMat4 model)
+    {
+        VkCommandBuffer commandBuffer = g_VulkanRenderer->GetGraphicsCommandBuffers()[g_VulkanRenderer->GetImageIndex()].GetHandle();
+        vkCmdPushConstants(commandBuffer, m_VulkanPipeline.GetPipelineLayout(), VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(smMat4), &model);
+    }
 }
 
 END_NAMESPACE

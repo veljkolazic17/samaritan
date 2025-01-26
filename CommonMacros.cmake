@@ -10,7 +10,7 @@ endmacro()
 
 
 # Macro for setting up projects
-macro(SETUP_APP projname graphics_api target_platform user_remote_logging window_api memstats test_code_enabled)
+macro(SETUP_APP projname graphics_api target_platform user_remote_logging window_api memstats test_code_enabled engine_mode)
   set(PROJ_NAME ${projname})
   project(${PROJ_NAME})
 
@@ -32,9 +32,16 @@ macro(SETUP_APP projname graphics_api target_platform user_remote_logging window
     list(APPEND CXX_COMPILE_FLAGS PUBLIC TARGET_LINUX)
   endif()
 
-   # Enable Memory stats logging
+   # Enable Test code
   if(${test_code_enabled} MATCHES true)
     list(APPEND CXX_COMPILE_FLAGS PUBLIC MEM_STATS_ENABLED)
+  endif()
+
+  # Engine mode
+  if(${engine_mode} MATCHES engine)
+    list(APPEND CXX_COMPILE_FLAGS PUBLIC SM_ENGINE)
+  elseif(${engine_mode} MATCHES tool)
+    list(APPEND CXX_COMPILE_FLAGS PUBLIC SM_TOOL)
   endif()
 
   # Enable Memory stats logging
