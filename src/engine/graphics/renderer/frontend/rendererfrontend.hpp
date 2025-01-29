@@ -33,6 +33,9 @@ namespace Graphics
 		SM_INLINE void SetProjection(const smMat4& projection) { m_Projection = projection; }
 		SM_INLINE void SetView(const smMat4& view) { m_View = view; }
 
+		void CreateTexture(mcstring textureName, mbool shouldAutoRelease, muint32 width, muint32 height, muint32 channelCount, const muint8* pixels, mbool hasTransparency, Texture* outTexture);
+		void DestroyTexture(Texture* texture);
+
 	private:
 		smMat4 m_Projection;
 		smMat4 m_View;

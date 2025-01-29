@@ -1,8 +1,9 @@
 #include <engine/graphics/renderer/backend/vulkan/vulkanbackend.hpp>
-#include <utils/asserts/assert.hpp>
-#include <utils/logger/log.hpp>
+#include <engine/graphics/renderer/backend/vulkan/vulkantexturedata.hpp>
 #include <engine/memory/memory.hpp>
 
+#include <utils/asserts/assert.hpp>
+#include <utils/logger/log.hpp>
 #include <set>
 
 BEGIN_NAMESPACE
@@ -831,6 +832,123 @@ namespace Graphics
         // Issue the draw.
         vkCmdDrawIndexed(m_GraphicsCommandBuffers[m_ImageIndex].GetHandle(), 6, 1, 0, 0, 0);
 #endif
+    }
+
+    void VulkanRenderer::CreateTexture(mcstring textureName, mbool shouldAutoRelease, muint32 width, muint32 height, muint32 channelCount, const muint8* pixels, mbool hasTransparency, Texture* outTexture)
+    {
+        outTexture->m_Width = width;
+        outTexture->m_Width = height;
+        outTexture->m_ChannelCount = channelCount;
+        outTexture->m_Generation = 0;
+
+        // TODO: [GRAPHICS][ALLOCATION] use allocators
+        outTexture->m_Data = gpAllocTexture(sizeof(VulkanTextureData));
+
+        VulkanTextureData* data = static_cast<VulkanTextureData*>(outTexture->m_Data);
+
+        VkDeviceSize imageSize = width * height * channelCount;
+
+        // WE USE 8 BITS PER CHANNEL
+        VkFormat imageFormat = VK_FORMAT_R8G8B8A8_UNORM;
+
+        // Staging buffer with loaded data
+        VkBufferUsageFlagBits usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
+        VkMemoryPropertyFlags memoryPropertyFlags = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT;
+
+        VulkanBuffer stagingBuffer;
+        stagingBuffer.Create(imageSize, usage, memoryPropertyFlags, true);
+
+        stagingBuffer.LoadData(0, imageSize, 0, const_cast<muint8*>(pixels));
+
+        // NOTE: Lots of assumptions here, different texture types will require
+        // different options here.
+
+        constexpr mbool shouldCreateView = true;
+
+        VulkanImage* image = nullptr;
+
+        VulkanImage::CreateImage
+        (
+			g_VulkanRenderer->GetVulkanDevice().m_PhysicalDevice,
+			g_VulkanRenderer->GetVulkanDevice().m_LogicalDevice,
+            g_VulkanRenderer->GetAllocator(),
+            //TODO : [GRAPHICS][TEXTURES] make this configurable so we can use 3D textures
+            VK_IMAGE_TYPE_2D,
+            width,
+            height,
+            imageFormat,
+            VK_IMAGE_TILING_OPTIMAL,
+            VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT,
+            VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
+            shouldCreateView,
+            VK_IMAGE_ASPECT_COLOR_BIT,
+            image
+        );
+
+        if (image == nullptr)
+        {
+            softAssert(false, "Could not create image!");
+            return;
+        }
+
+        VulkanCommandBuffer buffer;
+        VkCommandPool graphicsCommandPool = g_VulkanRenderer->GetVulkanDevice().m_GraphicsCommandPool;
+        VkQueue graphicsQueue = g_VulkanRenderer->GetVulkanDevice().m_GraphicsQueue;
+
+        buffer.BeginSingleUseBuffer(g_VulkanRenderer->GetVulkanDevice().m_LogicalDevice, graphicsCommandPool);
+
+        //Transition layouts to receive data
+        image->TransitionLayout(&buffer, imageFormat, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+        // Copy the data from the buffer.
+        image->CopyImageFromBuffer(&buffer, stagingBuffer.GetHandle());
+        //optimal data receiving -> shader read-only optimal layout.
+        image->TransitionLayout(&buffer, imageFormat, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+        buffer.EndSingleUseBuffer(g_VulkanRenderer->GetVulkanDevice().m_LogicalDevice, graphicsCommandPool, graphicsQueue);
+
+        //Sampler
+        VkSamplerCreateInfo samplerInfo = { VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO };
+        // TODO : [GRAPHICS][TEXTURE] Not configurable
+        samplerInfo.magFilter = VK_FILTER_LINEAR;
+        samplerInfo.minFilter = VK_FILTER_LINEAR;
+        samplerInfo.addressModeU = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+        samplerInfo.addressModeV = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+        samplerInfo.addressModeW = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+        samplerInfo.anisotropyEnable = VK_TRUE;
+        samplerInfo.maxAnisotropy = 16;
+        samplerInfo.borderColor = VK_BORDER_COLOR_INT_OPAQUE_BLACK;
+        samplerInfo.unnormalizedCoordinates = VK_FALSE;
+        samplerInfo.compareEnable = VK_FALSE;
+        samplerInfo.compareOp = VK_COMPARE_OP_ALWAYS;
+        samplerInfo.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
+        samplerInfo.mipLodBias = 0.0f;
+        //TODO : [GRAPHICS][TEXTURE] HAHA fucking lod
+        samplerInfo.minLod = 0.0f;
+        samplerInfo.maxLod = 0.0f;
+
+        VkResult result = vkCreateSampler(g_VulkanRenderer->GetVulkanDevice().m_LogicalDevice, &samplerInfo, g_VulkanRenderer->GetAllocator(), &data->m_Sampler);
+        if (!Vulkan::Utils::IsResultSuccess(VK_SUCCESS))
+        {
+            softAssert(false, "Error creating texture sampler. Error : %s", Vulkan::Utils::ResultToString(result));
+            return;
+        }
+
+        outTexture->m_HasTransparency = hasTransparency;
+        outTexture->m_Generation++;
+    }
+
+    void VulkanRenderer::DestroyTexture(Texture* texture)
+    {
+        VulkanTextureData* data = static_cast<VulkanTextureData*>(texture->m_Data);
+        VulkanImage* image = data->m_Image;
+
+        VulkanImage::DeleteImage(g_VulkanRenderer->GetVulkanDevice().m_LogicalDevice, g_VulkanRenderer->GetAllocator(), *image);
+        data->m_Image = nullptr;
+
+        vkDestroySampler(g_VulkanRenderer->GetVulkanDevice().m_LogicalDevice, data->m_Sampler, g_VulkanRenderer->GetAllocator());
+        data->m_Sampler = 0;
+
+        gpFreeTexture(data, sizeof(VulkanTextureData));
+        smZero(texture, sizeof(Texture));
     }
 
 }

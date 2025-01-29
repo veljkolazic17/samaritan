@@ -354,7 +354,7 @@ SM_INLINE mbool smVec3::operator!=(const smVec3& a) const
 
 SM_INLINE muint8 smVec3::GetDimension(void) const
 {
-	return 4;
+	return 3;
 }
 
 SM_INLINE mfloat32 smVec3::Normalize()
@@ -372,5 +372,192 @@ SM_INLINE mfloat32 smVec3::Normalize()
 
 //END Definition smVec3
 
+//START Definition smVec2
+
+struct smVec2
+{
+	smVec2() {}
+
+	explicit smVec2(const mfloat32 x, const mfloat32 y)
+		: m_X(x), m_Y(y) {}
+
+	void Set(const mfloat32 x, const mfloat32 y);
+	void Zero();
+
+	mfloat32 operator[](const int index) const;
+	mfloat32& operator[](const int index);
+	smVec2 operator-() const;
+	mfloat32 operator*(const smVec2& a) const;
+	smVec2 operator*(const mfloat32 a) const;
+	smVec2 operator/(const mfloat32 a) const;
+	smVec2 operator+(const smVec2& a) const;
+	smVec2 operator-(const smVec2& a) const;
+	smVec2& operator+=(const smVec2& a);
+	smVec2& operator-=(const smVec2& a);
+	smVec2& operator/=(const smVec2& a);
+	smVec2& operator/=(const mfloat32 a);
+	smVec2& operator*=(const mfloat32 a);
+
+	friend smVec2 operator*(const mfloat32 a, const smVec2 b);
+
+	mbool Compare(const smVec2& a) const;									// exact compare, no epsilon
+	mbool Compare(const smVec2& a, const mfloat32 epsilon) const;			// compare with epsilon
+	mbool operator==(const smVec2& a) const;								// exact compare, no epsilon
+	mbool operator!=(const smVec2& a) const;								// exact compare, no epsilon
+
+	mfloat32 Length() const;
+	mfloat32 LengthSqr() const;
+	mfloat32 Normalize();			// returns length
+
+	muint8 GetDimension() const;
+
+	void Lerp(const smVec2& v1, const smVec2& v2, const mfloat32 l);
+
+	mfloat32 m_X;
+	mfloat32 m_Y;
+};
+
+#define smVec2_zero	smVec2{0, 0}
+#define smVec2_one	smVec2{1, 1}
+
+SM_INLINE void smVec2::Set(const mfloat32 x, const mfloat32 y)
+{
+	m_X = x;
+	m_Y = y;
+}
+
+SM_INLINE void smVec2::Zero()
+{
+	m_X = m_Y = 0.0f;
+}
+
+SM_INLINE mfloat32 smVec2::operator[](int index) const
+{
+	return (&m_X)[index];
+}
+
+SM_INLINE mfloat32& smVec2::operator[](int index)
+{
+	return (&m_X)[index];
+}
+
+SM_INLINE smVec2 smVec2::operator-() const
+{
+	return smVec2(-m_X, -m_Y);
+}
+
+SM_INLINE smVec2 smVec2::operator-(const smVec2& a) const
+{
+	return smVec2(m_X - a.m_X, m_Y - a.m_Y);
+}
+
+SM_INLINE mfloat32 smVec2::operator*(const smVec2& a) const
+{
+	return m_X * a.m_X + m_Y * a.m_Y;
+}
+
+SM_INLINE smVec2 smVec2::operator*(const float a) const
+{
+	return smVec2(m_X * a, m_Y * a);
+}
+
+SM_INLINE smVec2 smVec2::operator/(const mfloat32 a) const
+{
+	mfloat32 inverted = 1.0f / a;
+	return smVec2(m_X * inverted, m_Y * inverted);
+}
+
+SM_INLINE smVec2 operator*(const mfloat32 a, const smVec2 b)
+{
+	return smVec2(b.m_X * a, b.m_Y * a);
+}
+
+SM_INLINE smVec2 smVec2::operator+(const smVec2& a) const
+{
+	return smVec2(m_X + a.m_X, m_Y + a.m_Y);
+}
+
+SM_INLINE smVec2& smVec2::operator+=(const smVec2& a)
+{
+	m_X += a.m_X;
+	m_Y += a.m_Y;
+
+	return *this;
+}
+
+SM_INLINE smVec2& smVec2::operator/=(const smVec2& a)
+{
+	m_X /= a.m_X;
+	m_Y /= a.m_Y;
+
+	return *this;
+}
+
+SM_INLINE smVec2& smVec2::operator/=(const mfloat32 a)
+{
+	mfloat32 inverted = 1.0f / a;
+	m_X *= inverted;
+	m_Y *= inverted;
+
+	return *this;
+}
+
+SM_INLINE smVec2& smVec2::operator-=(const smVec2& a)
+{
+	m_X -= a.m_X;
+	m_Y -= a.m_Y;
+
+	return *this;
+}
+
+SM_INLINE smVec2& smVec2::operator*=(const mfloat32 a)
+{
+	m_X *= a;
+	m_Y *= a;
+
+	return *this;
+}
+
+SM_INLINE mbool smVec2::Compare(const smVec2& a) const
+{
+	return ((m_X == a.m_X) && (m_Y == a.m_Y));
+}
+
+SM_INLINE mbool smVec2::operator==(const smVec2& a) const
+{
+	return Compare(a);
+}
+
+SM_INLINE mbool smVec2::operator!=(const smVec2& a) const
+{
+	return !Compare(a);
+}
+
+SM_INLINE muint8 smVec2::GetDimension(void) const
+{
+	return 2;
+}
+
+SM_INLINE mfloat32 smVec2::Normalize()
+{
+	mfloat32 sqrLength, invLength;
+
+	sqrLength = m_X * m_X + m_Y * m_Y;
+	invLength = Math::DOOM_InvSqrt(sqrLength);
+	m_X *= invLength;
+	m_Y *= invLength;
+	return invLength * sqrLength;
+}
+
+//END Definition smVec2
+
+
+//START Definition smVert3D
+struct smVert3D
+{
+	smVec3 m_Position;
+	smVec2 m_TextureCoordinates;
+};
+//END Definition smVert3D
 
 END_NAMESPACE

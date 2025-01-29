@@ -4,10 +4,12 @@
 #include <engine/graphics/renderer/backend/vulkan/vulkantypes.inl>
 #include <engine/graphics/renderer/backend/vulkan/vulkanpipeline.hpp>
 #include <engine/graphics/renderer/backend/vulkan/vulkanbuffer.hpp>
+#include <engine/graphics/renderer/backend/vulkan/vulkanobjectshaderobjectstate.hpp>
 #include <engine/graphics/renderer/renderertype.inl>
 
-#define OBJECT_SHADER_STAGE_COUNT	2
-#define BUILTIN_SHADER_NAME_OBJECT	"Builtin.ObjectShader"
+#define OBJECT_SHADER_STAGE_COUNT						2
+#define BUILTIN_SHADER_NAME_OBJECT						"Builtin.ObjectShader"
+#define SM_VULKAN_OBJECT_MAX_OBJECT_COUNT				1024
 
 BEGIN_NAMESPACE
 
@@ -40,22 +42,29 @@ namespace Graphics
 		void Use(VulkanCommandBuffer* commandBuffer);
 		void UpdateGlobalState();
 		void UpdateModel(smMat4 model);
-	private:
-		VulkanShaderStage m_Stages[OBJECT_SHADER_STAGE_COUNT];
 
+		muint32 AcquireObjectShaderResources();
+		void ReleaseObjectShaderResources(muint32 objectID);
+
+	private:
+		//TODO : [FUCKED][GRAPHICS][SHADER] make pool of indexer or some shit.This will have unexpected behaviour when overflow
+		muint32 m_ObjectUniformBufferIndex;
+		VulkanShaderStage m_Stages[OBJECT_SHADER_STAGE_COUNT];
 		VkDescriptorPool m_GlobalDescriptorPool;
 		VkDescriptorSetLayout m_GlobalDescriptorSetLayout;
-
+		VkDescriptorPool m_DescriptorPool;
+		VkDescriptorSetLayout m_DescriptorSetLayout;
 		// One descriptor set per frame - max 3 for triple-buffering.
 		VkDescriptorSet m_GlobalDescriptorSets[3];
 
 		// Global uniform object.
 		GlobalUniformObject m_GlobalUbo;
-
 		// Global uniform buffer.
 		VulkanBuffer m_GlobalUniformBuffer;
-
+		VulkanBuffer m_ObjectUniformBuffer;
 		VulkanPipeline m_VulkanPipeline;
+		//TODO : [GRAPHICS][SHADER] make this dynamic
+		VulkanObjectShaderObjectState m_ObjectStates[SM_VULKAN_OBJECT_MAX_OBJECT_COUNT];
 	};
 }
 

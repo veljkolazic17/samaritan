@@ -22,7 +22,7 @@ namespace Graphics
 
         windowResizedEvent.m_Width = LOWORD(l_param);
         windowResizedEvent.m_Height = HIWORD(l_param);
-        //FUCKED : There should be pre and post event dispacher.'
+        //TODO : [FUCKED][WINDOW] : There should be pre and post event dispacher.'
         //Vulkan:: In this case surface will have 0 0, but framebuffer W and H will change at the end of frame after Draw call
         Renderer::GetInstance().Resize(LOWORD(l_param), HIWORD(l_param));
         //Events::AddEvent<WindowResizedEvent>(std::move(windowResizedEvent));

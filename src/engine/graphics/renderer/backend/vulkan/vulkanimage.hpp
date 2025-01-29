@@ -2,8 +2,12 @@
 #include <defines.hpp>
 #include <engine/graphics/renderer/backend/vulkan/vulkantypes.inl>
 
-BEGIN_NAMESPACE
+namespace samaritan::Graphics
+{
+	class VulkanCommandBuffer;
+}
 
+BEGIN_NAMESPACE
 namespace Graphics
 {
 	class VulkanImage
@@ -47,6 +51,9 @@ namespace Graphics
         SM_INLINE VkDeviceMemory& GetMemory() { return m_Memory; }
         SM_INLINE muint32 GetWidth() { return m_Width; }
         SM_INLINE muint32 GetHeight() { return m_Height; }
+
+        void TransitionLayout(VulkanCommandBuffer* commandBuffer, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout);
+        void CopyImageFromBuffer(VulkanCommandBuffer* commandBuffer, VkBuffer buffer);
     private:
         VkImage m_Handle;
         VkDeviceMemory m_Memory;

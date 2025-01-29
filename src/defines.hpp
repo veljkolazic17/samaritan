@@ -12,3 +12,5 @@ namespace samaritan { enum { isInsamaritanNamespace = true }; }
 #define END_NAMESPACE                               } STATIC_ASSERT_MESSAGE(!isInsamaritanNamespace, "samaritan namespace is not previously opened");
 
 #define SM_INLINE									inline
+
+#define SM_INVALID_ID 4294967295U

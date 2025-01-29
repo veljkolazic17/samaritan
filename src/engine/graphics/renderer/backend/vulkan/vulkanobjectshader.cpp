@@ -240,6 +240,62 @@ namespace Graphics
         VkCommandBuffer commandBuffer = g_VulkanRenderer->GetGraphicsCommandBuffers()[g_VulkanRenderer->GetImageIndex()].GetHandle();
         vkCmdPushConstants(commandBuffer, m_VulkanPipeline.GetPipelineLayout(), VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(smMat4), &model);
     }
+
+    muint32 VulkanObjectShader::AcquireObjectShaderResources()
+	{
+        ++m_ObjectUniformBufferIndex;
+        constexpr muint32 frameNumber = 3;
+        VulkanObjectShaderObjectState* objectState = &m_ObjectStates[m_ObjectUniformBufferIndex];
+        for (muint32 i = 0; i < SM_VULKAN_OBJECT_SHADER_DESCRIPTOR_COUNT; ++i) 
+        {
+            for (muint32 j = 0; j < frameNumber; ++j)
+            {
+                objectState->m_DescriptorStates[i].m_Generation[j] = SM_INVALID_ID;
+            }
+        }
+
+        // Allocate descriptor sets.
+        VkDescriptorSetLayout layouts[frameNumber] =
+        {
+        	m_DescriptorSetLayout,
+        	m_DescriptorSetLayout,
+        	m_DescriptorSetLayout
+        };
+
+        VkDescriptorSetAllocateInfo allocInfo = { VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO };
+        allocInfo.descriptorPool = m_DescriptorPool;
+        allocInfo.descriptorSetCount = frameNumber;
+        allocInfo.pSetLayouts = layouts;
+        VkResult result = vkAllocateDescriptorSets(g_VulkanRenderer->GetVulkanDevice().m_LogicalDevice, &allocInfo, objectState->m_DescriptorSet);
+        if (result != VK_SUCCESS) 
+        {
+            softAssert(false, "Could not allocate descriptor sets!");
+            return SM_INVALID_ID;
+        }
+
+        return m_ObjectUniformBufferIndex;
+	}
+
+    void VulkanObjectShader::ReleaseObjectShaderResources(muint32 objectID)
+	{
+        VulkanObjectShaderObjectState* objectState = &m_ObjectStates[objectID];
+        constexpr muint32 descriptorSetCount = 3;
+        // Release object descriptor sets.
+        VkResult result = vkFreeDescriptorSets(g_VulkanRenderer->GetVulkanDevice().m_LogicalDevice, m_DescriptorPool, descriptorSetCount, objectState->m_DescriptorStates;
+        if (result != VK_SUCCESS) 
+        {
+            softAssert(false, "Could not free descriptor sets!");
+        }
+
+        constexpr muint32 frameCount = 3;
+        for (muint32 i = 0; i < SM_VULKAN_OBJECT_SHADER_DESCRIPTOR_COUNT; ++i) 
+        {
+            for (muint32 j = 0; j < frameCount; ++j)
+            {
+                objectState->m_DescriptorStates[i].m_Generation[j] = SM_INVALID_ID;
+            }
+        }
+	}
 }
 
 END_NAMESPACE

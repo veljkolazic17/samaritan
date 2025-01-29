@@ -10,6 +10,7 @@
 #include <engine/graphics/renderer/backend/vulkan/vulkanfence.hpp>
 #include <engine/graphics/renderer/backend/vulkan/vulkanobjectshader.hpp>
 
+#include <engine/resources/graphics/texture.hpp>
 #include <vector>
 
 BEGIN_NAMESPACE
@@ -60,6 +61,9 @@ namespace Graphics
 		void CreateBuffers();
 		void DestroyBuffers();
 		void UploadData(VkCommandPool pool, VkFence fence, VkQueue queue, VulkanBuffer* buffer, muint64 offset, muint64 size, void* data);
+		void CreateTexture(mcstring textureName, mbool shouldAutoRelease, muint32 width, muint32 height, muint32 channelCount, const muint8* pixels, mbool hasTransparency, Texture* outTexture) override;
+		void DestroyTexture(Texture* texture) override;
+
 
 		mbool CheckDeviceRequerments
 		(
