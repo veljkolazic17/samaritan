@@ -42,6 +42,7 @@ namespace Graphics
 		RendererBackend* m_RendererBackend = nullptr;
 		mfloat32 m_NearClip;
 		mfloat32 m_FarClip;
+		Texture m_DefaultTexture;
 	};
 }
 

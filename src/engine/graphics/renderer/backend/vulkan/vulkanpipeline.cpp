@@ -39,6 +39,7 @@ namespace Graphics
         rasterizerCreateInfo.rasterizerDiscardEnable = VK_FALSE;
         rasterizerCreateInfo.polygonMode = isWireframe ? VK_POLYGON_MODE_LINE : VK_POLYGON_MODE_FILL;
         rasterizerCreateInfo.lineWidth = 1.0f;
+        //TODO : [GRAPHICS]
         rasterizerCreateInfo.cullMode = VK_CULL_MODE_FRONT_BIT;
         rasterizerCreateInfo.frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE;
         rasterizerCreateInfo.depthBiasEnable = VK_FALSE;
@@ -97,7 +98,7 @@ namespace Graphics
         // Vertex input
         VkVertexInputBindingDescription bindingDescription;
         bindingDescription.binding = 0;  // Binding index
-        bindingDescription.stride = sizeof(smVec3);
+        bindingDescription.stride = sizeof(smVert3D);
         bindingDescription.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;  // Move to next data entry for each vertex.
 
         // Attributes

@@ -149,28 +149,39 @@ namespace Graphics
 
 #ifdef TEST_CODE_ENABLED
         const muint32 vert_count = 4;
-        smVec3 verts[vert_count];
-        smZero(verts, sizeof(smVec3) * vert_count);
+        smVert3D verts[vert_count];
+        smZero(verts, sizeof(smVert3D) * vert_count);
 
         constexpr muint32 f = 10;
 
-        verts[0].m_X = -0.5 * f;
-        verts[0].m_Y = -0.5 * f;
+        verts[0].m_Position.m_X = -0.5 * f;
+        verts[0].m_Position.m_Y = -0.5 * f;
+        verts[0].m_TextureCoordinates.m_X = 0.0f;
+        verts[0].m_TextureCoordinates.m_Y = 0.0f;
 
-        verts[1].m_X = 0.5 * f;
-        verts[1].m_Y = 0.5 * f;
+        verts[1].m_Position.m_X = 0.5 * f;
+        verts[1].m_Position.m_Y = 0.5 * f;
+        verts[1].m_TextureCoordinates.m_X = 1.0f;
+        verts[1].m_TextureCoordinates.m_Y = 1.0f;
 
-        verts[2].m_X = -0.5 * f;
-        verts[2].m_Y = 0.5 * f;
+        verts[2].m_Position.m_X = -0.5 * f;
+        verts[2].m_Position.m_Y = 0.5 * f;
+        verts[2].m_TextureCoordinates.m_X = 0.0f;
+        verts[2].m_TextureCoordinates.m_Y = 1.0f;
 
-        verts[3].m_X = 0.5 * f;
-        verts[3].m_Y = -0.5 * f;
+        verts[3].m_Position.m_X = 0.5 * f;
+        verts[3].m_Position.m_Y = -0.5 * f;
+        verts[3].m_TextureCoordinates.m_X = 1.0f;
+        verts[3].m_TextureCoordinates.m_Y = 0.0f;
 
-        const muint32 index_count = 6;
-        muint32 indices[index_count] = { 0, 1, 2, 0, 3, 1 };
+        constexpr muint32 indexCount = 6;
+        muint32 indices[indexCount] = { 0, 1, 2, 0, 3, 1 };
 
-        UploadData(m_VulkanDevice.m_GraphicsCommandPool, 0, m_VulkanDevice.m_GraphicsQueue, &m_VertexBuffer, 0, sizeof(smVec3) * vert_count, verts);
-        UploadData(m_VulkanDevice.m_GraphicsCommandPool, 0, m_VulkanDevice.m_GraphicsQueue, &m_IndexBuffer, 0, sizeof(muint32) * index_count, indices);
+        UploadData(m_VulkanDevice.m_GraphicsCommandPool, 0, m_VulkanDevice.m_GraphicsQueue, &m_VertexBuffer, 0, sizeof(smVert3D) * vert_count, verts);
+        UploadData(m_VulkanDevice.m_GraphicsCommandPool, 0, m_VulkanDevice.m_GraphicsQueue, &m_IndexBuffer, 0, sizeof(muint32) * indexCount, indices);
+
+        muint32 objectID = m_ObjectShader.AcquireObjectShaderResources();
+        softAssert(objectID != SM_INVALID_ID, "Failed to acquire shader resources");
 #endif
     }
 
@@ -769,7 +780,7 @@ namespace Graphics
     {
         VkMemoryPropertyFlagBits memoryPropertyFlags = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT;
 
-        const muint64 vertexBufferSize = sizeof(smVec3) * 1024 * 1024;
+        const muint64 vertexBufferSize = sizeof(smVert3D) * 1024 * 1024;
         m_VertexBuffer.Create(vertexBufferSize, (VkBufferUsageFlagBits)(VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_TRANSFER_SRC_BIT), memoryPropertyFlags,true);
         m_GeometryVertexOffset = 0;
 
@@ -815,9 +826,9 @@ namespace Graphics
         m_ObjectShader.UpdateGlobalState();
     }
 
-    void VulkanRenderer::UpdateObject(smMat4 model)
+    void VulkanRenderer::UpdateObject(const GeometryData& data)
     {
-        m_ObjectShader.UpdateModel(model);
+        m_ObjectShader.UpdateModel(data);
 
 #ifdef TEST_CODE_ENABLED
         m_ObjectShader.Use(&m_GraphicsCommandBuffers[m_ImageIndex]);
@@ -837,9 +848,9 @@ namespace Graphics
     void VulkanRenderer::CreateTexture(mcstring textureName, mbool shouldAutoRelease, muint32 width, muint32 height, muint32 channelCount, const muint8* pixels, mbool hasTransparency, Texture* outTexture)
     {
         outTexture->m_Width = width;
-        outTexture->m_Width = height;
+        outTexture->m_Height = height;
         outTexture->m_ChannelCount = channelCount;
-        outTexture->m_Generation = 0;
+        outTexture->m_Generation = SM_INVALID_ID;
 
         // TODO: [GRAPHICS][ALLOCATION] use allocators
         outTexture->m_Data = gpAllocTexture(sizeof(VulkanTextureData));
@@ -865,7 +876,7 @@ namespace Graphics
 
         constexpr mbool shouldCreateView = true;
 
-        VulkanImage* image = nullptr;
+        VulkanImage* image = &data->m_Image;
 
         VulkanImage::CreateImage
         (
@@ -939,16 +950,16 @@ namespace Graphics
     void VulkanRenderer::DestroyTexture(Texture* texture)
     {
         VulkanTextureData* data = static_cast<VulkanTextureData*>(texture->m_Data);
-        VulkanImage* image = data->m_Image;
+        VulkanImage& image = data->m_Image;
 
-        VulkanImage::DeleteImage(g_VulkanRenderer->GetVulkanDevice().m_LogicalDevice, g_VulkanRenderer->GetAllocator(), *image);
-        data->m_Image = nullptr;
+        VulkanImage::DeleteImage(g_VulkanRenderer->GetVulkanDevice().m_LogicalDevice, g_VulkanRenderer->GetAllocator(), image);
 
         vkDestroySampler(g_VulkanRenderer->GetVulkanDevice().m_LogicalDevice, data->m_Sampler, g_VulkanRenderer->GetAllocator());
         data->m_Sampler = 0;
 
         gpFreeTexture(data, sizeof(VulkanTextureData));
         smZero(texture, sizeof(Texture));
+        texture->m_Generation = SM_INVALID_ID;
     }
 
 }

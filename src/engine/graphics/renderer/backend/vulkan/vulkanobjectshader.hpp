@@ -41,7 +41,7 @@ namespace Graphics
 		void Destroy(VkDevice logicalDevice, VkAllocationCallbacks* allocator);
 		void Use(VulkanCommandBuffer* commandBuffer);
 		void UpdateGlobalState();
-		void UpdateModel(smMat4 model);
+		void UpdateModel(GeometryData data);
 
 		muint32 AcquireObjectShaderResources();
 		void ReleaseObjectShaderResources(muint32 objectID);
@@ -61,6 +61,7 @@ namespace Graphics
 		GlobalUniformObject m_GlobalUbo;
 		// Global uniform buffer.
 		VulkanBuffer m_GlobalUniformBuffer;
+		//Object uniform buffer
 		VulkanBuffer m_ObjectUniformBuffer;
 		VulkanPipeline m_VulkanPipeline;
 		//TODO : [GRAPHICS][SHADER] make this dynamic

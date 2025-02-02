@@ -29,7 +29,7 @@ namespace Graphics
 		mbool BeginFrame(Time time) override;
 		mbool EndFrame(Time time) override;
 		void UpdateGlobalState(smMat4 projection, smMat4 view, smVec3 viewPosition, smVec4 ambientColor, mint32 mode) override;
-		void UpdateObject(smMat4 model) override;
+		void UpdateObject(const GeometryData& data) override;
 
 		SM_INLINE VkAllocationCallbacks* GetAllocator() { return m_Allocator; }
 		SM_INLINE VulkanDevice& GetVulkanDevice() { return m_VulkanDevice; }
@@ -44,6 +44,9 @@ namespace Graphics
 
 		SM_INLINE muint64 GetCurrentFrame() { return m_CurrentFrame; }
 		SM_INLINE void SetCurrentFrame(muint64 frame) { m_CurrentFrame = frame; }
+
+		void CreateTexture(mcstring textureName, mbool shouldAutoRelease, muint32 width, muint32 height, muint32 channelCount, const muint8* pixels, mbool hasTransparency, Texture* outTexture) override;
+		void DestroyTexture(Texture* texture) override;
 	private:
 		void GetPlatformExtensions(std::vector<const char*>& platfromExtensions);
 		void CreatePlatformSurface();
@@ -61,9 +64,6 @@ namespace Graphics
 		void CreateBuffers();
 		void DestroyBuffers();
 		void UploadData(VkCommandPool pool, VkFence fence, VkQueue queue, VulkanBuffer* buffer, muint64 offset, muint64 size, void* data);
-		void CreateTexture(mcstring textureName, mbool shouldAutoRelease, muint32 width, muint32 height, muint32 channelCount, const muint8* pixels, mbool hasTransparency, Texture* outTexture) override;
-		void DestroyTexture(Texture* texture) override;
-
 
 		mbool CheckDeviceRequerments
 		(

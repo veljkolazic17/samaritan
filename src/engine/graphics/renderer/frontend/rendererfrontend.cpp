@@ -21,10 +21,45 @@ namespace Graphics
 			m_NearClip = 0.1f;
 			m_FarClip = 1000.0f;
 			m_Projection = smMat4::Perspective(Math::Deg2Rad(45.0f), 1280 / 720.0f, 0.1f, 1000.0f);
-			m_View = smMat4Translation(smVec3{ 0, 0, 30.0f });
+			m_View = smMat4Translation(smVec3{ 0, 0, -30.0f });
 			m_View.InverseFastSelf();
 
 			m_RendererBackend->Init();
+
+#pragma region DEFAULT_TEXTURE_CREATION
+			constexpr muint64 textureDimension = 256;
+			constexpr muint64 channels = 4;
+			constexpr muint64 pixelCount = textureDimension * textureDimension;
+
+			constexpr muint64 textureSize = pixelCount * channels;
+			muint8 pixels[textureSize];
+			smSet(pixels, 255, sizeof(muint8) * textureSize);
+
+			for (muint64 row = 0; row < textureDimension; ++row)
+			{
+				bool rowIsOdd = row % 2; // Precompute row parity
+				for (muint64 col = 0; col < textureDimension; ++col)
+				{
+					if (col % 2 == rowIsOdd) // Check if row and column parity match
+					{
+						muint64 index_bpp = (row * textureDimension + col) * channels;
+						pixels[index_bpp + 0] = 0;
+						pixels[index_bpp + 1] = 0;
+					}
+				}
+			}
+			m_RendererBackend->CreateTexture
+			(
+				"default",
+				false,
+				textureDimension,
+				textureDimension,
+				4,
+				pixels,
+				false,
+				&m_DefaultTexture
+			);
+#pragma endregion
 		}
 		else
 		{
@@ -58,6 +93,7 @@ namespace Graphics
 	{
 		if (m_RendererBackend)
 		{
+			m_RendererBackend->DestroyTexture(&m_DefaultTexture);
 			m_RendererBackend->Shutdown();
 		}
 		
@@ -72,7 +108,13 @@ namespace Graphics
 			{
 #ifdef TEST_CODE_ENABLED
 				m_RendererBackend->UpdateGlobalState(m_Projection, m_View, smVec3_zero, smVec4_one, 0);
-				m_RendererBackend->UpdateObject(smMat4_zero);
+
+				smMat4	 model = smMat4Translation(smVec3{ 0, 0, 0 });
+				GeometryData data = {};
+				data.m_ObjectID = 0; 
+				data.m_Model = model;
+				data.m_Textures[0] = &m_DefaultTexture;
+				m_RendererBackend->UpdateObject(data);
 #endif
 
 				if (!m_RendererBackend->EndFrame(renderData.m_Time))

@@ -26,7 +26,7 @@ BEGIN_NAMESPACE
 		virtual mbool BeginFrame(Time time) = 0;
 		virtual mbool EndFrame(Time time) = 0;
 		virtual void UpdateGlobalState(smMat4 projection, smMat4 view, smVec3 viewPosition, smVec4 ambientColor, mint32 mode) = 0;
-		virtual void UpdateObject(smMat4 model) = 0;
+		virtual void UpdateObject(const GeometryData& data) = 0;
 		virtual void CreateTexture(mcstring textureName, mbool shouldAutoRelease, muint32 width, muint32 height, muint32 channelCount, const muint8* pixels, mbool hasTransparency, Texture* outTexture) = 0;
 		virtual void DestroyTexture(Texture* texture) = 0;
 

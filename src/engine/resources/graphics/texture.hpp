@@ -10,7 +10,7 @@ struct Texture
     muint32 m_Height;
     muint32 m_ChannelCount;
     mbool m_HasTransparency;
-    muint32 m_Generation;
+    muint32 m_Generation = SM_INVALID_ID;
     void* m_Data;
 };
 

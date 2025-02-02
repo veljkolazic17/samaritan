@@ -9,7 +9,7 @@ namespace Graphics
 {
 	struct VulkanTextureData
 	{
-		VulkanImage* m_Image = nullptr;
+		VulkanImage m_Image;
 		VkSampler m_Sampler;
 	};
 

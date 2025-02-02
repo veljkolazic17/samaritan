@@ -7,8 +7,7 @@ namespace Graphics
 {
 	struct VulkanDescriptorState
 	{
-		constexpr muint32 frameCount = 3;
-		muint32 m_Generation[frameCount];
+		muint32 m_Generation[3] = {SM_INVALID_ID, SM_INVALID_ID, SM_INVALID_ID};
 	};
 }
 

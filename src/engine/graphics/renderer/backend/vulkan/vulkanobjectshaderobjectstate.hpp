@@ -11,8 +11,7 @@ namespace Graphics
 {
     struct VulkanObjectShaderObjectState
     {
-        constexpr muint32 frameCount = 3;
-        VkDescriptorSet m_DescriptorSet[frameCount];
+        VkDescriptorSet m_DescriptorSet[3];
         VulkanDescriptorState m_DescriptorStates[SM_VULKAN_OBJECT_SHADER_DESCRIPTOR_COUNT];
     };
 }
