@@ -113,13 +113,15 @@ namespace Graphics
 
 	void VulkanRenderpass::Begin(smVec4 renderArea, VulkanCommandBuffer& commandBuffer, VkFramebuffer frameBuffer)
 	{
+		m_RenderArea = renderArea;
+
 		VkRenderPassBeginInfo beginInfo = { VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO };
 		beginInfo.renderPass = m_Handle;
 		beginInfo.framebuffer = frameBuffer;
-		beginInfo.renderArea.offset.x = renderArea.m_X;
-		beginInfo.renderArea.offset.y = renderArea.m_Y;
-		beginInfo.renderArea.extent.width = renderArea.m_Z;
-		beginInfo.renderArea.extent.height = renderArea.m_W;
+		beginInfo.renderArea.offset.x = m_RenderArea.m_X;
+		beginInfo.renderArea.offset.y = m_RenderArea.m_Y;
+		beginInfo.renderArea.extent.width = m_RenderArea.m_Z;
+		beginInfo.renderArea.extent.height = m_RenderArea.m_W;
 
 		VkClearValue clearValues[2];
 		clearValues[0].color.float32[0] = m_Color.m_X;

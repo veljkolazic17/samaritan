@@ -121,9 +121,9 @@ BEGIN_NAMESPACE
         // Pipeline creation
         VkViewport viewport;
         viewport.x = 0.0f;
-        viewport.y = 0.0f;
+        viewport.y = framebufferHeight;
         viewport.width = framebufferWidth;
-        viewport.height = framebufferHeight;
+        viewport.height = - framebufferHeight;
         viewport.minDepth = 0.0f;
         viewport.maxDepth = 1.0f;
 

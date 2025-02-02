@@ -21,8 +21,9 @@ namespace Graphics
 			m_NearClip = 0.1f;
 			m_FarClip = 1000.0f;
 			m_Projection = smMat4::Perspective(Math::Deg2Rad(45.0f), 1280 / 720.0f, 0.1f, 1000.0f);
-			m_View = smMat4Translation(smVec3{ 0, 0, -30.0f });
-			m_View.InverseFastSelf();
+			m_View = smMat4Translation(smVec3{ 0, 0, -10.0f });
+			//TODO : [GRAPHICS] Is this needed?
+			//m_View.InverseFastSelf();
 
 			m_RendererBackend->Init();
 

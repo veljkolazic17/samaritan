@@ -6,6 +6,8 @@
 #include <utils/logger/log.hpp>
 #include <set>
 
+//TODO : [FUCKED][GRAPHICS] changing screen size makes objects look weird
+
 BEGIN_NAMESPACE
 
 namespace Graphics
@@ -128,7 +130,7 @@ namespace Graphics
 
         m_MainRenderPass.Create
         (
-            smVec4(0.f, 0.f, (mfloat32)m_VulkanDevice.m_FrameBufferWidth, (mfloat32)m_VulkanDevice.m_FrameBufferHeight),
+            smVec4(0.0f, 0.0f, static_cast<mfloat32>(m_VulkanDevice.m_FrameBufferWidth), static_cast<mfloat32>(m_VulkanDevice.m_FrameBufferHeight)),
             smVec4(1.0f, 0.0f, 0.0f, 1.0f),
             1.f,
             0.f
@@ -153,6 +155,8 @@ namespace Graphics
         smZero(verts, sizeof(smVert3D) * vert_count);
 
         constexpr muint32 f = 10;
+
+        constexpr muint32 z = 0.0f;
 
         verts[0].m_Position.m_X = -0.5 * f;
         verts[0].m_Position.m_Y = -0.5 * f;
@@ -635,13 +639,11 @@ namespace Graphics
         commandBuffer.ResetBuffer();
         commandBuffer.BeginBuffer(isSingleUse, isRenderpassContinue, isSimultaneousUse);
 
-        smVec4 renderArea(0.f, 0.f, m_VulkanDevice.m_FrameBufferWidth , m_VulkanDevice.m_FrameBufferHeight);
-
         VkViewport viewport;
-        viewport.x = renderArea.m_X;
-        viewport.y = renderArea.m_Y;
-        viewport.width = renderArea.m_Z;
-        viewport.height = renderArea.m_W;
+        viewport.x = 0.0f;
+        viewport.y = static_cast<mfloat32>(m_VulkanDevice.m_FrameBufferHeight);
+        viewport.width = static_cast<mfloat32>(m_VulkanDevice.m_FrameBufferWidth);
+        viewport.height = -static_cast<mfloat32>(m_VulkanDevice.m_FrameBufferHeight);
         viewport.minDepth = 0.0f;
         viewport.maxDepth = 1.0f;
 
@@ -653,6 +655,9 @@ namespace Graphics
 
         vkCmdSetViewport(commandBuffer.GetHandle(), 0, 1, &viewport);
         vkCmdSetScissor(commandBuffer.GetHandle(), 0, 1, &scissor);
+
+
+        smVec4 renderArea = smVec4{0.0f, 0.0f, static_cast<mfloat32>(m_VulkanDevice.m_FrameBufferWidth), static_cast<mfloat32>(m_VulkanDevice.m_FrameBufferHeight)};
 
         m_MainRenderPass.Begin(renderArea, commandBuffer, m_SwapChain.GetFrameBuffers()[m_ImageIndex].GetHandle());
 
