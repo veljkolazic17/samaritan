@@ -26,41 +26,6 @@ namespace Graphics
 			//m_View.InverseFastSelf();
 
 			m_RendererBackend->Init();
-
-#pragma region DEFAULT_TEXTURE_CREATION
-			constexpr muint64 textureDimension = 256;
-			constexpr muint64 channels = 4;
-			constexpr muint64 pixelCount = textureDimension * textureDimension;
-
-			constexpr muint64 textureSize = pixelCount * channels;
-			muint8 pixels[textureSize];
-			smSet(pixels, 255, sizeof(muint8) * textureSize);
-
-			for (muint64 row = 0; row < textureDimension; ++row)
-			{
-				bool rowIsOdd = row % 2; // Precompute row parity
-				for (muint64 col = 0; col < textureDimension; ++col)
-				{
-					if (col % 2 == rowIsOdd) // Check if row and column parity match
-					{
-						muint64 index_bpp = (row * textureDimension + col) * channels;
-						pixels[index_bpp + 0] = 0;
-						pixels[index_bpp + 1] = 0;
-					}
-				}
-			}
-			m_RendererBackend->CreateTexture
-			(
-				"default",
-				false,
-				textureDimension,
-				textureDimension,
-				4,
-				pixels,
-				false,
-				&m_DefaultTexture
-			);
-#pragma endregion
 		}
 		else
 		{

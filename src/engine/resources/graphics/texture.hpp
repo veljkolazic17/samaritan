@@ -1,6 +1,8 @@
 #pragma once
 #include <defines.hpp>
 
+#define SM_DEFAULT_TEXTURE_NAME		"DEFAULT"
+
 BEGIN_NAMESPACE
 
 struct Texture
