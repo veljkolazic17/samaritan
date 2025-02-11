@@ -2,8 +2,12 @@
 
 #include <engine/graphics/renderer/frontend/rendererfrontend.hpp>
 
-#include <museum/museum.hpp>
 #include <format>
+#include <cstring>
+
+//HACK
+#define STB_IMAGE_IMPLEMENTATION
+#include <museum/museum.hpp>
 
 BEGIN_NAMESPACE
 
@@ -16,6 +20,10 @@ mbool TextureSystem::Init(const TextureSystemConfing& config)
 	}
 
 	m_Config = config;
+
+    //TODO : [FUCKED][TEXTURE] This is bad. Why? Idk it feels bad check this later
+    Texture temp;
+    std::fill_n(std::back_inserter(m_Textures), config.m_MaxTextureCount, temp);
 
 	constexpr muint64 textureDimension = 256;
 	constexpr muint64 channels = 4;
@@ -39,24 +47,16 @@ mbool TextureSystem::Init(const TextureSystemConfing& config)
 		}
 	}
 
-	if (Graphics::Renderer* renderer = smRenderer())
-	{
-		renderer->CreateTexture
-		(
-				SM_DEFAULT_TEXTURE_NAME,
-				false,
-				textureDimension,
-				textureDimension,
-				channels,
-				pixels,
-				false,
-				&m_DefaultTexture
-		);
-	}
-	else
-	{
-		hardAssert(false, "Renderer is nullptr!");
-	}
+    smRenderer().CreateTexture
+	(
+			SM_DEFAULT_TEXTURE_NAME,
+			textureDimension,
+			textureDimension,
+			channels,
+			pixels,
+			false,
+			&m_DefaultTexture
+	);
 
 	m_DefaultTexture.m_Generation = SM_INVALID_ID;
 
@@ -65,38 +65,99 @@ mbool TextureSystem::Init(const TextureSystemConfing& config)
 
 void TextureSystem::Shutdown()
 {
-	Graphics::Renderer* renderer = smRenderer()
-
-	if (renderer == nullptr)
+    Graphics::Renderer& renderer = smRenderer();
+    renderer.DestroyTexture(&m_DefaultTexture);
+	for (Texture& texture : m_Textures)
 	{
-		hardAssert(false, "Renderer is nullptr!");
-	}
-
-	renderer->DestroyTexture(&m_DefaultTexture);
-
-	for (const Texture& texture : m_Textures)
-	{
-		renderer->DestroyTexture(&texture);
+		renderer.DestroyTexture(&texture);
 	}
 }
 
-Texture& TextureSystem::Acquire(mcstring name, mbool shouldAutoRelease)
+Texture* TextureSystem::Acquire(mcstring name, mbool shouldAutoRelease)
 {
+    if (!std::strcmp(name, SM_DEFAULT_TEXTURE_NAME))
+    {
+        softAssert(false, "Trying to acquire default texture!");
+        return &m_DefaultTexture;
+    }
 
+    TextureReference& reference = m_TextureLookup[name];
 
-	return nullptr;
+    if (reference.m_RefCount == 0)
+    {
+        reference.m_ShouldAutoRelease = shouldAutoRelease;
+    }
+
+    ++reference.m_RefCount;
+    //First time getting texture
+    if (reference.m_Handle == SM_INVALID_ID)
+    {
+        //Find free space in array
+        //TODO : [TEXTURE] change this not to be vector
+        Texture* newTexture = nullptr;
+        for (muint64 counter = 0; counter < m_Textures.size(); ++counter)
+        {
+            Texture& texture = m_Textures[counter];
+            if (texture.m_ID == SM_INVALID_ID)
+            {
+                newTexture = &texture;
+                reference.m_Handle = counter;
+                break;
+            }
+        }
+
+        if (newTexture == nullptr)
+        {
+            softAssert(false, "Can't load more textures!");
+            return &m_DefaultTexture;
+        }
+
+        if (!LoadTexture(name, newTexture))
+        {
+            softAssert(false, "Failed to load texture %s", name);
+            return &m_DefaultTexture;
+        }
+        newTexture->m_ID = reference.m_Handle;
+    }
+    return &m_Textures[reference.m_Handle];
 }
 
 void TextureSystem::Release(mcstring name)
 {
+    if (!std::strcmp(name, SM_DEFAULT_TEXTURE_NAME))
+    {
+        softAssert(false, "Trying to release default texture!");
+    }
 
+    if (m_TextureLookup.contains(name))
+    {
+        TextureReference& reference = m_TextureLookup[name];
+        --reference.m_RefCount;
+
+        if (reference.m_RefCount == 0 && reference.m_ShouldAutoRelease)
+        {
+            Texture* texture = &m_Textures[reference.m_Handle];
+            smRenderer().DestroyTexture(texture);
+            smZero(texture, sizeof(Texture));
+            //Texture is destroyed
+            texture->m_ID = SM_INVALID_ID;
+            texture->m_Generation = SM_INVALID_ID;
+            reference.m_Handle = SM_INVALID_ID;
+            reference.m_ShouldAutoRelease = false;
+        }
+        //TODO : [TEXTURE] Check when reference should be removed from entries
+    }
+    else
+    {
+        softAssert(false, "Texture not loaded!");
+    }
 }
 
-mbool LoadTexture(mcstring textureName, Texture* texture)
+mbool TextureSystem::LoadTexture(mcstring textureName, Texture* texture)
 {
 #if SM_USE_MUSEUM_STB
 
-    constexpr mcstring pathFormat = "assets/textures/{}.{}";
+    constexpr mcstring pathFormat = "../../../assets/textures/{}.{}";
     constexpr mint32 channelCount = 4;
 
     stbi_set_flip_vertically_on_load(true);
@@ -108,18 +169,18 @@ mbool LoadTexture(mcstring textureName, Texture* texture)
     Texture temp;
     muint8* data = stbi_load
     (
-        path.data,
-        (muint32*)&temp.m_Width,
-        (muint32*)&temp.m_Height,
-        (muint32*)&temp.m_ChannelCount,
-        channelCount
+		path.data(),
+		reinterpret_cast<int*>(&temp.m_Width),
+		reinterpret_cast<int*>(&temp.m_Height),
+		reinterpret_cast<int*>(&temp.m_ChannelCount),
+		channelCount
     );
 
     temp.m_ChannelCount = channelCount;
-    if (data != nullptr) 
+    if (data != nullptr)
     {
         muint32 generation = texture->m_Generation;
-        texture->m_Generation = INVALID_ID;
+        texture->m_Generation = SM_INVALID_ID;
 
         muint64 size = temp.m_Width * temp.m_Height * channelCount;
 
@@ -127,7 +188,7 @@ mbool LoadTexture(mcstring textureName, Texture* texture)
         for (muint64 i = 0; i < size; i += channelCount)
         {
             muint8 alpha = data[i + 3];
-            if (alpha < 255) 
+            if (alpha < 255)
             {
                 isTransparent = true;
                 break;
@@ -135,13 +196,9 @@ mbool LoadTexture(mcstring textureName, Texture* texture)
         }
 
         // Acquire internal texture resources and upload to GPU.
-        Graphics::Renderer* renderer = smRenderer();
-        if (renderer == nullptr)
-        {
-            hardAssert(false, "Renderer is nullptr!");
-        }
+        Graphics::Renderer& renderer = smRenderer();
 
-        renderer->CreateTexture
+        renderer.CreateTexture
         (
             textureName,
             temp.m_Width,
@@ -154,14 +211,14 @@ mbool LoadTexture(mcstring textureName, Texture* texture)
 
         Texture oldTexture = *texture;
         *texture = temp;
-        renderer->DestroyTexture(&oldTexture);
-        
+        renderer.DestroyTexture(&oldTexture);
+
         //Check generation
         if (generation == SM_INVALID_ID)
         {
             texture->m_Generation = 0;
         }
-        else 
+        else
         {
             texture->m_Generation = generation + 1;
         }
@@ -169,12 +226,13 @@ mbool LoadTexture(mcstring textureName, Texture* texture)
         stbi_image_free(data);
         return true;
     }
-    if (const char* reason = stbi_failure_reason()) 
+    if (const char* reason = stbi_failure_reason())
     {
-        softAssert(false, "Failed to load texture '%s': %s", path.data, reason);
+        //TODO [TEXTURE] Add support for asserts messages {} or %s
+        softAssert(false, "Failed to load texture", path.data(), reason);
     }
 #endif
-	return false;
-}
+    return false;
+};
 
 END_NAMESPACE

@@ -131,7 +131,7 @@ namespace Graphics
         m_MainRenderPass.Create
         (
             smVec4(0.0f, 0.0f, static_cast<mfloat32>(m_VulkanDevice.m_FrameBufferWidth), static_cast<mfloat32>(m_VulkanDevice.m_FrameBufferHeight)),
-            smVec4(1.0f, 0.0f, 0.0f, 1.0f),
+            smVec4(0.5f, 0.5f, 0.5f, 1.0f),
             1.f,
             0.f
         );
@@ -850,7 +850,7 @@ namespace Graphics
 #endif
     }
 
-    void VulkanRenderer::CreateTexture(mcstring textureName, mbool shouldAutoRelease, muint32 width, muint32 height, muint32 channelCount, const muint8* pixels, mbool hasTransparency, Texture* outTexture)
+    void VulkanRenderer::CreateTexture(mcstring textureName, muint32 width, muint32 height, muint32 channelCount, const muint8* pixels, mbool hasTransparency, Texture* outTexture)
     {
         outTexture->m_Width = width;
         outTexture->m_Height = height;
@@ -954,6 +954,12 @@ namespace Graphics
 
     void VulkanRenderer::DestroyTexture(Texture* texture)
     {
+        //TODO : [GRAPHICS][TEXTURE] Check this asap
+        if (texture == nullptr || texture->m_ID == SM_INVALID_ID)
+        {
+            return;
+        }
+
         VulkanTextureData* data = static_cast<VulkanTextureData*>(texture->m_Data);
         VulkanImage& image = data->m_Image;
 

@@ -2,4 +2,4 @@ out
 vcpkg_installed
 .vs
 bin
-src/museum/*/
+/src/museum/*/

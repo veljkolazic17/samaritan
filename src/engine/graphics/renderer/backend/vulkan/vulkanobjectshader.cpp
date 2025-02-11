@@ -4,12 +4,13 @@
 #include <engine/graphics/renderer/backend/vulkan/vulkanshadermodule.hpp>
 #include <engine/graphics/renderer/backend/vulkan/vulkanrenderpass.hpp>
 #include <engine/graphics/renderer/backend/vulkan/vulkancommandbuffer.hpp>
+#include <engine/graphics/renderer/backend/vulkan/vulkantexturedata.hpp>
+#include <engine/graphics/systems/texturesystem.hpp>
 
 #include <math/vector.hpp>
 #include <engine/memory/memory.hpp>
 #include <engine/Engine.hpp>
 
-#include "vulkantexturedata.hpp"
 
 
 BEGIN_NAMESPACE
@@ -353,10 +354,16 @@ BEGIN_NAMESPACE
         for (muint32 samplerIndex = 0; samplerIndex < samplerCount; ++samplerIndex)
         {
             Texture* texture = data.m_Textures[samplerIndex];
+            if (texture == nullptr)
+            {
+                texture = &smTextureSystem().GetDefaultTexture();
+            }
+
             muint32& descriptorGeneration = objectState.m_DescriptorStates[descriptorIndex].m_Generation[imageIndex];
+            muint32& descriptorID = objectState.m_DescriptorStates[descriptorIndex].m_ID[imageIndex];
 
             // Check if the descriptor needs updating first.
-            if (texture != nullptr && (descriptorGeneration != texture->m_Generation || descriptorGeneration == SM_INVALID_ID)) 
+            if (texture != nullptr && (descriptorID != texture->m_ID || descriptorGeneration != texture->m_Generation || descriptorGeneration == SM_INVALID_ID)) 
             {
                 VulkanTextureData* textureData = static_cast<VulkanTextureData*>(texture->m_Data);
                 // Assign view and sampler.
@@ -376,6 +383,7 @@ BEGIN_NAMESPACE
                 if (texture->m_Generation != SM_INVALID_ID) 
                 {
                     descriptorGeneration = texture->m_Generation;
+                    descriptorID = texture->m_ID;
                 }
                 ++descriptorIndex;
             }
@@ -397,6 +405,7 @@ BEGIN_NAMESPACE
             for (muint32 j = 0; j < frameNumber; ++j)
             {
                 objectState->m_DescriptorStates[i].m_Generation[j] = SM_INVALID_ID;
+                objectState->m_DescriptorStates[i].m_ID[j] = SM_INVALID_ID;
             }
         }
 
@@ -439,6 +448,7 @@ BEGIN_NAMESPACE
             for (muint32 j = 0; j < frameCount; ++j)
             {
                 objectState->m_DescriptorStates[i].m_Generation[j] = SM_INVALID_ID;
+                objectState->m_DescriptorStates[i].m_ID[j] = SM_INVALID_ID;
             }
         }
 	}

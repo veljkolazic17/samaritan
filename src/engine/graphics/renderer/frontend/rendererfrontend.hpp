@@ -33,15 +33,20 @@ namespace Graphics
 		SM_INLINE void SetProjection(const smMat4& projection) { m_Projection = projection; }
 		SM_INLINE void SetView(const smMat4& view) { m_View = view; }
 
-		void CreateTexture(mcstring textureName, mbool shouldAutoRelease, muint32 width, muint32 height, muint32 channelCount, const muint8* pixels, mbool hasTransparency, Texture* outTexture);
+		void CreateTexture(mcstring textureName, muint32 width, muint32 height, muint32 channelCount, const muint8* pixels, mbool hasTransparency, Texture* outTexture);
 		void DestroyTexture(Texture* texture);
-
+#ifdef TEST_CODE_ENABLED
+		SM_INLINE void SetTestTexture(Texture* texture) { m_TestTexture = texture; }
+#endif
 	private:
 		smMat4 m_Projection;
 		smMat4 m_View;
 		RendererBackend* m_RendererBackend = nullptr;
 		mfloat32 m_NearClip;
 		mfloat32 m_FarClip;
+#ifdef TEST_CODE_ENABLED
+		Texture* m_TestTexture;
+#endif
 	};
 }
 

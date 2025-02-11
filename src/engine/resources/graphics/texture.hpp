@@ -7,13 +7,13 @@ BEGIN_NAMESPACE
 
 struct Texture
 {
-    muint32 m_ID;
-    muint32 m_Width;
-    muint32 m_Height;
-    muint32 m_ChannelCount;
-    mbool m_HasTransparency;
+    muint32 m_ID = SM_INVALID_ID;
+    muint32 m_Width = 0;
+    muint32 m_Height = 0;
+    muint32 m_ChannelCount = 0;
+    mbool m_HasTransparency = false;
     muint32 m_Generation = SM_INVALID_ID;
-    void* m_Data;
+    void* m_Data = nullptr;
 };
 
 END_NAMESPACE

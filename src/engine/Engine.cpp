@@ -8,9 +8,14 @@
 #include <engine/graphics/renderer/frontend/rendererfrontend.hpp>
 //TODO : this should be changed to be in another folder
 #include <engine/memory/containers/singleframeallocator.hpp>
+#include <engine/graphics/systems/texturesystem.hpp>
 
 #ifdef SM_TOOL
-#include "camera/tool/toolcamerainputhandler.hpp"
+#include <engine/camera/tool/toolcamerainputhandler.hpp>
+#endif
+
+#ifdef DEBUG
+#include <engine/graphics/debug/texturedebug.hpp>
 #endif
 
 BEGIN_NAMESPACE
@@ -74,6 +79,9 @@ BEGIN_NAMESPACE
 
 		//This should be configurable
 		Graphics::Renderer::GetInstance().Init(m_DeafualtRenderer);
+
+		TextureSystemConfing config = { 65536 };
+		TextureSystem::GetInstance().Init(config);
 	}
 
 	void Engine::Run(void)
@@ -83,9 +91,12 @@ BEGIN_NAMESPACE
 		Input::InputManager& inputManager = Input::InputManager::GetInstance();
 		Graphics::Renderer& renderer = Graphics::Renderer::GetInstance();
 		Clock& clock = Clock::GetInstance();
-#ifdef SM_TOOL
 #if HACKS_ENABLED
-		SM_INVOKE_SINGLETON_INIT(ToolCameraInputHandler);
+#ifdef SM_TOOL
+		SM_INVOKE_SINGLETON_INIT(ToolCameraInputHandler)
+#endif
+#ifdef DEBUG
+		SM_INVOKE_SINGLETON_INIT(TextureSystemDebug)
 #endif
 #endif
 		clock.Start();

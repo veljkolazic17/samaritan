@@ -20,6 +20,7 @@ BEGIN_NAMESPACE
 		Singleton& operator = (const Singleton&) = delete;
 		Singleton& operator = (Singleton&&) = delete;
 		~Singleton() = default;
+		//WTF is this shit, I was drunk
 		virtual void SingletonInit() {}
 	};
 

@@ -6,4 +6,4 @@ project(Samaritan)
 
 include(./CommonMacros.cmake)
 
-SETUP_APP(Vulkan_WinAPI vulkanapi Win true WINDOW_NATIVE_WIN true true tool)
+SETUP_APP(Samaritan_Vulkan_WindowsAPI vulkanapi Win true WINDOW_NATIVE_WIN true true tool)

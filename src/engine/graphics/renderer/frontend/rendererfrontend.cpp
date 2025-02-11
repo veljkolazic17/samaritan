@@ -59,7 +59,9 @@ namespace Graphics
 	{
 		if (m_RendererBackend)
 		{
-			m_RendererBackend->DestroyTexture(&m_DefaultTexture);
+#ifdef TEST_CODE_ENABLED
+			m_RendererBackend->DestroyTexture(m_TestTexture);
+#endif
 			m_RendererBackend->Shutdown();
 		}
 		
@@ -79,7 +81,7 @@ namespace Graphics
 				GeometryData data = {};
 				data.m_ObjectID = 0; 
 				data.m_Model = model;
-				data.m_Textures[0] = &m_DefaultTexture;
+				data.m_Textures[0] = m_TestTexture;
 				m_RendererBackend->UpdateObject(data);
 #endif
 
@@ -106,11 +108,11 @@ namespace Graphics
 		}
 	}
 
-	void Renderer::CreateTexture(mcstring textureName, mbool shouldAutoRelease, muint32 width, muint32 height, muint32 channelCount, const muint8* pixels, mbool hasTransparency, Texture* outTexture)
+	void Renderer::CreateTexture(mcstring textureName, muint32 width, muint32 height, muint32 channelCount, const muint8* pixels, mbool hasTransparency, Texture* outTexture)
 	{
 		if (m_RendererBackend != nullptr)
 		{
-			m_RendererBackend->CreateTexture(textureName, shouldAutoRelease, width, height, channelCount, pixels, hasTransparency, outTexture);
+			m_RendererBackend->CreateTexture(textureName, width, height, channelCount, pixels, hasTransparency, outTexture);
 		}
 	}
 
