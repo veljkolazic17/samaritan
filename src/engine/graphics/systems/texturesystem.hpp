@@ -11,6 +11,7 @@
 
 BEGIN_NAMESPACE
 
+//TODO : [GRAPHICS] Make reference system for whole engine
 struct TextureReference
 {
 	muint64 m_RefCount = 0;
@@ -28,7 +29,7 @@ class TextureSystem SINGLETON(TextureSystem)
 public:
 	SINGLETON_CONSTRUCTOR(TextureSystem)
 
-	mbool Init(const TextureSystemConfing & config);
+	mbool Init(const TextureSystemConfing& config);
 	void Shutdown();
 
 	Texture* Acquire(mcstring name, mbool shouldAutoRelease);

@@ -1,6 +1,7 @@
 #include <engine/graphics/renderer/backend/vulkan/vulkanbackend.hpp>
 #include <engine/graphics/renderer/backend/vulkan/vulkantexturedata.hpp>
 #include <engine/memory/memory.hpp>
+#include <engine/resources/graphics/material.hpp>
 
 #include <utils/asserts/assert.hpp>
 #include <utils/logger/log.hpp>
@@ -850,19 +851,14 @@ namespace Graphics
 #endif
     }
 
-    void VulkanRenderer::CreateTexture(mcstring textureName, muint32 width, muint32 height, muint32 channelCount, const muint8* pixels, mbool hasTransparency, Texture* outTexture)
+    mbool VulkanRenderer::CreateTexture(const muint8* pixels, Texture* texture)
     {
-        outTexture->m_Width = width;
-        outTexture->m_Height = height;
-        outTexture->m_ChannelCount = channelCount;
-        outTexture->m_Generation = SM_INVALID_ID;
-
         // TODO: [GRAPHICS][ALLOCATION] use allocators
-        outTexture->m_Data = gpAllocTexture(sizeof(VulkanTextureData));
+        texture->m_Data = gpAllocTexture(sizeof(VulkanTextureData));
 
-        VulkanTextureData* data = static_cast<VulkanTextureData*>(outTexture->m_Data);
+        VulkanTextureData* data = static_cast<VulkanTextureData*>(texture->m_Data);
 
-        VkDeviceSize imageSize = width * height * channelCount;
+        VkDeviceSize imageSize = texture->m_Width * texture->m_Height * texture->m_ChannelCount;
 
         // WE USE 8 BITS PER CHANNEL
         VkFormat imageFormat = VK_FORMAT_R8G8B8A8_UNORM;
@@ -890,8 +886,8 @@ namespace Graphics
             g_VulkanRenderer->GetAllocator(),
             //TODO : [GRAPHICS][TEXTURES] make this configurable so we can use 3D textures
             VK_IMAGE_TYPE_2D,
-            width,
-            height,
+            texture->m_Width,
+            texture->m_Height,
             imageFormat,
             VK_IMAGE_TILING_OPTIMAL,
             VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT,
@@ -904,7 +900,7 @@ namespace Graphics
         if (image == nullptr)
         {
             softAssert(false, "Could not create image!");
-            return;
+            return false;;
         }
 
         VulkanCommandBuffer buffer;
@@ -945,11 +941,10 @@ namespace Graphics
         if (!Vulkan::Utils::IsResultSuccess(VK_SUCCESS))
         {
             softAssert(false, "Error creating texture sampler. Error : %s", Vulkan::Utils::ResultToString(result));
-            return;
+            return false;
         }
 
-        outTexture->m_HasTransparency = hasTransparency;
-        outTexture->m_Generation++;
+        texture->m_Generation++;
     }
 
     void VulkanRenderer::DestroyTexture(Texture* texture)
@@ -957,6 +952,7 @@ namespace Graphics
         //TODO : [GRAPHICS][TEXTURE] Check this asap
         if (texture == nullptr || texture->m_ID == SM_INVALID_ID)
         {
+            softAssert(false, "Invalid texture (nullptr or invalid id)");
             return;
         }
 
@@ -971,6 +967,34 @@ namespace Graphics
         gpFreeTexture(data, sizeof(VulkanTextureData));
         smZero(texture, sizeof(Texture));
         texture->m_Generation = SM_INVALID_ID;
+    }
+
+    mbool VulkanRenderer::CreateMaterial(Material* material)
+    {
+        if (material == nullptr)
+        {
+            softAssert(false, "Trying to create material on nullptr!");
+            return false;
+        }
+
+        if (m_ObjectShader.AcquireObjectShaderResources(material) == SM_INVALID_ID)
+        {
+            softAssert(false, "Failed to acquire material shader resources!");
+            return false;
+        }
+
+        return true;
+    }
+
+    void VulkanRenderer::DestroyMaterial(Material* material)
+    {
+        if (material == nullptr || material->m_ID == SM_INVALID_ID)
+        {
+            softAssert(false, "Invalid material (nullptr or invalid id)");
+            return;
+        }
+
+        m_ObjectShader.ReleaseObjectShaderResources(material);
     }
 
 }

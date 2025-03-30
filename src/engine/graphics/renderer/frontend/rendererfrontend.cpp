@@ -108,12 +108,13 @@ namespace Graphics
 		}
 	}
 
-	void Renderer::CreateTexture(mcstring textureName, muint32 width, muint32 height, muint32 channelCount, const muint8* pixels, mbool hasTransparency, Texture* outTexture)
+	mbool Renderer::CreateTexture(const muint8* pixels, Texture* texture)
 	{
 		if (m_RendererBackend != nullptr)
 		{
-			m_RendererBackend->CreateTexture(textureName, width, height, channelCount, pixels, hasTransparency, outTexture);
+			return m_RendererBackend->CreateTexture(pixels, texture);
 		}
+		return false;
 	}
 
 	void Renderer::DestroyTexture(Texture* texture)
@@ -121,6 +122,23 @@ namespace Graphics
 		if (m_RendererBackend != nullptr)
 		{
 			m_RendererBackend->DestroyTexture(texture);
+		}
+	}
+
+	mbool Renderer::CreateMaterial(Material* material)
+	{
+		if (m_RendererBackend != nullptr)
+		{
+			return m_RendererBackend->CreateMaterial(material);
+		}
+		return false;
+	}
+
+	void Renderer::DestroyMaterial(Material* material)
+	{
+		if (m_RendererBackend != nullptr)
+		{
+			m_RendererBackend->DestroyMaterial(material);
 		}
 	}
 }

@@ -33,8 +33,12 @@ namespace Graphics
 		SM_INLINE void SetProjection(const smMat4& projection) { m_Projection = projection; }
 		SM_INLINE void SetView(const smMat4& view) { m_View = view; }
 
-		void CreateTexture(mcstring textureName, muint32 width, muint32 height, muint32 channelCount, const muint8* pixels, mbool hasTransparency, Texture* outTexture);
+		mbool CreateTexture(const muint8* pixels, Texture* texture);
 		void DestroyTexture(Texture* texture);
+
+		mbool CreateMaterial(Material* material);
+		void DestroyMaterial(Material* material);
+
 #ifdef TEST_CODE_ENABLED
 		SM_INLINE void SetTestTexture(Texture* texture) { m_TestTexture = texture; }
 #endif

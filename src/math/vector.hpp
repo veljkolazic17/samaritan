@@ -3,6 +3,10 @@
 
 #include <math/math.hpp>
 
+#include <string>
+#include <cstdio>
+
+
 BEGIN_NAMESPACE
 	//START Definition: smVec4
 struct smVec4 
@@ -45,6 +49,8 @@ struct smVec4
 
 	void Lerp(const smVec4& v1, const smVec4& v2, const mfloat32 l);
 
+	SM_INLINE static smVec4 StringToVec4(const std::string& str);
+
 	mfloat32 m_X;
 	mfloat32 m_Y;
 	mfloat32 m_Z;
@@ -53,6 +59,20 @@ struct smVec4
 
 #define smVec4_zero	smVec4{0, 0, 0, 0}
 #define smVec4_one	smVec4{1, 1, 1, 1}
+
+SM_INLINE smVec4 smVec4::StringToVec4(const std::string& str)
+{
+	mfloat32 x, y, z, w;
+	mint32 numParsed = std::sscanf(str.c_str(), "%f %f %f %f", &x, &y, &z, &w);
+	if (numParsed == 4) 
+	{
+		return smVec4(x, y, z, w);
+	}
+	else 
+	{
+		return smVec4(0.0f, 0.0f, 0.0f, 0.0f);
+	}
+}
 
 SM_INLINE void smVec4::Set(const mfloat32 x, const mfloat32 y, const mfloat32 z, const mfloat32 w)
 {

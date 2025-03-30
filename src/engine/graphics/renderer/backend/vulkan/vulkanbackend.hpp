@@ -45,8 +45,10 @@ namespace Graphics
 		SM_INLINE muint64 GetCurrentFrame() { return m_CurrentFrame; }
 		SM_INLINE void SetCurrentFrame(muint64 frame) { m_CurrentFrame = frame; }
 
-		void CreateTexture(mcstring textureName, muint32 width, muint32 height, muint32 channelCount, const muint8* pixels, mbool hasTransparency, Texture* outTexture) override;
+		mbool CreateTexture(const muint8* pixels, Texture* texture) override;
 		void DestroyTexture(Texture* texture) override;
+		mbool CreateMaterial(Material* material) override;
+		void DestroyMaterial(Material* material) override;
 	private:
 		void GetPlatformExtensions(std::vector<const char*>& platfromExtensions);
 		void CreatePlatformSurface();

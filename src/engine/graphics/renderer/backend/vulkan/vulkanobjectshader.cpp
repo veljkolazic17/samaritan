@@ -6,6 +6,7 @@
 #include <engine/graphics/renderer/backend/vulkan/vulkancommandbuffer.hpp>
 #include <engine/graphics/renderer/backend/vulkan/vulkantexturedata.hpp>
 #include <engine/graphics/systems/texturesystem.hpp>
+#include <engine/resources/graphics/material.hpp>
 
 #include <math/vector.hpp>
 #include <engine/memory/memory.hpp>
@@ -396,7 +397,7 @@ BEGIN_NAMESPACE
         vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_VulkanPipeline.GetPipelineLayout(), 1, 1, &objectDescriptorSet, 0, 0);
     }
 
-    muint32 VulkanObjectShader::AcquireObjectShaderResources()
+    muint32 VulkanObjectShader::AcquireObjectShaderResources(Material* outMaterial)
 	{
         constexpr muint32 frameNumber = 3;
         VulkanObjectShaderObjectState* objectState = &m_ObjectStates[m_ObjectUniformBufferIndex];
@@ -428,12 +429,21 @@ BEGIN_NAMESPACE
             return SM_INVALID_ID;
         }
 
+        //TODO : [CRITICAL][GRAPHICS] Check if uniform buffer should increase as internal id
+        outMaterial->m_InternalID = m_ObjectUniformBufferIndex;
         return ++m_ObjectUniformBufferIndex;
+
+
 	}
 
-    void VulkanObjectShader::ReleaseObjectShaderResources(muint32 objectID)
+    void VulkanObjectShader::ReleaseObjectShaderResources(const Material* material)
 	{
-        VulkanObjectShaderObjectState* objectState = &m_ObjectStates[objectID];
+        if (material == nullptr)
+        {
+            hardAssert(false, "Trying to release nullptr as material!");
+        }
+
+        VulkanObjectShaderObjectState* objectState = &m_ObjectStates[material->m_InternalID];
         constexpr muint32 descriptorSetCount = 3;
         // Release object descriptor sets.
         VkResult result = vkFreeDescriptorSets(g_VulkanRenderer->GetVulkanDevice().m_LogicalDevice, m_DescriptorPool, descriptorSetCount, &objectState->m_DescriptorSet[objectID]);

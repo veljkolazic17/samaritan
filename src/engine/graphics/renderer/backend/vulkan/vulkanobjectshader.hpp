@@ -19,6 +19,8 @@ namespace Graphics
 	class VulkanCommandBuffer;
 }
 
+class Material;
+
 namespace Graphics
 {
 
@@ -43,8 +45,8 @@ namespace Graphics
 		void UpdateGlobalState();
 		void UpdateModel(GeometryData data);
 
-		muint32 AcquireObjectShaderResources();
-		void ReleaseObjectShaderResources(muint32 objectID);
+		muint32 AcquireObjectShaderResources(Material* outMaterial);
+		void ReleaseObjectShaderResources(const Material* material);
 
 	private:
 		//TODO : [FUCKED][GRAPHICS][SHADER] make pool of indexer or some shit.This will have unexpected behaviour when overflow

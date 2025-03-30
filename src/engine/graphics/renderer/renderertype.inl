@@ -4,6 +4,7 @@
 #include <math/matrix.hpp>
 //TODO : [GRAPHICS] maybe do fdeclare
 #include <engine/resources/graphics/texture.hpp>
+#include <engine/resources/graphics/material.hpp>
 
 
 #define	NVIDIA_GBO_PADDING	128

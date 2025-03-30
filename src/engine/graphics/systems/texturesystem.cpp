@@ -25,6 +25,7 @@ mbool TextureSystem::Init(const TextureSystemConfing& config)
     Texture temp;
     std::fill_n(std::back_inserter(m_Textures), config.m_MaxTextureCount, temp);
 
+    //Create default texture
 	constexpr muint64 textureDimension = 256;
 	constexpr muint64 channels = 4;
 	constexpr muint64 pixelCount = textureDimension * textureDimension;
@@ -47,16 +48,11 @@ mbool TextureSystem::Init(const TextureSystemConfing& config)
 		}
 	}
 
-    smRenderer().CreateTexture
-	(
-			SM_DEFAULT_TEXTURE_NAME,
-			textureDimension,
-			textureDimension,
-			channels,
-			pixels,
-			false,
-			&m_DefaultTexture
-	);
+    if (!smRenderer().CreateTexture(pixels, &m_DefaultTexture))
+    {
+        softAssert(false, "Cannot create default texutre!");
+        return false;
+    }
 
 	m_DefaultTexture.m_Generation = SM_INVALID_ID;
 
