@@ -1,13 +1,13 @@
 #ifdef DEBUG
-#include <engine/graphics/debug/texturedebug.hpp>
+#include <engine/graphics/debug/materialdebug.hpp>
 #include <engine/events/eventmanager.hpp>
-#include <engine/graphics/systems/texturesystem.hpp>
+#include <engine/graphics/systems/materialsystem.hpp>
 #ifdef TEST_CODE_ENABLED
 #include <engine/graphics/renderer/frontend/rendererfrontend.hpp>
 #endif
 BEGIN_NAMESPACE
 
-void TextureSystemDebug::SingletonInit()
+void MaterialSystemDebug::SingletonInit()
 {
 	m_KeyboardInputPressedEventHandler = [this](const Input::KeyboardInputPressedEvent& event) { HandleOnKeyboardInputPressedEvent(event); };
 	Events::Subscribe<Input::KeyboardInputPressedEvent>(m_KeyboardInputPressedEventHandler);
@@ -16,7 +16,7 @@ void TextureSystemDebug::SingletonInit()
 	Events::Subscribe<Input::KeyboardInputReleasedEvent>(m_KeyboardInputReleasedEventHandler);
 }
 
-void TextureSystemDebug::HandleOnKeyboardInputPressedEvent(const Input::KeyboardInputPressedEvent& event)
+void MaterialSystemDebug::HandleOnKeyboardInputPressedEvent(const Input::KeyboardInputPressedEvent& event)
 {
 	mcstring testTextureName = nullptr;
 
@@ -50,21 +50,20 @@ void TextureSystemDebug::HandleOnKeyboardInputPressedEvent(const Input::Keyboard
 
 	if (m_IsDebugKeyPressed && testTextureName != nullptr)
 	{
-		if (Texture* texture = smTextureSystem().Acquire(testTextureName, true))
+		if (Material* material = smMaterialSystem().Acquire(testTextureName))
 		{
-#ifdef TEST_CODE_ENABLED
-			smRenderer().SetTestTexture(texture);
-#endif
+			smRenderer().SetTestMaterial(material);
+
 			if (m_LoadedImage != nullptr)
 			{
-				smTextureSystem().Release(m_LoadedImage);
+				smMaterialSystem().Release(m_LoadedImage);
 			}
 			m_LoadedImage = testTextureName;
 		}
 	}
 }
 
-void TextureSystemDebug::HandleOnKeyboardInputReleasedEvent(const Input::KeyboardInputReleasedEvent& event)
+void MaterialSystemDebug::HandleOnKeyboardInputReleasedEvent(const Input::KeyboardInputReleasedEvent& event)
 {
 	if (event.m_Key == TEXTURE_DEBUG_KEY)
 	{

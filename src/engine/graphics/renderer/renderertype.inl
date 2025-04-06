@@ -41,9 +41,8 @@ namespace Graphics
 
 	struct GeometryData
 	{
-		muint32 m_ObjectID = SM_INVALID_ID;
 		smMat4 m_Model;
-		Texture* m_Textures[16];
+		Material* m_Material = nullptr;
 	};
 }
 

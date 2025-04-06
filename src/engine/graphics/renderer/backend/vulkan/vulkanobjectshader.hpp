@@ -7,9 +7,10 @@
 #include <engine/graphics/renderer/backend/vulkan/vulkanobjectshaderobjectstate.hpp>
 #include <engine/graphics/renderer/renderertype.inl>
 
-#define OBJECT_SHADER_STAGE_COUNT						2
-#define BUILTIN_SHADER_NAME_OBJECT						"Builtin.ObjectShader"
+#define SM_OBJECT_SHADER_STAGE_COUNT					2
+#define SM_BUILTIN_SHADER_NAME_OBJECT					"Builtin.ObjectShader"
 #define SM_VULKAN_OBJECT_MAX_OBJECT_COUNT				1024
+#define SM_VULKAN_OBJECT_SHADER_SAMPLER_COUNT			1
 
 BEGIN_NAMESPACE
 
@@ -46,12 +47,12 @@ namespace Graphics
 		void UpdateModel(GeometryData data);
 
 		muint32 AcquireObjectShaderResources(Material* outMaterial);
-		void ReleaseObjectShaderResources(const Material* material);
+		void ReleaseObjectShaderResources(Material* material);
 
 	private:
 		//TODO : [FUCKED][GRAPHICS][SHADER] make pool of indexer or some shit.This will have unexpected behaviour when overflow
 		muint32 m_ObjectUniformBufferIndex;
-		VulkanShaderStage m_Stages[OBJECT_SHADER_STAGE_COUNT];
+		VulkanShaderStage m_Stages[SM_OBJECT_SHADER_STAGE_COUNT];
 		VkDescriptorPool m_GlobalDescriptorPool;
 		VkDescriptorSetLayout m_GlobalDescriptorSetLayout;
 		VkDescriptorPool m_DescriptorPool;
@@ -68,6 +69,8 @@ namespace Graphics
 		VulkanPipeline m_VulkanPipeline;
 		//TODO : [GRAPHICS][SHADER] make this dynamic
 		VulkanObjectShaderObjectState m_ObjectStates[SM_VULKAN_OBJECT_MAX_OBJECT_COUNT];
+
+		TextureUsageType m_SamplerUsages[SM_VULKAN_OBJECT_SHADER_SAMPLER_COUNT];
 	};
 }
 

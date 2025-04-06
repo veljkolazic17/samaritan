@@ -9,13 +9,14 @@
 //TODO : this should be changed to be in another folder
 #include <engine/memory/containers/singleframeallocator.hpp>
 #include <engine/graphics/systems/texturesystem.hpp>
+#include <engine/graphics/systems/materialsystem.hpp>
 
 #ifdef SM_TOOL
 #include <engine/camera/tool/toolcamerainputhandler.hpp>
 #endif
 
 #ifdef DEBUG
-#include <engine/graphics/debug/texturedebug.hpp>
+#include <engine/graphics/debug/materialdebug.hpp>
 #endif
 
 BEGIN_NAMESPACE
@@ -80,8 +81,11 @@ BEGIN_NAMESPACE
 		//This should be configurable
 		Graphics::Renderer::GetInstance().Init(m_DeafualtRenderer);
 
-		TextureSystemConfing config = { 65536 };
-		TextureSystem::GetInstance().Init(config);
+		TextureSystemConfing texutreSystemConfig = { 65536 };
+		TextureSystem::GetInstance().Init(texutreSystemConfig);
+
+		MaterialSystemConfig materialSystemConfig = { 4096 };
+		MaterialSystem::GetInstance().Init(materialSystemConfig);
 	}
 
 	void Engine::Run(void)
@@ -96,7 +100,7 @@ BEGIN_NAMESPACE
 		SM_INVOKE_SINGLETON_INIT(ToolCameraInputHandler)
 #endif
 #ifdef DEBUG
-		SM_INVOKE_SINGLETON_INIT(TextureSystemDebug)
+		SM_INVOKE_SINGLETON_INIT(MaterialSystemDebug)
 #endif
 #endif
 		clock.Start();

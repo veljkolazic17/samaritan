@@ -40,7 +40,7 @@ namespace Graphics
 		void DestroyMaterial(Material* material);
 
 #ifdef TEST_CODE_ENABLED
-		SM_INLINE void SetTestTexture(Texture* texture) { m_TestTexture = texture; }
+		SM_INLINE void SetTestMaterial(Material* material) { m_TestMaterial = material; }
 #endif
 	private:
 		smMat4 m_Projection;
@@ -49,7 +49,7 @@ namespace Graphics
 		mfloat32 m_NearClip;
 		mfloat32 m_FarClip;
 #ifdef TEST_CODE_ENABLED
-		Texture* m_TestTexture;
+		Material* m_TestMaterial;
 #endif
 	};
 }

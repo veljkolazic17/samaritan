@@ -6,6 +6,8 @@
 
 BEGIN_NAMESPACE
 
+class Texture;
+
 enum class TextureUsageType
 {
     TEXTURE_USAGE_DEFAULT,
@@ -16,7 +18,7 @@ enum class TextureUsageType
 struct TextureMap
 {
     Texture* m_Texture = nullptr;
-    TextureUsageType m_Type;
+    TextureUsageType m_Type = TextureUsageType::TEXTURE_USAGE_UNKNOWN;
 };
 
 struct Texture

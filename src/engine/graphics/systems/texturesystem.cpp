@@ -47,6 +47,13 @@ mbool TextureSystem::Init(const TextureSystemConfing& config)
 			}
 		}
 	}
+    
+    std::strncpy(reinterpret_cast<char*>(m_DefaultTexture.m_Name), SM_DEFAULT_TEXTURE_NAME, SM_TEXTURE_NAME_MAX_LENGTH);
+    m_DefaultTexture.m_HasTransparency = false;
+    m_DefaultTexture.m_Generation = SM_INVALID_ID;
+    m_DefaultTexture.m_Width = textureDimension;
+    m_DefaultTexture.m_Height = textureDimension;
+    m_DefaultTexture.m_ChannelCount = 4;
 
     if (!smRenderer().CreateTexture(pixels, &m_DefaultTexture))
     {
@@ -153,6 +160,7 @@ mbool TextureSystem::LoadTexture(mcstring textureName, Texture* texture)
 {
 #if SM_USE_MUSEUM_STB
 
+    //TODO : [SYSTEM][TEXTURE] Support dynamic file paths
     constexpr mcstring pathFormat = "../../../assets/textures/{}.{}";
     constexpr mint32 channelCount = 4;
 
@@ -172,6 +180,7 @@ mbool TextureSystem::LoadTexture(mcstring textureName, Texture* texture)
 		channelCount
     );
 
+    //Generation of default texture
     temp.m_ChannelCount = channelCount;
     if (data != nullptr)
     {
@@ -194,14 +203,11 @@ mbool TextureSystem::LoadTexture(mcstring textureName, Texture* texture)
         // Acquire internal texture resources and upload to GPU.
         Graphics::Renderer& renderer = smRenderer();
 
+        //TODO : [CRITICAL] check this shit code later!!!!
+        std::strncmp(reinterpret_cast<mcstring>(temp.m_Name), textureName, SM_TEXTURE_NAME_MAX_LENGTH);
         renderer.CreateTexture
         (
-            textureName,
-            temp.m_Width,
-            temp.m_Height,
-            temp.m_ChannelCount,
             data,
-            isTransparent,
             &temp
         );
 
@@ -226,6 +232,7 @@ mbool TextureSystem::LoadTexture(mcstring textureName, Texture* texture)
     {
         //TODO [TEXTURE] Add support for asserts messages {} or %s
         softAssert(false, "Failed to load texture", path.data(), reason);
+        stbi__err(0, 0);
     }
 #endif
     return false;

@@ -8,6 +8,7 @@
 #include <math/matrix.hpp>
 #include <math/math.hpp>
 #include <math/vector.hpp>
+#include <engine/graphics/systems/materialsystem.hpp>
 #endif
 
 BEGIN_NAMESPACE
@@ -60,7 +61,7 @@ namespace Graphics
 		if (m_RendererBackend)
 		{
 #ifdef TEST_CODE_ENABLED
-			m_RendererBackend->DestroyTexture(m_TestTexture);
+			m_RendererBackend->DestroyMaterial(m_TestMaterial);
 #endif
 			m_RendererBackend->Shutdown();
 		}
@@ -79,9 +80,13 @@ namespace Graphics
 
 				smMat4	 model = smMat4Translation(smVec3{ 0, 0, 0 });
 				GeometryData data = {};
-				data.m_ObjectID = 0; 
 				data.m_Model = model;
-				data.m_Textures[0] = m_TestTexture;
+				if (m_TestMaterial == nullptr)
+				{
+					m_TestMaterial = const_cast<Material*>(&smMaterialSystem().GetDefaultMaterial());
+				}
+
+				data.m_Material = m_TestMaterial;
 				m_RendererBackend->UpdateObject(data);
 #endif
 

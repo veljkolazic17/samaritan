@@ -32,7 +32,7 @@ struct MaterialConfig
 	muint8 m_DiffuseMapName[SM_TEXTURE_NAME_MAX_LENGTH];
 };
 
-class MaterialSystem SINGLETON(TextureSystem)
+class MaterialSystem SINGLETON(MaterialSystem)
 {
 public:
 	SINGLETON_CONSTRUCTOR(MaterialSystem)
@@ -42,12 +42,14 @@ public:
 
 	Material* Acquire(mcstring name);
 	void Release(mcstring name);
-private:
-	void DestroyMaterial(Material* material);
-	mbool LoadMaterial(const MaterialConfig & config, Material* material);
 
-	Material* AcquireFromConfig(const MaterialConfig& materialConfig);
-	mbool LoadConfigurationFile(mcstring name, MaterialConfig& config);
+	const Material& GetDefaultMaterial() { return m_DefaultMaterial; }
+private:
+	void DestroyMaterial(Material * material);
+	mbool LoadMaterial(const MaterialConfig & config, Material * material);
+
+	Material* AcquireFromConfig(const MaterialConfig & materialConfig);
+	mbool LoadConfigurationFile(mcstring name, MaterialConfig & config);
 
 	Material m_DefaultMaterial;
 
@@ -55,6 +57,6 @@ private:
 
 	std::vector<Material> m_Materials;
 	std::unordered_map<mcstring, MaterialReference> m_MaterialLookup;
-}
+};
 
 END_NAMESPACE

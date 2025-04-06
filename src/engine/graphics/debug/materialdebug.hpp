@@ -10,10 +10,10 @@
 
 BEGIN_NAMESPACE
 
-class TextureSystemDebug SINGLETON(TextureSystemDebug)
+class MaterialSystemDebug SINGLETON(MaterialSystemDebug)
 {
 public:
-	SINGLETON_CONSTRUCTOR_INIT(TextureSystemDebug)
+	SINGLETON_CONSTRUCTOR_INIT(MaterialSystemDebug)
 	void SingletonInit() override;
 
 private:

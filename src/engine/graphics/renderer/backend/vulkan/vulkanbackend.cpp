@@ -184,9 +184,6 @@ namespace Graphics
 
         UploadData(m_VulkanDevice.m_GraphicsCommandPool, 0, m_VulkanDevice.m_GraphicsQueue, &m_VertexBuffer, 0, sizeof(smVert3D) * vert_count, verts);
         UploadData(m_VulkanDevice.m_GraphicsCommandPool, 0, m_VulkanDevice.m_GraphicsQueue, &m_IndexBuffer, 0, sizeof(muint32) * indexCount, indices);
-
-        muint32 objectID = m_ObjectShader.AcquireObjectShaderResources();
-        softAssert(objectID != SM_INVALID_ID, "Failed to acquire shader resources");
 #endif
     }
 
@@ -945,6 +942,8 @@ namespace Graphics
         }
 
         texture->m_Generation++;
+
+        return true;
     }
 
     void VulkanRenderer::DestroyTexture(Texture* texture)
