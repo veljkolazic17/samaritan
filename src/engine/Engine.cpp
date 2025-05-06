@@ -10,6 +10,10 @@
 #include <engine/memory/containers/singleframeallocator.hpp>
 #include <engine/graphics/systems/texturesystem.hpp>
 #include <engine/graphics/systems/materialsystem.hpp>
+#if HACKS_ENABLED
+#include <engine/threads/iupdatable.hpp>
+#endif
+
 
 #ifdef SM_TOOL
 #include <engine/camera/tool/toolcamerainputhandler.hpp>
@@ -159,9 +163,25 @@ BEGIN_NAMESPACE
 
 	void Engine::LoopPostProcess(void)
 	{
-
+#if HACKS_ENABLED
+		UpdateSingleThreaded();
+#endif
 	}
 
+#if HACKS_ENABLED
+	void Engine::RegisterForSingleThreadedUpdate(IUpdatable* updatable)
+	{
+		m_SingleThreadedUpdatables.push_back(updatable);
+	}
+
+	void Engine::UpdateSingleThreaded()
+	{
+		for (IUpdatable* updatable : m_SingleThreadedUpdatables)
+		{
+			updatable->UpdateSingleThreaded();
+		}
+	}
+#endif
 }
 
 END_NAMESPACE

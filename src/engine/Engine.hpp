@@ -4,9 +4,9 @@
 #include <engine/graphics/renderer/renderertype.inl>
 #include <engine/events/eventhandlerwrapper.hpp>
 #include <engine/graphics/events/windowevents.hpp>
-
 #include <objecttemplates/singleton.hpp>
 #include <objecttemplates/shutdownable.hpp>
+#include <vector>
 
 // Why am I doing this???
 #define ENGINE_RUN()			SetEngineState(EngineState::RUNNING);
@@ -21,6 +21,8 @@
 
 BEGIN_NAMESPACE
 
+class IUpdatable;
+
 namespace Engine
 {
 	enum class EngineState
@@ -29,7 +31,7 @@ namespace Engine
 		RUNNING,
 		SUSPENDED,
 		CLEANUP,
-		SIZE = 4
+		SIZE
 	};
 
 	class Engine SINGLETON(Engine), public Shutdownable
@@ -50,8 +52,16 @@ namespace Engine
 		void LoopPostProcess(void);
 
 		SM_INLINE const Graphics::Window* const GetWindow() { return m_Window; }
+#if HACKS_ENABLED
+		void RegisterForSingleThreadedUpdate(IUpdatable* updatable);
+#endif
 	private:
 		void LoopPreProcessPlatformImpl(void);
+
+#if HACKS_ENABLED
+		void UpdateSingleThreaded();
+		std::vector<IUpdatable*> m_SingleThreadedUpdatables;
+#endif
 
 		EngineState m_EngineState = EngineState::PENDING;
 		Graphics::Window* m_Window = nullptr;
