@@ -145,11 +145,21 @@ mbool MaterialSystem::LoadConfigurationFile(mcstring name, MaterialConfig& confi
 		LogError(LogChannel::Graphics, "Cannot opet material file!");
 		return false;
 	}
+
 	nlohmann::json data = nlohmann::json::parse(f);
 
-	std::strncpy(reinterpret_cast<char*>(config.m_Name), data[1].template get<std::string>().data(), SM_MATERIAL_NAME_MAX_LENGTH);
-	config.m_DiffuseColor = smVec4::StringToVec4(data[2]);
-	std::strncpy(reinterpret_cast<char*>(config.m_DiffuseMapName), data[3].template get<std::string>().data(), SM_TEXTURE_NAME_MAX_LENGTH);
+    if (data.size() != 4)
+    {
+        LogError(LogChannel::Graphics, "Material file has wrong format!");
+        return false;
+    }
+
+	const std::string& jname = data["name"].template get<std::string>();
+    const std::string& jdiffuseMapName = data["diffusemapname"].template get<std::string>();
+
+	std::strncpy(reinterpret_cast<char*>(config.m_Name), jname.data(), SM_MATERIAL_NAME_MAX_LENGTH);
+	std::strncpy(reinterpret_cast<char*>(config.m_DiffuseMapName), jdiffuseMapName.data(), SM_TEXTURE_NAME_MAX_LENGTH);
+	config.m_DiffuseColor = smVec4::StringToVec4(data["diffusecolor"]);
 
 	return true;
 }
