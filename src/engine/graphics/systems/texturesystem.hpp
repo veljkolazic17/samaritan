@@ -32,12 +32,12 @@ public:
 	mbool Init(const TextureSystemConfing& config);
 	void Shutdown();
 
-	Texture* Acquire(mcstring name, mbool shouldAutoRelease);
-	void Release(mcstring name);
+	Texture* Acquire(const mstring& name, mbool shouldAutoRelease);
+	void Release(const mstring& name);
 
 	SM_INLINE Texture& GetDefaultTexture() { return m_DefaultTexture; }
 private:
-	mbool LoadTexture(mcstring textureName, Texture * texture);
+	mbool LoadTexture(const mstring& textureName, Texture * texture);
 
 private:
 	Texture m_DefaultTexture;
@@ -46,7 +46,7 @@ private:
 
 	//TODO : [FUCKED][GRAPHICS] Do not save textures like this
 	std::vector<Texture> m_Textures;
-	std::unordered_map<mcstring, TextureReference> m_TextureLookup;
+	std::unordered_map<mstring, TextureReference> m_TextureLookup;
 };
 
 END_NAMESPACE

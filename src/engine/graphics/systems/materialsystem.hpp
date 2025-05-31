@@ -40,8 +40,8 @@ public:
 	mbool Init(const MaterialSystemConfig & config);
 	void Shutdown();
 
-	Material* Acquire(mcstring name);
-	void Release(mcstring name);
+	Material* Acquire(const mstring& name);
+	void Release(const mstring& name);
 
 	const Material& GetDefaultMaterial() { return m_DefaultMaterial; }
 private:
@@ -56,7 +56,7 @@ private:
 	MaterialSystemConfig m_Config;
 
 	std::vector<Material> m_Materials;
-	std::unordered_map<mcstring, MaterialReference> m_MaterialLookup;
+	std::unordered_map<mstring, MaterialReference> m_MaterialLookup;
 };
 
 END_NAMESPACE

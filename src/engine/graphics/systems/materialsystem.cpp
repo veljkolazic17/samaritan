@@ -48,10 +48,10 @@ void MaterialSystem::Shutdown()
 	}
 }
 
-Material* MaterialSystem::Acquire(mcstring name)
+Material* MaterialSystem::Acquire(const mstring& name)
 {
 	MaterialConfig materialConfig;
-	if (LoadConfigurationFile(name, materialConfig))
+	if (LoadConfigurationFile(name.data(), materialConfig))
 	{
 		return AcquireFromConfig(materialConfig);
 	}
@@ -65,7 +65,7 @@ Material* MaterialSystem::AcquireFromConfig(const MaterialConfig& materialConfig
 		return &m_DefaultMaterial;
 	}
 
-	MaterialReference& reference = m_MaterialLookup[reinterpret_cast<mcstring>(materialConfig.m_Name)];
+	MaterialReference& reference = m_MaterialLookup[std::string(reinterpret_cast<mcstring>(materialConfig.m_Name))];
 
 	if (reference.m_RefCount == 0)
 	{
@@ -107,9 +107,9 @@ Material* MaterialSystem::AcquireFromConfig(const MaterialConfig& materialConfig
 	return nullptr;
 }
 
-void MaterialSystem::Release(mcstring name)
+void MaterialSystem::Release(const mstring& name)
 {
-	if (!std::strcmp(name, SM_DEFAULT_MATERIAL_NAME))
+	if (!std::strcmp(name.data(), SM_DEFAULT_MATERIAL_NAME))
 	{
 		softAssert(false, "Trying to release default material!");
 	}

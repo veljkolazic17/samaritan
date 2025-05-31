@@ -76,9 +76,9 @@ void TextureSystem::Shutdown()
 	}
 }
 
-Texture* TextureSystem::Acquire(mcstring name, mbool shouldAutoRelease)
+Texture* TextureSystem::Acquire(const mstring& name, mbool shouldAutoRelease)
 {
-    if (!std::strcmp(name, SM_DEFAULT_TEXTURE_NAME))
+    if (!std::strcmp(name.data(), SM_DEFAULT_TEXTURE_NAME))
     {
         softAssert(false, "Trying to acquire default texture!");
         return &m_DefaultTexture;
@@ -125,9 +125,9 @@ Texture* TextureSystem::Acquire(mcstring name, mbool shouldAutoRelease)
     return &m_Textures[reference.m_Handle];
 }
 
-void TextureSystem::Release(mcstring name)
+void TextureSystem::Release(const mstring& name)
 {
-    if (!std::strcmp(name, SM_DEFAULT_TEXTURE_NAME))
+    if (!std::strcmp(name.data(), SM_DEFAULT_TEXTURE_NAME))
     {
         softAssert(false, "Trying to release default texture!");
     }
@@ -156,7 +156,7 @@ void TextureSystem::Release(mcstring name)
     }
 }
 
-mbool TextureSystem::LoadTexture(mcstring textureName, Texture* texture)
+mbool TextureSystem::LoadTexture(const mstring& textureName, Texture* texture)
 {
 #if SM_USE_MUSEUM_STB
 
@@ -168,7 +168,7 @@ mbool TextureSystem::LoadTexture(mcstring textureName, Texture* texture)
     char full_file_path[512];
 
     //TODO : [SYSTEM][TEXUTRE] Support multiple formats
-    std::string path = std::format(pathFormat, textureName, "png");
+    std::string path = std::format(pathFormat, textureName.data(), "png");
 
     Texture temp;
     muint8* data = stbi_load
@@ -204,7 +204,7 @@ mbool TextureSystem::LoadTexture(mcstring textureName, Texture* texture)
         Graphics::Renderer& renderer = smRenderer();
 
         //TODO : [CRITICAL] check this shit code later!!!!
-        std::strncmp(reinterpret_cast<mcstring>(temp.m_Name), textureName, SM_TEXTURE_NAME_MAX_LENGTH);
+        std::strncmp(reinterpret_cast<mcstring>(temp.m_Name), textureName.data(), SM_TEXTURE_NAME_MAX_LENGTH);
         renderer.CreateTexture
         (
             data,

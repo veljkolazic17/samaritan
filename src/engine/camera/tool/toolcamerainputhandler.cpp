@@ -43,10 +43,14 @@ void ToolCameraInputHandler::UpdateSingleThreaded()
 
 	Graphics::Renderer& renderer = smRenderer();
 
+	mbool needUpdate = false;
+
 	for (const auto& [key, isPressed] : m_KeyStates)
 	{
 		if (isPressed)
 		{
+            needUpdate = true;
+
 			switch (key)
 			{
 			case Input::Key::KEY_W:
@@ -89,24 +93,23 @@ void ToolCameraInputHandler::UpdateSingleThreaded()
 				camera.ChangeYaw(-1.0f * deltaTime);
 				break;
 			}
-			default:
-			{
-				return;
-			}
 			}
 		}
 	}
 
-	moveVec.Normalize();
-	smVec3& cameraPosition = camera.GetCameraPosition();
-	mfloat32 move = deltaTime * moveSpeed;
-	cameraPosition.m_X += moveVec.m_X * move;
-	cameraPosition.m_Y += moveVec.m_Y * move;
-	cameraPosition.m_Z += moveVec.m_Z * move;
-	camera.SetIsViewDirty(true);
+    if (needUpdate)
+    {
+		moveVec.Normalize();
+		smVec3& cameraPosition = camera.GetCameraPosition();
+		mfloat32 move = deltaTime * moveSpeed;
+		cameraPosition.m_X += moveVec.m_X * move;
+		cameraPosition.m_Y += moveVec.m_Y * move;
+		cameraPosition.m_Z += moveVec.m_Z * move;
+		camera.SetIsViewDirty(true);
 
-	camera.CalculateNewView();
-	renderer.SetView(camera.GetCameraView());
+		camera.CalculateNewView();
+		renderer.SetView(camera.GetCameraView());
+    }
 }
 #endif
 
