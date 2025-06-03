@@ -17,10 +17,10 @@ namespace Memory
         SingleFrameAllocator() {};
         ~SingleFrameAllocator() {}
     public:
-        void* Allocate(muint64 size);
+        void* Allocate(smuint64 size);
         void  Clear(void);
 
-        static constexpr muint32 SINGLE_FRAME_ALLOCATOR_SIZE = 65536;
+        static constexpr smuint32 SINGLE_FRAME_ALLOCATOR_SIZE = 65536;
     private:
         //StackAllocator m_StackAllocator;
 	};

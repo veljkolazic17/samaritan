@@ -25,7 +25,7 @@ namespace Engine
 		void Stop();
 
 	private:
-		mfloat64 m_Frequency = 0;
+		smfloat64 m_Frequency = 0;
 		Time m_StartTime = 0;
 		Time m_Elapsed = 0;
 	};

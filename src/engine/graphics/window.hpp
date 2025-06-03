@@ -26,7 +26,7 @@ namespace Graphics
 	class Window : public Shutdownable
 	{
 	public:
-		Window(muint64 width, muint64 height, muint64 x, muint64 y, mcstring windowName)
+		Window(smuint64 width, smuint64 height, smuint64 x, smuint64 y, smcstring windowName)
 			: m_Width(width),
 			m_Height(height),
 			m_X(x),
@@ -34,11 +34,11 @@ namespace Graphics
 			m_WindowName(windowName){}
 		Window(){}
 
-		SM_INLINE muint64 GetWidth() { return m_Width; }
-		SM_INLINE muint64 GetHeight() { return m_Height; }
+		SM_INLINE smuint64 GetWidth() { return m_Width; }
+		SM_INLINE smuint64 GetHeight() { return m_Height; }
 
-		SM_INLINE void SetWidth(muint64 width) { m_Width = width; }
-		SM_INLINE void SetHeight(muint64 height) { m_Height = height; }
+		SM_INLINE void SetWidth(smuint64 width) { m_Width = width; }
+		SM_INLINE void SetHeight(smuint64 height) { m_Height = height; }
 
 		void Init() override;
 		void Shutdown() override;
@@ -46,11 +46,11 @@ namespace Graphics
 		SM_INLINE const WindowState* const GetWindowState() const { return m_WindowState; }
 
 	private:
-		muint64 m_Width = 0;
-		muint64 m_Height = 0;
-		muint64 m_X = 0;
-		muint64 m_Y = 0;
-		mcstring m_WindowName = nullptr;
+		smuint64 m_Width = 0;
+		smuint64 m_Height = 0;
+		smuint64 m_X = 0;
+		smuint64 m_Y = 0;
+		smcstring m_WindowName = nullptr;
 		WindowState* m_WindowState = nullptr;
 	};
 }

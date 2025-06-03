@@ -1,7 +1,9 @@
 #ifdef DEBUG
-#include <engine/graphics/debug/materialdebug.hpp>
 #include <engine/events/eventmanager.hpp>
+#include <engine/input/input.hpp>
+#include <engine/graphics/debug/materialdebug.hpp>
 #include <engine/graphics/systems/materialsystem.hpp>
+#include <utils/logger/log.hpp>
 #ifdef TEST_CODE_ENABLED
 #include <engine/graphics/renderer/frontend/rendererfrontend.hpp>
 #endif
@@ -18,7 +20,9 @@ void MaterialSystemDebug::SingletonInit()
 
 void MaterialSystemDebug::HandleOnKeyboardInputPressedEvent(const Input::KeyboardInputPressedEvent& event)
 {
-	mcstring testTextureName = nullptr;
+	smcstring testTextureName = nullptr;
+
+	LogDebug(LogChannel::Graphics, "Button pressed %s", Input::KeyToShortString(event.m_Key));
 
 	switch (event.m_Key)
 	{

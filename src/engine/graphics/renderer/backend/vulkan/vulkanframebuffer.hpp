@@ -20,13 +20,13 @@ namespace Graphics
 		
 		SM_INLINE VkFramebuffer GetHandle() { return m_Handle; }
 
-		void Init(const VulkanCreateArguments& arguments, VulkanRenderpass* renderpass, muint32 width, muint32 height, muint32 attachmentCount, const VkImageView attachments[]);
+		void Init(const VulkanCreateArguments& arguments, VulkanRenderpass* renderpass, smuint32 width, smuint32 height, smuint32 attachmentCount, const VkImageView attachments[]);
 		void Shutdown(const VulkanCreateArguments& arguments);
 	private:
 		std::vector<VkImageView> m_Attachments;
 		const VulkanRenderpass* m_Renderpass;
 		VkFramebuffer m_Handle;
-		muint32 m_AttachmentCount;
+		smuint32 m_AttachmentCount;
 	};
 }
 

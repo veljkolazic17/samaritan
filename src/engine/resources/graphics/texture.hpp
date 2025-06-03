@@ -23,13 +23,13 @@ struct TextureMap
 
 struct Texture
 {
-    muint8 m_Name[SM_TEXTURE_NAME_MAX_LENGTH];
-    muint32 m_ID = SM_INVALID_ID;
-    muint32 m_Width = 0;
-    muint32 m_Height = 0;
-    muint32 m_ChannelCount = 0;
-    mbool m_HasTransparency = false;
-    muint32 m_Generation = SM_INVALID_ID;
+    smuint8 m_Name[SM_TEXTURE_NAME_MAX_LENGTH];
+    smuint32 m_ID = SM_INVALID_ID;
+    smuint32 m_Width = 0;
+    smuint32 m_Height = 0;
+    smuint32 m_ChannelCount = 0;
+    smbool m_HasTransparency = false;
+    smuint32 m_Generation = SM_INVALID_ID;
     void* m_Data = nullptr;
 };
 

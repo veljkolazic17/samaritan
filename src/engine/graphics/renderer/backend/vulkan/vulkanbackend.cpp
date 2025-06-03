@@ -73,14 +73,14 @@ namespace Graphics
         std::vector<const char*> layers;
         layers.emplace_back("VK_LAYER_KHRONOS_validation");
 
-        muint32 availableLayerCount = 0;
+        smuint32 availableLayerCount = 0;
         VulkanCheckResult(vkEnumerateInstanceLayerProperties(&availableLayerCount, 0), "Error enumerating layer properties");
         std::vector<VkLayerProperties> availableLayers(availableLayerCount);
         VulkanCheckResult(vkEnumerateInstanceLayerProperties(&availableLayerCount, availableLayers.data()), "Error enumerating layer properties");
 
         for (const char* requiredLayerName : layers)
         {
-            mbool isLayerPresent = false;
+            smbool isLayerPresent = false;
             for (const VkLayerProperties& layerProperties : availableLayers)
             {
                 if (std::strcmp(requiredLayerName, layerProperties.layerName))
@@ -104,7 +104,7 @@ namespace Graphics
 
 
 #ifdef DEBUG
-        muint32 logTypes = VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT;
+        smuint32 logTypes = VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT;
 
         VkDebugUtilsMessengerCreateInfoEXT debugCreateInfo = { VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT };
         debugCreateInfo.messageSeverity = logTypes;
@@ -131,7 +131,7 @@ namespace Graphics
 
         m_MainRenderPass.Create
         (
-            smVec4(0.0f, 0.0f, static_cast<mfloat32>(m_VulkanDevice.m_FrameBufferWidth), static_cast<mfloat32>(m_VulkanDevice.m_FrameBufferHeight)),
+            smVec4(0.0f, 0.0f, static_cast<smfloat32>(m_VulkanDevice.m_FrameBufferWidth), static_cast<smfloat32>(m_VulkanDevice.m_FrameBufferHeight)),
             smVec4(0.5f, 0.5f, 0.5f, 1.0f),
             1.f,
             0.f
@@ -151,13 +151,13 @@ namespace Graphics
         CreateBuffers();
 
 #ifdef TEST_CODE_ENABLED
-        const muint32 vert_count = 4;
+        const smuint32 vert_count = 4;
         smVert3D verts[vert_count];
         smZero(verts, sizeof(smVert3D) * vert_count);
 
-        constexpr muint32 f = 10;
+        constexpr smuint32 f = 10;
 
-        constexpr muint32 z = 0.0f;
+        constexpr smuint32 z = 0.0f;
 
         verts[0].m_Position.m_X = -0.5 * f;
         verts[0].m_Position.m_Y = -0.5 * f;
@@ -179,11 +179,11 @@ namespace Graphics
         verts[3].m_TextureCoordinates.m_X = 1.0f;
         verts[3].m_TextureCoordinates.m_Y = 0.0f;
 
-        constexpr muint32 indexCount = 6;
-        muint32 indices[indexCount] = { 0, 1, 2, 0, 3, 1 };
+        constexpr smuint32 indexCount = 6;
+        smuint32 indices[indexCount] = { 0, 1, 2, 0, 3, 1 };
 
         UploadData(m_VulkanDevice.m_GraphicsCommandPool, 0, m_VulkanDevice.m_GraphicsQueue, &m_VertexBuffer, 0, sizeof(smVert3D) * vert_count, verts);
-        UploadData(m_VulkanDevice.m_GraphicsCommandPool, 0, m_VulkanDevice.m_GraphicsQueue, &m_IndexBuffer, 0, sizeof(muint32) * indexCount, indices);
+        UploadData(m_VulkanDevice.m_GraphicsCommandPool, 0, m_VulkanDevice.m_GraphicsQueue, &m_IndexBuffer, 0, sizeof(smuint32) * indexCount, indices);
 #endif
     }
 
@@ -219,7 +219,7 @@ namespace Graphics
         LogInfo(LogChannel::Graphics, "Vulkan instance destroyed!");
     }
 
-    mbool VulkanRenderer::CheckDeviceRequerments
+    smbool VulkanRenderer::CheckDeviceRequerments
     (
         const VkPhysicalDevice& device,
         const VkPhysicalDeviceProperties& properties,
@@ -232,17 +232,17 @@ namespace Graphics
             hardAssert(false, "Supporting only descrete GPUs");
         }
 
-        muint32 queuesFamilyCount = 0;
+        smuint32 queuesFamilyCount = 0;
         vkGetPhysicalDeviceQueueFamilyProperties(device, &queuesFamilyCount, 0);
         std::vector<VkQueueFamilyProperties> queuesFamily(queuesFamilyCount);
         vkGetPhysicalDeviceQueueFamilyProperties(device, &queuesFamilyCount, queuesFamily.data());
 
-        muint8 minimumTransferScore = 255;
+        smuint8 minimumTransferScore = 255;
 
-        muint8 indexCounter = 0;
+        smuint8 indexCounter = 0;
         for (const VkQueueFamilyProperties& familyProperties : queuesFamily)
         {
-            muint8 transferScore = 0;
+            smuint8 transferScore = 0;
 
             // Graphics queue?
             if (familyProperties.queueFlags & VK_QUEUE_GRAPHICS_BIT)
@@ -303,7 +303,7 @@ namespace Graphics
             // Check device extensions
             if (requirements.m_DeviceExtensions.size() > 0)
             {
-                muint32 extensionCount = 0;
+                smuint32 extensionCount = 0;
                 VulkanCheckResult(vkEnumerateDeviceExtensionProperties(device, 0, &extensionCount, 0), "Error getting extension count!");
 
                 if (extensionCount > 0)
@@ -314,7 +314,7 @@ namespace Graphics
 
                     for (const char* extensionName : requirements.m_DeviceExtensions)
                     {
-                        mbool isFound = false;;
+                        smbool isFound = false;;
                         for (const VkExtensionProperties& extensionProperties : extensions)
                         {
                             if (std::strcmp(extensionName, extensionProperties.extensionName))
@@ -346,8 +346,8 @@ namespace Graphics
 
     void VulkanRenderer::SelectVPD()
     {
-        muint32 deviceCount = 0;
-        mbool deviceSelected = false;
+        smuint32 deviceCount = 0;
+        smbool deviceSelected = false;
 
         VulkanCheckResult(vkEnumeratePhysicalDevices(m_Instance, &deviceCount, 0), "Error getting device number!");
         if (deviceCount == 0)
@@ -394,14 +394,14 @@ namespace Graphics
 
     void VulkanRenderer::CreateVLD()
     {
-        muint32 graphicsQueueIndex = m_VulkanDevice.m_QueuesInfo.m_GraphicsIndex;
-        muint32 presentQueueIndex = m_VulkanDevice.m_QueuesInfo.m_PresentIndex;
-        muint32 transferQueueIndex = m_VulkanDevice.m_QueuesInfo.m_TransferIndex;
+        smuint32 graphicsQueueIndex = m_VulkanDevice.m_QueuesInfo.m_GraphicsIndex;
+        smuint32 presentQueueIndex = m_VulkanDevice.m_QueuesInfo.m_PresentIndex;
+        smuint32 transferQueueIndex = m_VulkanDevice.m_QueuesInfo.m_TransferIndex;
 
-        std::set<muint32> queueIndecies = { graphicsQueueIndex, presentQueueIndex, transferQueueIndex };
+        std::set<smuint32> queueIndecies = { graphicsQueueIndex, presentQueueIndex, transferQueueIndex };
         
         std::vector<VkDeviceQueueCreateInfo> queueCreateInfos;
-        for (muint32 queueIndex : queueIndecies) 
+        for (smuint32 queueIndex : queueIndecies) 
         {
             VkDeviceQueueCreateInfo queueCreateInfo;
 
@@ -418,7 +418,7 @@ namespace Graphics
             queueCreateInfo.pNext = 0;
 
             //TODO : This may not work
-            mfloat32 queuePriority = 1.0f;
+            smfloat32 queuePriority = 1.0f;
             queueCreateInfo.pQueuePriorities = &queuePriority;
 
             queueCreateInfos.emplace_back(queueCreateInfo);
@@ -484,7 +484,7 @@ namespace Graphics
 
     void VulkanRenderer::CreateCommandBuffers()
     {
-        constexpr mbool isPrimary = true;
+        constexpr smbool isPrimary = true;
 
         if(m_GraphicsCommandBuffers.size() == 0)
         {
@@ -529,13 +529,13 @@ namespace Graphics
     {
         // We want to create signaled because our application will wait for fence first time it is created
         // so we just marked it as "rendered"
-        constexpr mbool isSignaled = true;
+        constexpr smbool isSignaled = true;
 
         m_ImageAvailableSemaphores.resize(SM_MAX_FRAMES_IN_FLIGHT);
         m_RenderFinishedSemaphores.resize(SM_MAX_FRAMES_IN_FLIGHT);
         m_InFlightFences.reserve(SM_MAX_FRAMES_IN_FLIGHT);
 
-        for (muint8 index = 0; index < SM_MAX_FRAMES_IN_FLIGHT; ++index)
+        for (smuint8 index = 0; index < SM_MAX_FRAMES_IN_FLIGHT; ++index)
         {
             VkSemaphoreCreateInfo semaphoreCreateInfo = { VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO };
             VulkanCheckResult(vkCreateSemaphore(m_VulkanDevice.m_LogicalDevice, &semaphoreCreateInfo, m_Allocator, &m_ImageAvailableSemaphores[index]), "Cannot create vksemaphore!");
@@ -551,7 +551,7 @@ namespace Graphics
 
     void VulkanRenderer::DestroySyncObjects()
     {
-        for (muint8 index = 0; index < SM_MAX_FRAMES_IN_FLIGHT; ++index)
+        for (smuint8 index = 0; index < SM_MAX_FRAMES_IN_FLIGHT; ++index)
         {
             vkDestroySemaphore(m_VulkanDevice.m_LogicalDevice, m_ImageAvailableSemaphores[index], m_Allocator);
             vkDestroySemaphore(m_VulkanDevice.m_LogicalDevice, m_RenderFinishedSemaphores[index], m_Allocator);
@@ -571,18 +571,18 @@ namespace Graphics
         LogInfo(LogChannel::Graphics, "Destroying command pools.");
     }
 
-	void VulkanRenderer::Resize(muint32 width, muint32 height)
+	void VulkanRenderer::Resize(smuint32 width, smuint32 height)
 	{
         m_VulkanDevice.m_FrameBufferWidth = width;
         m_VulkanDevice.m_FrameBufferHeight = height;
         ++m_FrameBuffferGeneration;
 	}
 
-	mbool VulkanRenderer::BeginFrame(Time time)
+	smbool VulkanRenderer::BeginFrame(Time time)
 	{
-        constexpr mbool isSingleUse = false;
-        constexpr mbool isRenderpassContinue = false;
-        constexpr mbool isSimultaneousUse = false;
+        constexpr smbool isSingleUse = false;
+        constexpr smbool isRenderpassContinue = false;
+        constexpr smbool isSimultaneousUse = false;
 
         // Check if recreating swapchain
         if (m_IsRecreatingSwapchain) 
@@ -639,9 +639,9 @@ namespace Graphics
 
         VkViewport viewport;
         viewport.x = 0.0f;
-        viewport.y = static_cast<mfloat32>(m_VulkanDevice.m_FrameBufferHeight);
-        viewport.width = static_cast<mfloat32>(m_VulkanDevice.m_FrameBufferWidth);
-        viewport.height = -static_cast<mfloat32>(m_VulkanDevice.m_FrameBufferHeight);
+        viewport.y = static_cast<smfloat32>(m_VulkanDevice.m_FrameBufferHeight);
+        viewport.width = static_cast<smfloat32>(m_VulkanDevice.m_FrameBufferWidth);
+        viewport.height = -static_cast<smfloat32>(m_VulkanDevice.m_FrameBufferHeight);
         viewport.minDepth = 0.0f;
         viewport.maxDepth = 1.0f;
 
@@ -655,16 +655,16 @@ namespace Graphics
         vkCmdSetScissor(commandBuffer.GetHandle(), 0, 1, &scissor);
 
 
-        smVec4 renderArea = smVec4{0.0f, 0.0f, static_cast<mfloat32>(m_VulkanDevice.m_FrameBufferWidth), static_cast<mfloat32>(m_VulkanDevice.m_FrameBufferHeight)};
+        smVec4 renderArea = smVec4{0.0f, 0.0f, static_cast<smfloat32>(m_VulkanDevice.m_FrameBufferWidth), static_cast<smfloat32>(m_VulkanDevice.m_FrameBufferHeight)};
 
         m_MainRenderPass.Begin(renderArea, commandBuffer, m_SwapChain.GetFrameBuffers()[m_ImageIndex].GetHandle());
 
         return true;
 	}
 
-    mbool VulkanRenderer::EndFrame(Time time)
+    smbool VulkanRenderer::EndFrame(Time time)
     {
-        constexpr muint32 submitCount = 1;
+        constexpr smuint32 submitCount = 1;
 
         VulkanCommandBuffer& commandBuffer = m_GraphicsCommandBuffers[m_ImageIndex];
 
@@ -721,7 +721,7 @@ namespace Graphics
         return true;
     }
 
-    mbool VulkanRenderer::RecreateSwapchain()
+    smbool VulkanRenderer::RecreateSwapchain()
     {
         // If already being recreated, do not try again.
         if (m_IsRecreatingSwapchain) 
@@ -783,11 +783,11 @@ namespace Graphics
     {
         VkMemoryPropertyFlagBits memoryPropertyFlags = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT;
 
-        const muint64 vertexBufferSize = sizeof(smVert3D) * 1024 * 1024;
+        const smuint64 vertexBufferSize = sizeof(smVert3D) * 1024 * 1024;
         m_VertexBuffer.Create(vertexBufferSize, (VkBufferUsageFlagBits)(VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_TRANSFER_SRC_BIT), memoryPropertyFlags,true);
         m_GeometryVertexOffset = 0;
 
-        const muint64 indexBufferSize = sizeof(muint32) * 1024 * 1024;
+        const smuint64 indexBufferSize = sizeof(smuint32) * 1024 * 1024;
         m_IndexBuffer.Create(indexBufferSize, (VkBufferUsageFlagBits)(VK_BUFFER_USAGE_INDEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_TRANSFER_SRC_BIT), memoryPropertyFlags, true);
         m_GeometryIndexOffset = 0;
 
@@ -800,7 +800,7 @@ namespace Graphics
         m_VertexBuffer.Destroy();
     }
 
-    void VulkanRenderer::UploadData(VkCommandPool pool, VkFence fence, VkQueue queue, VulkanBuffer* buffer, muint64 offset, muint64 size, void* data)
+    void VulkanRenderer::UploadData(VkCommandPool pool, VkFence fence, VkQueue queue, VulkanBuffer* buffer, smuint64 offset, smuint64 size, void* data)
     {
         // Create a host-visible staging buffer to upload to. Mark it as the source of the transfer.
         VkBufferUsageFlags flags = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT;
@@ -815,7 +815,7 @@ namespace Graphics
         staging.Destroy();
     }
 
-    void VulkanRenderer::UpdateGlobalState(smMat4 projection, smMat4 view, smVec3 viewPosition, smVec4 ambientColor, mint32 mode)
+    void VulkanRenderer::UpdateGlobalState(smMat4 projection, smMat4 view, smVec3 viewPosition, smVec4 ambientColor, smint32 mode)
     {
         VulkanCommandBuffer* commandBuffer = &g_VulkanRenderer->GetGraphicsCommandBuffers()[g_VulkanRenderer->GetImageIndex()];
 
@@ -848,7 +848,7 @@ namespace Graphics
 #endif
     }
 
-    mbool VulkanRenderer::CreateTexture(const muint8* pixels, Texture* texture)
+    smbool VulkanRenderer::CreateTexture(const smuint8* pixels, Texture* texture)
     {
         // TODO: [GRAPHICS][ALLOCATION] use allocators
         texture->m_Data = gpAllocTexture(sizeof(VulkanTextureData));
@@ -867,12 +867,12 @@ namespace Graphics
         VulkanBuffer stagingBuffer;
         stagingBuffer.Create(imageSize, usage, memoryPropertyFlags, true);
 
-        stagingBuffer.LoadData(0, imageSize, 0, const_cast<muint8*>(pixels));
+        stagingBuffer.LoadData(0, imageSize, 0, const_cast<smuint8*>(pixels));
 
         // NOTE: Lots of assumptions here, different texture types will require
         // different options here.
 
-        constexpr mbool shouldCreateView = true;
+        constexpr smbool shouldCreateView = true;
 
         VulkanImage* image = &data->m_Image;
 
@@ -948,10 +948,10 @@ namespace Graphics
 
     void VulkanRenderer::DestroyTexture(Texture* texture)
     {
-        //TODO : [GRAPHICS][TEXTURE] Check this asap
         if (texture == nullptr || texture->m_ID == SM_INVALID_ID)
         {
-            softAssert(false, "Invalid texture (nullptr or invalid id)");
+            //TODO : [GRAPHICS][TEXTURE] Maybe do this check before every call of DestroyTexture
+            //softAssert(false, "Invalid texture");
             return;
         }
 
@@ -968,7 +968,7 @@ namespace Graphics
         texture->m_Generation = SM_INVALID_ID;
     }
 
-    mbool VulkanRenderer::CreateMaterial(Material* material)
+    smbool VulkanRenderer::CreateMaterial(Material* material)
     {
         if (material == nullptr)
         {

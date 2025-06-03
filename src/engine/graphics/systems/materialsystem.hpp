@@ -14,22 +14,22 @@ BEGIN_NAMESPACE
 //TODO : [GRAPHICS] Make reference system for whole engine
 struct MaterialReference
 {
-	muint64 m_RefCount = 0;
-	muint32 m_Handle = SM_INVALID_ID;
-	mbool m_ShouldAutoRelease = false;
+	smuint64 m_RefCount = 0;
+	smuint32 m_Handle = SM_INVALID_ID;
+	smbool m_ShouldAutoRelease = false;
 };
 
 struct MaterialSystemConfig
 {
-	muint32 m_MaxMaterialCount;
+	smuint32 m_MaxMaterialCount;
 };
 
 struct MaterialConfig
 {
-	muint8 m_Name[SM_MATERIAL_NAME_MAX_LENGTH];
-	mbool m_ShouldAutoRelease = false;
+	smuint8 m_Name[SM_MATERIAL_NAME_MAX_LENGTH];
+	smbool m_ShouldAutoRelease = false;
 	smVec4 m_DiffuseColor;
-	muint8 m_DiffuseMapName[SM_TEXTURE_NAME_MAX_LENGTH];
+	smuint8 m_DiffuseMapName[SM_TEXTURE_NAME_MAX_LENGTH];
 };
 
 class MaterialSystem SINGLETON(MaterialSystem)
@@ -37,26 +37,26 @@ class MaterialSystem SINGLETON(MaterialSystem)
 public:
 	SINGLETON_CONSTRUCTOR(MaterialSystem)
 
-	mbool Init(const MaterialSystemConfig & config);
+	smbool Init(const MaterialSystemConfig & config);
 	void Shutdown();
 
-	Material* Acquire(const mstring& name);
-	void Release(const mstring& name);
+	Material* Acquire(const smstring& name);
+	void Release(const smstring& name);
 
 	const Material& GetDefaultMaterial() { return m_DefaultMaterial; }
 private:
 	void DestroyMaterial(Material * material);
-	mbool LoadMaterial(const MaterialConfig & config, Material * material);
+	smbool LoadMaterial(const MaterialConfig & config, Material * material);
 
 	Material* AcquireFromConfig(const MaterialConfig & materialConfig);
-	mbool LoadConfigurationFile(mcstring name, MaterialConfig & config);
+	smbool LoadConfigurationFile(smcstring name, MaterialConfig & config);
 
 	Material m_DefaultMaterial;
 
 	MaterialSystemConfig m_Config;
 
 	std::vector<Material> m_Materials;
-	std::unordered_map<mstring, MaterialReference> m_MaterialLookup;
+	std::unordered_map<smstring, MaterialReference> m_MaterialLookup;
 };
 
 END_NAMESPACE

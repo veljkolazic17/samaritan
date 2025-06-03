@@ -17,30 +17,30 @@ namespace Input
 		void Init() override;
 		void Shutdown() override;
 
-		void Update(mfloat64 deltaTime);
+		void Update(smfloat64 deltaTime);
 
 		//Keyboard
-		void ProcessKey(Key key, mbool isPressed);
-		mbool IsKeyUp(Key key);
-		mbool IsKeyDown(Key key);
-		mbool WasKeyUp(Key key);
-		mbool WasKeyDown(Key key);
+		void ProcessKey(Key key, smbool isPressed);
+		smbool IsKeyUp(Key key);
+		smbool IsKeyDown(Key key);
+		smbool WasKeyUp(Key key);
+		smbool WasKeyDown(Key key);
 		
 		//Mouse
-		void ProcessMouseButton(MouseButton button, mbool isPressed);
-		void ProcessMouseMovement(mint16 x, mint16 y);
-		void ProcessMouseWheel(mint16 deltaMove);
-		mbool IsMouseButtonUp(MouseButton button);
-		mbool IsMouseButtonDown(MouseButton button);
-		mbool WasMouseButtonUp(MouseButton button);
-		mbool WasMouseButtonDown(MouseButton button);
+		void ProcessMouseButton(MouseButton button, smbool isPressed);
+		void ProcessMouseMovement(smint16 x, smint16 y);
+		void ProcessMouseWheel(smint16 deltaMove);
+		smbool IsMouseButtonUp(MouseButton button);
+		smbool IsMouseButtonDown(MouseButton button);
+		smbool WasMouseButtonUp(MouseButton button);
+		smbool WasMouseButtonDown(MouseButton button);
 
 		//XBox
 
 	private:
 		//TODO : Only supports one player
 		InputState m_InputStates;
-		mbool m_IsInitialized = false;
+		smbool m_IsInitialized = false;
 	};
 }
 

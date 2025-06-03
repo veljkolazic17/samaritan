@@ -7,22 +7,22 @@ BEGIN_NAMESPACE
 
 namespace Memory
 {
-	void MemoryStats::MemoryTagAllocate(muint64 size, MemoryTag tag)
+	void MemoryStats::MemoryTagAllocate(smuint64 size, MemoryTag tag)
 	{
 		softAssert(tag < MemoryTag::SIZE, "Memory tag not defined!");
 		softAssert(tag != MemoryTag::MEM_UNKNOW, "Using uknown memory tag!");
-		m_MemoryTagSizes[(muint16)tag] += size;
+		m_MemoryTagSizes[(smuint16)tag] += size;
 	}
 
-	void MemoryStats::MemoryTagFree(muint64 size, MemoryTag tag)
+	void MemoryStats::MemoryTagFree(smuint64 size, MemoryTag tag)
 	{
 		softAssert(tag < MemoryTag::SIZE, "Memory tag not defined!");
-		m_MemoryTagSizes[(muint16)tag] += size;
+		m_MemoryTagSizes[(smuint16)tag] += size;
 	}
 
 	void MemoryStats::Clear()
 	{
-		for (muint16 tag = 0; tag < (muint16)MemoryTag::SIZE; ++tag)
+		for (smuint16 tag = 0; tag < (smuint16)MemoryTag::SIZE; ++tag)
 		{
 			m_MemoryTagSizes[tag] = 0;
 		}
@@ -30,8 +30,8 @@ namespace Memory
 
 	void MemoryStats::MemoryStatsLog()
 	{
-		constexpr muint8 sizeOfMemoryTagString = 8;
-		muint8 memoryTagStrings[(muint16)MemoryTag::SIZE][(muint16)sizeOfMemoryTagString] =
+		constexpr smuint8 sizeOfMemoryTagString = 8;
+		smuint8 memoryTagStrings[(smuint16)MemoryTag::SIZE][(smuint16)sizeOfMemoryTagString] =
 		{
 			"UNKNOW ",
 			"ARRAY  ",
@@ -43,7 +43,7 @@ namespace Memory
 			"RENDER "
 		};
 
-		for (int tag = 0; tag < (muint16)MemoryTag::SIZE; ++tag)
+		for (int tag = 0; tag < (smuint16)MemoryTag::SIZE; ++tag)
 		{
 			LogInfo(LogChannel::Memory, "Memory Tag %s is using %d bytes of memory!", memoryTagStrings[tag], m_MemoryTagSizes[tag]);
 		}

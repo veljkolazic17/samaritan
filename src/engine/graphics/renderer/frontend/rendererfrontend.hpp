@@ -24,7 +24,7 @@ namespace Graphics
 
 		void Init(RendererType rendererType);
 
-		void Resize(muint32 width, muint32 heigth);
+		void Resize(smuint32 width, smuint32 heigth);
 		void DrawFrame(RenderData& renderData);
 
 		SM_INLINE smMat4& GetProjection() { return m_Projection; }
@@ -33,10 +33,10 @@ namespace Graphics
 		SM_INLINE void SetProjection(const smMat4& projection) { m_Projection = projection; }
 		SM_INLINE void SetView(const smMat4& view) { m_View = view; }
 
-		mbool CreateTexture(const muint8* pixels, Texture* texture);
+		smbool CreateTexture(const smuint8* pixels, Texture* texture);
 		void DestroyTexture(Texture* texture);
 
-		mbool CreateMaterial(Material* material);
+		smbool CreateMaterial(Material* material);
 		void DestroyMaterial(Material* material);
 
 #ifdef TEST_CODE_ENABLED
@@ -46,8 +46,8 @@ namespace Graphics
 		smMat4 m_Projection;
 		smMat4 m_View;
 		RendererBackend* m_RendererBackend = nullptr;
-		mfloat32 m_NearClip;
-		mfloat32 m_FarClip;
+		smfloat32 m_NearClip;
+		smfloat32 m_FarClip;
 #ifdef TEST_CODE_ENABLED
 		Material* m_TestMaterial;
 #endif

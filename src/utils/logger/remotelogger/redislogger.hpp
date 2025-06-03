@@ -22,11 +22,11 @@ namespace Logger
         ~RedisLogger();
 
     public:
-        void Start(const char* address, muint16 port);
+        void Start(const char* address, smuint16 port);
 
         void Log(const char* message, LogChannel channel);
     private:
-        mbool m_IsLoggerRunning = false;
+        smbool m_IsLoggerRunning = false;
         redisContext* m_RedisContext = nullptr;
     };
 }

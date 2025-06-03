@@ -25,13 +25,13 @@ namespace Memory
 	private:
 		SINGLETON_CONSTRUCTOR(MemoryStats)
 	public:
-		void MemoryTagAllocate(muint64 size, MemoryTag tag);
-		void MemoryTagFree(muint64 size, MemoryTag tag);
+		void MemoryTagAllocate(smuint64 size, MemoryTag tag);
+		void MemoryTagFree(smuint64 size, MemoryTag tag);
 		void Clear();
 		void MemoryStatsLog();
 	private:
 		// TODO : is 64 bits enough???
-		muint64 m_MemoryTagSizes[(muint16)MemoryTag::SIZE];
+		smuint64 m_MemoryTagSizes[(smuint16)MemoryTag::SIZE];
 	};
 }
 

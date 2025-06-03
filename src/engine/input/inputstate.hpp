@@ -7,14 +7,14 @@ namespace Input
 {
     struct KeyboardState
     {
-        mbool m_Keys[(unsigned long)Key::SIZE];
+        smbool m_Keys[(unsigned long)Key::SIZE];
     };
 
     struct MouseState
     {
-        mint16 m_X;
-        mint16 m_Y;
-        mbool m_Buttons[(unsigned long)MouseButton::SIZE];
+        smint16 m_X;
+        smint16 m_Y;
+        smbool m_Buttons[(unsigned long)MouseButton::SIZE];
     };
 
     struct InputState

@@ -5,9 +5,9 @@ BEGIN_NAMESPACE
 
 namespace Graphics
 {
-	void VulkanCommandBuffer::AllocateBuffer(VkDevice device, VkCommandPool commandPool, mbool isPrimary)
+	void VulkanCommandBuffer::AllocateBuffer(VkDevice device, VkCommandPool commandPool, smbool isPrimary)
 	{
-		constexpr muint32 numberOfCommandBuffers = 1;
+		constexpr smuint32 numberOfCommandBuffers = 1;
 
 		m_Handle = 0;
 		m_State = VulkanCommandBufferState::COMMAND_BUFFER_STATE_NOT_ALLOCATED;
@@ -23,14 +23,14 @@ namespace Graphics
 
 	void VulkanCommandBuffer::FreeBuffer(VkDevice device, VkCommandPool commandPool)
 	{
-		constexpr muint32 numberOfCommandBuffers = 1;
+		constexpr smuint32 numberOfCommandBuffers = 1;
 
 		vkFreeCommandBuffers(device, commandPool, numberOfCommandBuffers, &m_Handle);
 		m_Handle = 0;
 		m_State = VulkanCommandBufferState::COMMAND_BUFFER_STATE_NOT_ALLOCATED;
 	}
 
-	void VulkanCommandBuffer::BeginBuffer(mbool isSingleUse, mbool isRenderpassContinue, mbool isSimultaneousUse)
+	void VulkanCommandBuffer::BeginBuffer(smbool isSingleUse, smbool isRenderpassContinue, smbool isSimultaneousUse)
 	{
 		VkCommandBufferBeginInfo beginInfo = { VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO };
 		beginInfo.flags = 0;
@@ -60,10 +60,10 @@ namespace Graphics
 
 	void VulkanCommandBuffer::BeginSingleUseBuffer(VkDevice device, VkCommandPool commandPool)
 	{
-		constexpr mbool isPrimary = true;
-		constexpr mbool isSingleUse = true;
-		constexpr mbool isRenderpassContinue = false;
-		constexpr mbool isSimultaneousUse = false;
+		constexpr smbool isPrimary = true;
+		constexpr smbool isSingleUse = true;
+		constexpr smbool isRenderpassContinue = false;
+		constexpr smbool isSimultaneousUse = false;
 
 		AllocateBuffer(device, commandPool, isPrimary);
 		BeginBuffer(isSingleUse, isRenderpassContinue, isSimultaneousUse);
@@ -71,7 +71,7 @@ namespace Graphics
 
 	void VulkanCommandBuffer::EndSingleUseBuffer(VkDevice device, VkCommandPool commandPool, VkQueue queue)
 	{
-		constexpr mbool numberOfCommands = 1;
+		constexpr smbool numberOfCommands = 1;
 
 		EndBuffer();
 		VkSubmitInfo submitInfo = { VK_STRUCTURE_TYPE_SUBMIT_INFO };

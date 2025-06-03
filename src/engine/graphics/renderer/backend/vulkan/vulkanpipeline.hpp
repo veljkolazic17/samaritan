@@ -15,18 +15,18 @@ namespace Graphics
 		SM_INLINE VkPipeline GetHandle() { return m_Handle; }
 		SM_INLINE VkPipelineLayout& GetPipelineLayout() { return m_PipelineLayout; }
 
-        mbool Create
+        smbool Create
         (
             VulkanRenderpass* renderpass,
-            muint32 attributeCount,
+            smuint32 attributeCount,
             VkVertexInputAttributeDescription* attributes,
-            muint32 descriptorSetLayoutCount,
+            smuint32 descriptorSetLayoutCount,
             VkDescriptorSetLayout* descriptorSetLayouts,
-            muint32 stageCount,
+            smuint32 stageCount,
             VkPipelineShaderStageCreateInfo* stages,
             VkViewport viewport,
             VkRect2D scissor,
-            mbool isWireframe,
+            smbool isWireframe,
             VkDevice logicalDevice,
             VkAllocationCallbacks* allocator
         );

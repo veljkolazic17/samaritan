@@ -14,14 +14,14 @@ BEGIN_NAMESPACE
 //TODO : [GRAPHICS] Make reference system for whole engine
 struct TextureReference
 {
-	muint64 m_RefCount = 0;
-	muint32 m_Handle = SM_INVALID_ID;
-	mbool m_ShouldAutoRelease = false;
+	smuint64 m_RefCount = 0;
+	smuint32 m_Handle = SM_INVALID_ID;
+	smbool m_ShouldAutoRelease = false;
 };
 
 struct TextureSystemConfing
 {
-	muint32 m_MaxTextureCount = 0;
+	smuint32 m_MaxTextureCount = 0;
 };
 
 class TextureSystem SINGLETON(TextureSystem)
@@ -29,15 +29,15 @@ class TextureSystem SINGLETON(TextureSystem)
 public:
 	SINGLETON_CONSTRUCTOR(TextureSystem)
 
-	mbool Init(const TextureSystemConfing& config);
+	smbool Init(const TextureSystemConfing& config);
 	void Shutdown();
 
-	Texture* Acquire(const mstring& name, mbool shouldAutoRelease);
-	void Release(const mstring& name);
+	Texture* Acquire(const smstring& name, smbool shouldAutoRelease);
+	void Release(const smstring& name);
 
 	SM_INLINE Texture& GetDefaultTexture() { return m_DefaultTexture; }
 private:
-	mbool LoadTexture(const mstring& textureName, Texture * texture);
+	smbool LoadTexture(const smstring& textureName, Texture * texture);
 
 private:
 	Texture m_DefaultTexture;
@@ -46,7 +46,7 @@ private:
 
 	//TODO : [FUCKED][GRAPHICS] Do not save textures like this
 	std::vector<Texture> m_Textures;
-	std::unordered_map<mstring, TextureReference> m_TextureLookup;
+	std::unordered_map<smstring, TextureReference> m_TextureLookup;
 };
 
 END_NAMESPACE

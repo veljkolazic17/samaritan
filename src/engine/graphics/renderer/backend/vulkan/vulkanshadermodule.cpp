@@ -13,12 +13,12 @@ BEGIN_NAMESPACE
 namespace Graphics
 {
 
-	mbool VulkanShaderModule::CreateVulkanShaderModule
+	smbool VulkanShaderModule::CreateVulkanShaderModule
 	(
-		mcstring name,
-		mcstring type,
+		smcstring name,
+		smcstring type,
 		VkShaderStageFlagBits stageFlags,
-		muint32 stageIndex,
+		smuint32 stageIndex,
         VulkanShaderStage shaderStages[],
         VkDevice logicalDevice,
         VkAllocationCallbacks* allocator
@@ -32,7 +32,7 @@ namespace Graphics
         //TODO : Should Open return bool?
         BFile file;
         file.Open(fileName.c_str(), std::ios::in);
-        muint64 fileLength = file.Length();
+        smuint64 fileLength = file.Length();
 
         // Read the entire file as binary.
         //Allocate memory for this
@@ -40,7 +40,7 @@ namespace Graphics
         file.Read(buffer);
 
         shaderStages[stageIndex].m_CrateInfo.codeSize = fileLength;
-        shaderStages[stageIndex].m_CrateInfo.pCode = (muint32*)buffer;
+        shaderStages[stageIndex].m_CrateInfo.pCode = (smuint32*)buffer;
 
         // Close the file.
         file.Close();

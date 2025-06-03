@@ -27,7 +27,7 @@ namespace Graphics
 	class VulkanRenderpass
 	{
 	public:
-		void Create(smVec4 renderArea, smVec4 color, mfloat32 depth, mfloat32 stencil);
+		void Create(smVec4 renderArea, smVec4 color, smfloat32 depth, smfloat32 stencil);
 		void Destroy();
 
 		void Begin(smVec4 renderArea, VulkanCommandBuffer& commandBuffer, VkFramebuffer frameBuffer);
@@ -37,8 +37,8 @@ namespace Graphics
 	private:
 		smVec4 m_RenderArea;
 		smVec4 m_Color DEFAULT_CLEAR_COLOR;
-		mfloat32 m_Depth;
-		mfloat32 m_Stencil;
+		smfloat32 m_Depth;
+		smfloat32 m_Stencil;
 		VulkanRenderpassState m_State = VulkanRenderpassState::NOT_ALLOCATED;
 
 		VkRenderPass m_Handle;

@@ -17,8 +17,8 @@ namespace Graphics
 		// ???? not sure if this should be done like this
 		hardAssert(queryArguments.IsVaild(), "Swap chain arguments not initialized");
 		//Check swap chain support
-		muint32 formatCount = 0;
-		muint32 presentModeCount = 0;
+		smuint32 formatCount = 0;
+		smuint32 presentModeCount = 0;
 
 		// Surface capabilities
 		VulkanCheckResult(vkGetPhysicalDeviceSurfaceCapabilitiesKHR(*queryArguments.m_Device, *queryArguments.m_Surface, queryArguments.m_SurfaceCapabilities), "Error getting Surface Capabilities!");
@@ -52,12 +52,12 @@ namespace Graphics
 		}
 	}
 
-	void VulkanSwapChain::Create(muint32 width, muint32 height)
+	void VulkanSwapChain::Create(smuint32 width, smuint32 height)
 	{
 		CreateInternal(width, height);
 	}
 
-	void VulkanSwapChain::Recreate(muint32 width, muint32 height)
+	void VulkanSwapChain::Recreate(smuint32 width, smuint32 height)
 	{
 		DestroyInternal();
 		CreateInternal(width, height);
@@ -68,13 +68,13 @@ namespace Graphics
 		DestroyInternal();
 	}
 
-	mbool VulkanSwapChain::AcquireNextImageIndex
+	smbool VulkanSwapChain::AcquireNextImageIndex
 	(
 		VulkanDevice& device,
-		muint64 timeout, 
+		smuint64 timeout, 
 		VkSemaphore& semaphore, 
 		VkFence& fence,
-		muint32* outImageIndex
+		smuint32* outImageIndex
 	)
 	{
 		VkResult result  = vkAcquireNextImageKHR(device.m_LogicalDevice, m_Handle, timeout, semaphore, 0, outImageIndex);
@@ -91,7 +91,7 @@ namespace Graphics
 		return true;
 	}
 
-	void VulkanSwapChain::Present(VulkanDevice& device, VkSemaphore& renderCompletionSemaphore, muint32 imageToPresnet)
+	void VulkanSwapChain::Present(VulkanDevice& device, VkSemaphore& renderCompletionSemaphore, smuint32 imageToPresnet)
 	{
 		VkPresentInfoKHR presentInfo = { VK_STRUCTURE_TYPE_PRESENT_INFO_KHR };
 		presentInfo.waitSemaphoreCount = 1;
@@ -112,24 +112,24 @@ namespace Graphics
 			hardAssert(false, "Failed to present swap chain image!");
 		}
 
-		const muint64 nextFrame = (g_VulkanRenderer->GetCurrentFrame() + 1) % SM_MAX_FRAMES_IN_FLIGHT;
+		const smuint64 nextFrame = (g_VulkanRenderer->GetCurrentFrame() + 1) % SM_MAX_FRAMES_IN_FLIGHT;
 		g_VulkanRenderer->SetCurrentFrame(nextFrame);
 	}
 
 
 	// Too much magic numbers used
 	// This fucking queryArguments is passed from vulkanbackend and it is set of beckend fields
-	void VulkanSwapChain::CreateInternal(muint32 width, muint32 height)
+	void VulkanSwapChain::CreateInternal(smuint32 width, smuint32 height)
 	{
-		constexpr muint32 imageArrayLayers = 1;
-		constexpr muint32 queueCount = 2;
+		constexpr smuint32 imageArrayLayers = 1;
+		constexpr smuint32 queueCount = 2;
 
 		hardAssert(g_VulkanRenderer != nullptr, "Renderer not set for surface!");
 
 		VkExtent2D swapchainExtent = { width, height };
 
 		// Choose a swap surface format.
-		mbool found = false;
+		smbool found = false;
 		for (const VkSurfaceFormatKHR& supportedFormat : g_VulkanRenderer->GetSurfaceFormats())
 		{
 			// Preferred formats
@@ -188,7 +188,7 @@ namespace Graphics
 		swapchainExtent.width = Math::ClampInt(swapchainExtent.width, min.width, max.width);
 		swapchainExtent.height = Math::ClampInt(swapchainExtent.height, min.height, max.height);
 
-		muint32 image_count = surfaceCapabilities->minImageCount + 1;
+		smuint32 image_count = surfaceCapabilities->minImageCount + 1;
 		if (surfaceCapabilities->maxImageCount > 0 && image_count > surfaceCapabilities->maxImageCount)
 		{
 			image_count = surfaceCapabilities->maxImageCount;
@@ -208,13 +208,13 @@ namespace Graphics
 		swapchainCreateInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
 
 		const VPDQueues& queuesInfo = g_VulkanRenderer->GetVulkanDevice().m_QueuesInfo;
-		muint32 graphicsQueueIndex = queuesInfo.m_GraphicsIndex;
-		muint32 presentQueueIndex = queuesInfo.m_PresentIndex;
+		smuint32 graphicsQueueIndex = queuesInfo.m_GraphicsIndex;
+		smuint32 presentQueueIndex = queuesInfo.m_PresentIndex;
 
 		// Setup the queue family indices
 		if (graphicsQueueIndex != presentQueueIndex)
 		{
-			muint32 queueFamilyIndices[queueCount] =
+			smuint32 queueFamilyIndices[queueCount] =
 			{
 				graphicsQueueIndex,
 				presentQueueIndex
@@ -244,7 +244,7 @@ namespace Graphics
 		// Images
 		m_Images.clear();
 		m_ImageViews.clear();
-		muint32 imageCount = 0;
+		smuint32 imageCount = 0;
 		VulkanCheckResult(vkGetSwapchainImagesKHR(g_VulkanRenderer->GetVulkanDevice().m_LogicalDevice, m_Handle, &imageCount, 0), "Error getting swapchain image count!");
 		m_Images.resize(imageCount);
 		VulkanCheckResult(vkGetSwapchainImagesKHR(g_VulkanRenderer->GetVulkanDevice().m_LogicalDevice, m_Handle, &imageCount, m_Images.data()), "Error creating swapchain images!");
@@ -299,10 +299,10 @@ namespace Graphics
 		LogInfo(LogChannel::Graphics, "Swapchain created!");
 	}
 
-	mbool VulkanSwapChain::GetDeviceDepthFormat()
+	smbool VulkanSwapChain::GetDeviceDepthFormat()
 	{
 		// Format candidates
-		constexpr muint64 cancidatesSize = 3;
+		constexpr smuint64 cancidatesSize = 3;
 		VkFormat candidates[cancidatesSize] =
 		{
 			VK_FORMAT_D32_SFLOAT,
@@ -310,7 +310,7 @@ namespace Graphics
 			VK_FORMAT_D24_UNORM_S8_UINT 
 		};
 
-		muint32 flags = VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT;
+		smuint32 flags = VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT;
 		for (const VkFormat& candidate : candidates) 
 		{
 			VkFormatProperties properties;
@@ -353,7 +353,7 @@ namespace Graphics
 
 	void VulkanSwapChain::RegenerateFramebuffers()
 	{
-		constexpr muint32 attachmentCount = 2;
+		constexpr smuint32 attachmentCount = 2;
 
 		if (g_VulkanRenderer == nullptr)
 		{

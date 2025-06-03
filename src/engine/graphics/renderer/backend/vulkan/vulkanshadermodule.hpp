@@ -16,11 +16,11 @@ namespace Graphics
 	class VulkanShaderModule
 	{
 	public:
-		static mbool CreateVulkanShaderModule(
-			mcstring name,
-			mcstring type,
+		static smbool CreateVulkanShaderModule(
+			smcstring name,
+			smcstring type,
 			VkShaderStageFlagBits stageFlags,
-			muint32 stageIndex,
+			smuint32 stageIndex,
 			VulkanShaderStage shaderStages[],
 			VkDevice logicalDevice,
 			VkAllocationCallbacks* allocator

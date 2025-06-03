@@ -13,22 +13,22 @@ class Camera SINGLETON(Camera)
 public:
 	SINGLETON_CONSTRUCTOR_INIT(Camera);
     
-    void ChangePitch(mfloat32 ammount);
-    void ChangeYaw(mfloat32 ammount);
-    void ChangeRoll(mfloat32 ammount);
+    void ChangePitch(smfloat32 ammount);
+    void ChangeYaw(smfloat32 ammount);
+    void ChangeRoll(smfloat32 ammount);
     void CalculateNewView();
 
     void SingletonInit() override;
 
     SM_INLINE smVec3& GetCameraPosition() { return m_CameraPosition; }
     SM_INLINE smMat4& GetCameraView() { return m_View; }
-    SM_INLINE void SetIsViewDirty(mbool isViewDirty) { m_IsViewDirty = isViewDirty; }
+    SM_INLINE void SetIsViewDirty(smbool isViewDirty) { m_IsViewDirty = isViewDirty; }
 
 private:
     smMat4 m_View;
     smVec3 m_CameraPosition;
     smVec3 m_CameraEuler;
-    mbool m_IsViewDirty;
+    smbool m_IsViewDirty;
 };
 
 SM_INLINE void Camera::CalculateNewView()
@@ -43,21 +43,21 @@ SM_INLINE void Camera::CalculateNewView()
     }
 }
 
-SM_INLINE void Camera::ChangePitch(mfloat32 ammount)
+SM_INLINE void Camera::ChangePitch(smfloat32 ammount)
 {
     m_CameraEuler.m_X += ammount;
-    mfloat32 limit = Math::Deg2Rad(89.0f);
+    smfloat32 limit = Math::Deg2Rad(89.0f);
     m_CameraEuler.m_X = Math::ClampFloat(-limit, limit, m_CameraEuler.m_X);
     m_IsViewDirty = true;
 }
 
-SM_INLINE void Camera::ChangeYaw(mfloat32 ammount)
+SM_INLINE void Camera::ChangeYaw(smfloat32 ammount)
 {
     m_CameraEuler.m_Y += ammount;
     m_IsViewDirty = true;
 }
 
-SM_INLINE void Camera::ChangeRoll(mfloat32 ammount)
+SM_INLINE void Camera::ChangeRoll(smfloat32 ammount)
 {
     m_CameraEuler.m_Z += ammount;
     m_IsViewDirty = true;

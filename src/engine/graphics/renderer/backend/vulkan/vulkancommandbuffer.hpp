@@ -25,9 +25,9 @@ namespace Graphics
 		SM_INLINE void SetState(VulkanCommandBufferState state) { m_State = state; }
 		SM_INLINE VulkanCommandBufferState& GetState() { return m_State; }
 
-		void AllocateBuffer(VkDevice device, VkCommandPool commandPool, mbool isPrimary);
+		void AllocateBuffer(VkDevice device, VkCommandPool commandPool, smbool isPrimary);
 		void FreeBuffer(VkDevice device, VkCommandPool commandPool);
-		void BeginBuffer(mbool isSingleUse, mbool isRenderpassContinue, mbool isSimultaneousUse);
+		void BeginBuffer(smbool isSingleUse, smbool isRenderpassContinue, smbool isSimultaneousUse);
 		void EndBuffer();
 		void BeginSingleUseBuffer(VkDevice device, VkCommandPool commandPool);
 		void EndSingleUseBuffer(VkDevice device, VkCommandPool commandPool, VkQueue queue);

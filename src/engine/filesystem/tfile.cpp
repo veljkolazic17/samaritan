@@ -7,7 +7,7 @@
 
 BEGIN_NAMESPACE
 
-void TFile::Open(const mint8* filepath, smfilemode filemode)
+void TFile::Open(const smint8* filepath, smfilemode filemode)
 {
 	m_FileHandle.open(filepath, filemode);
 }
@@ -38,7 +38,7 @@ void TFile::Read(void* buffer)
 	smCopy(tstring.c_str(), buffer, tstring.size());
 }
 
-void TFile::Write(const void* buffer, muint32 size)
+void TFile::Write(const void* buffer, smuint32 size)
 {
 	if (!m_FileHandle.is_open())
 	{
@@ -54,7 +54,7 @@ void TFile::Write(const void* buffer, muint32 size)
 	m_FileHandle << reinterpret_cast<const char*>(buffer);
 }
 
-muint32 TFile::Length()
+smuint32 TFile::Length()
 {
 	m_FileHandle.seekg(0, std::ios_base::end);
 	auto length = m_FileHandle.tellg();

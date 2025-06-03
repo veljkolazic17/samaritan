@@ -17,23 +17,23 @@ namespace Graphics
     public:
         SM_INLINE VkBuffer& GetHandle() { return m_Handle; }
 
-        void Create(muint32 size, VkBufferUsageFlagBits usage,muint32 memoryPropertyFlags, mbool bindOnCreate);
+        void Create(smuint32 size, VkBufferUsageFlagBits usage,smuint32 memoryPropertyFlags, smbool bindOnCreate);
         void Destroy();
-        mbool Resize(muint32 size, VkQueue queue, VkCommandPool pool);
-        void Bind(muint64 offset);
-        void* LockMemory(muint64 offset, muint64 size, muint32 flags);
+        smbool Resize(smuint32 size, VkQueue queue, VkCommandPool pool);
+        void Bind(smuint64 offset);
+        void* LockMemory(smuint64 offset, smuint64 size, smuint32 flags);
         void UnlockMemory();
-        void LoadData(muint64 offset, muint64 size, muint32 flags, void* data);
-        void CopyTo(VkCommandPool pool, VkFence fence, VkQueue queue, VkBuffer destination, muint64 sourceOffset, muint64 destinationOffset, muint64 size);
+        void LoadData(smuint64 offset, smuint64 size, smuint32 flags, void* data);
+        void CopyTo(VkCommandPool pool, VkFence fence, VkQueue queue, VkBuffer destination, smuint64 sourceOffset, smuint64 destinationOffset, smuint64 size);
 
 	private:
-        muint64 m_Size;
+        smuint64 m_Size;
         VkBuffer m_Handle;
         VkBufferUsageFlagBits m_Usage;
-        mbool m_IsLocked;
+        smbool m_IsLocked;
         VkDeviceMemory m_Memory;
-        mint32 m_MemoryIndex;
-        muint32 m_MemoryPropertyFlags;
+        smint32 m_MemoryIndex;
+        smuint32 m_MemoryPropertyFlags;
 	};
 }
 

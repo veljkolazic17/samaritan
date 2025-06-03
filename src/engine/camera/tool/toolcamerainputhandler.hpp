@@ -27,7 +27,7 @@ private:
 	void HandleOnKeyboardInputReleasedEvent(const Input::KeyboardInputReleasedEvent & event);
 	Events::EventHandler<Input::KeyboardInputReleasedEvent> m_KeyboardInputReleasedEventHandler;
 
-	std::map<Input::Key, mbool> m_KeyStates;
+	std::map<Input::Key, smbool> m_KeyStates;
 };
 
 END_NAMESPACE

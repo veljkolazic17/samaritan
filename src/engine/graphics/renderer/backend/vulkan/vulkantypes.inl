@@ -28,7 +28,7 @@ namespace Graphics
 
     namespace Vulkan::Utils
     {
-        mbool IsResultSuccess(VkResult result);
+        smbool IsResultSuccess(VkResult result);
 		const char* ResultToString(VkResult result);
     }
 }

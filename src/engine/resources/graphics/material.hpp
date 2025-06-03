@@ -11,10 +11,10 @@ BEGIN_NAMESPACE
 
 struct Material
 {
-	muint8 m_Name[SM_MATERIAL_NAME_MAX_LENGTH];
-	muint32 m_ID = SM_INVALID_ID;
-	muint32 m_Generation = SM_INVALID_ID;
-	muint32 m_InternalID = SM_INVALID_ID;
+	smuint8 m_Name[SM_MATERIAL_NAME_MAX_LENGTH];
+	smuint32 m_ID = SM_INVALID_ID;
+	smuint32 m_Generation = SM_INVALID_ID;
+	smuint32 m_InternalID = SM_INVALID_ID;
 	smVec4 m_DiffuseColor;
 	//Expect usage for texture to be TEXTURE_USAGE_MAP_DIFFUSE
 	TextureMap m_DiffuseMap;

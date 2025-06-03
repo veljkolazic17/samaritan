@@ -66,15 +66,15 @@ namespace Engine
 		EngineState m_EngineState = EngineState::PENDING;
 		Graphics::Window* m_Window = nullptr;
 
-		mfloat64 m_TargetFrameRate = 1.0 / 60.0;
+		smfloat64 m_TargetFrameRate = 1.0 / 60.0;
 		Time m_Runtime = 0;
-		muint16 m_FrameCount = 0;
+		smuint16 m_FrameCount = 0;
 		Time m_FrameTimeStart = 0;
 		Time m_FrameTimeEnd = 0;
 		Time m_LastLoopTime = 0;
 		Time m_DeltaTime = 0;
 
-		mbool m_IsFrameLimitActive = false;
+		smbool m_IsFrameLimitActive = false;
 
 		Graphics::RendererType m_DeafualtRenderer = Graphics::RendererType::Vulkan;
 

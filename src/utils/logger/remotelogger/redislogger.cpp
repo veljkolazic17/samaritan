@@ -6,7 +6,7 @@ BEGIN_NAMESPACE
 
 namespace Logger
 {
-    void RedisLogger::Start(const char* address, muint16 port)
+    void RedisLogger::Start(const char* address, smuint16 port)
     {
         m_RedisContext = redisConnect(address, port);
         if (m_RedisContext == nullptr || m_RedisContext->err) 

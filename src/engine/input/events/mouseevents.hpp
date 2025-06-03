@@ -23,8 +23,8 @@ namespace Input
     struct MouseMovedEvent : public Events::Event
     {
         DEFINE_EVENT("MouseMoved");
-        muint16 m_X { 0 };
-        muint16 m_Y { 0 };
+        smuint16 m_X { 0 };
+        smuint16 m_Y { 0 };
     };
     
 }

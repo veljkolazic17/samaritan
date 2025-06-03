@@ -26,7 +26,7 @@ namespace Input
         m_IsInitialized = false;
     }
 
-    void InputManager::Update(mfloat64 deltaTime)
+    void InputManager::Update(smfloat64 deltaTime)
     {
         if(!m_IsInitialized)
         {
@@ -49,7 +49,7 @@ namespace Input
     }
 
     //Keyboard
-    void InputManager::ProcessKey(Key key, mbool isPressed)
+    void InputManager::ProcessKey(Key key, smbool isPressed)
     {
         if(!m_IsInitialized)
         {
@@ -76,7 +76,7 @@ namespace Input
         }
     }
 
-    mbool InputManager::IsKeyUp(Key key)
+    smbool InputManager::IsKeyUp(Key key)
     {
         if(!m_IsInitialized)
         {
@@ -85,7 +85,7 @@ namespace Input
         return !m_InputStates.m_CurrentKeyboardState.m_Keys[(unsigned long)key];
     }
 
-    mbool InputManager::IsKeyDown(Key key)
+    smbool InputManager::IsKeyDown(Key key)
     {
         if(!m_IsInitialized)
         {
@@ -94,7 +94,7 @@ namespace Input
         return m_InputStates.m_CurrentKeyboardState.m_Keys[(unsigned long)key];
     }
 
-    mbool InputManager::WasKeyUp(Key key)
+    smbool InputManager::WasKeyUp(Key key)
     {
         if(!m_IsInitialized)
         {
@@ -103,7 +103,7 @@ namespace Input
         return !m_InputStates.m_PrevoiusKeyboardState.m_Keys[(unsigned long)key];
     }
 
-    mbool InputManager::WasKeyDown(Key key)
+    smbool InputManager::WasKeyDown(Key key)
     {
         if(!m_IsInitialized)
         {
@@ -113,7 +113,7 @@ namespace Input
     }
     
     //Mouse
-    void InputManager::ProcessMouseButton(MouseButton button, mbool isPressed)
+    void InputManager::ProcessMouseButton(MouseButton button, smbool isPressed)
     {
         if(!m_IsInitialized)
         {
@@ -140,7 +140,7 @@ namespace Input
         }
     }
 
-    void InputManager::ProcessMouseMovement(mint16 x, mint16 y)
+    void InputManager::ProcessMouseMovement(smint16 x, smint16 y)
     {
         if(!m_IsInitialized)
         {
@@ -158,7 +158,7 @@ namespace Input
         }
     }
 
-    void InputManager::ProcessMouseWheel(mint16 deltaMove)
+    void InputManager::ProcessMouseWheel(smint16 deltaMove)
     {
         if(!m_IsInitialized)
         {
@@ -167,7 +167,7 @@ namespace Input
         //TODO : Implement mouse wheel
     }
 
-    mbool InputManager::IsMouseButtonUp(MouseButton button)
+    smbool InputManager::IsMouseButtonUp(MouseButton button)
     {
         if(!m_IsInitialized)
         {
@@ -176,7 +176,7 @@ namespace Input
         return !m_InputStates.m_CurrentMouseState.m_Buttons[(unsigned long)button];
     }
 
-    mbool InputManager::IsMouseButtonDown(MouseButton button)
+    smbool InputManager::IsMouseButtonDown(MouseButton button)
     {
         if(!m_IsInitialized)
         {
@@ -185,7 +185,7 @@ namespace Input
         return m_InputStates.m_CurrentMouseState.m_Buttons[(unsigned long)button];
     }
 
-    mbool InputManager::WasMouseButtonUp(MouseButton button)
+    smbool InputManager::WasMouseButtonUp(MouseButton button)
     {
         if(!m_IsInitialized)
         {
@@ -194,7 +194,7 @@ namespace Input
         return !m_InputStates.m_PreviousMousetate.m_Buttons[(unsigned long)button];
     }
 
-    mbool InputManager::WasMouseButtonDown(MouseButton button)
+    smbool InputManager::WasMouseButtonDown(MouseButton button)
     {
         if(!m_IsInitialized)
         {

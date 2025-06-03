@@ -11,7 +11,7 @@
 
 BEGIN_NAMESPACE
 
-mbool TextureSystem::Init(const TextureSystemConfing& config)
+smbool TextureSystem::Init(const TextureSystemConfing& config)
 {
 	if (config.m_MaxTextureCount == 0)
 	{
@@ -26,22 +26,22 @@ mbool TextureSystem::Init(const TextureSystemConfing& config)
     std::fill_n(std::back_inserter(m_Textures), config.m_MaxTextureCount, temp);
 
     //Create default texture
-	constexpr muint64 textureDimension = 256;
-	constexpr muint64 channels = 4;
-	constexpr muint64 pixelCount = textureDimension * textureDimension;
+	constexpr smuint64 textureDimension = 256;
+	constexpr smuint64 channels = 4;
+	constexpr smuint64 pixelCount = textureDimension * textureDimension;
 
-	constexpr muint64 textureSize = pixelCount * channels;
-	muint8 pixels[textureSize];
-	smSet(pixels, 255, sizeof(muint8) * textureSize);
+	constexpr smuint64 textureSize = pixelCount * channels;
+	smuint8 pixels[textureSize];
+	smSet(pixels, 255, sizeof(smuint8) * textureSize);
 
-	for (muint64 row = 0; row < textureDimension; ++row)
+	for (smuint64 row = 0; row < textureDimension; ++row)
 	{
 		bool rowIsOdd = row % 2; // Precompute row parity
-		for (muint64 col = 0; col < textureDimension; ++col)
+		for (smuint64 col = 0; col < textureDimension; ++col)
 		{
 			if (col % 2 == rowIsOdd) // Check if row and column parity match
 			{
-				muint64 index_bpp = (row * textureDimension + col) * channels;
+				smuint64 index_bpp = (row * textureDimension + col) * channels;
 				pixels[index_bpp + 0] = 0;
 				pixels[index_bpp + 1] = 0;
 			}
@@ -76,7 +76,7 @@ void TextureSystem::Shutdown()
 	}
 }
 
-Texture* TextureSystem::Acquire(const mstring& name, mbool shouldAutoRelease)
+Texture* TextureSystem::Acquire(const smstring& name, smbool shouldAutoRelease)
 {
     if (!std::strcmp(name.data(), SM_DEFAULT_TEXTURE_NAME))
     {
@@ -98,7 +98,7 @@ Texture* TextureSystem::Acquire(const mstring& name, mbool shouldAutoRelease)
         //Find free space in array
         //TODO : [TEXTURE] change this not to be vector
         Texture* newTexture = nullptr;
-        for (muint64 counter = 0; counter < m_Textures.size(); ++counter)
+        for (smuint64 counter = 0; counter < m_Textures.size(); ++counter)
         {
             Texture& texture = m_Textures[counter];
             if (texture.m_ID == SM_INVALID_ID)
@@ -125,7 +125,7 @@ Texture* TextureSystem::Acquire(const mstring& name, mbool shouldAutoRelease)
     return &m_Textures[reference.m_Handle];
 }
 
-void TextureSystem::Release(const mstring& name)
+void TextureSystem::Release(const smstring& name)
 {
     if (!std::strcmp(name.data(), SM_DEFAULT_TEXTURE_NAME))
     {
@@ -156,13 +156,13 @@ void TextureSystem::Release(const mstring& name)
     }
 }
 
-mbool TextureSystem::LoadTexture(const mstring& textureName, Texture* texture)
+smbool TextureSystem::LoadTexture(const smstring& textureName, Texture* texture)
 {
 #if SM_USE_MUSEUM_STB
 
     //TODO : [SYSTEM][TEXTURE] Support dynamic file paths
-    constexpr mcstring pathFormat = "../../../assets/textures/{}.{}";
-    constexpr mint32 channelCount = 4;
+    constexpr smcstring pathFormat = "../../../assets/textures/{}.{}";
+    constexpr smint32 channelCount = 4;
 
     stbi_set_flip_vertically_on_load(true);
     char full_file_path[512];
@@ -171,7 +171,7 @@ mbool TextureSystem::LoadTexture(const mstring& textureName, Texture* texture)
     std::string path = std::format(pathFormat, textureName.data(), "png");
 
     Texture temp;
-    muint8* data = stbi_load
+    smuint8* data = stbi_load
     (
 		path.data(),
 		reinterpret_cast<int*>(&temp.m_Width),
@@ -184,15 +184,15 @@ mbool TextureSystem::LoadTexture(const mstring& textureName, Texture* texture)
     temp.m_ChannelCount = channelCount;
     if (data != nullptr)
     {
-        muint32 generation = texture->m_Generation;
+        smuint32 generation = texture->m_Generation;
         texture->m_Generation = SM_INVALID_ID;
 
-        muint64 size = temp.m_Width * temp.m_Height * channelCount;
+        smuint64 size = temp.m_Width * temp.m_Height * channelCount;
 
-        mbool isTransparent = false;
-        for (muint64 i = 0; i < size; i += channelCount)
+        smbool isTransparent = false;
+        for (smuint64 i = 0; i < size; i += channelCount)
         {
-            muint8 alpha = data[i + 3];
+            smuint8 alpha = data[i + 3];
             if (alpha < 255)
             {
                 isTransparent = true;
@@ -204,7 +204,7 @@ mbool TextureSystem::LoadTexture(const mstring& textureName, Texture* texture)
         Graphics::Renderer& renderer = smRenderer();
 
         //TODO : [CRITICAL] check this shit code later!!!!
-        std::strncmp(reinterpret_cast<mcstring>(temp.m_Name), textureName.data(), SM_TEXTURE_NAME_MAX_LENGTH);
+        std::strncpy(reinterpret_cast<char*>(temp.m_Name), textureName.data(), SM_TEXTURE_NAME_MAX_LENGTH);
         renderer.CreateTexture
         (
             data,

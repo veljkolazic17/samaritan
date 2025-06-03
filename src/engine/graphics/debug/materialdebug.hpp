@@ -23,16 +23,16 @@ private:
 	void HandleOnKeyboardInputReleasedEvent(const Input::KeyboardInputReleasedEvent & event);
 	Events::EventHandler<Input::KeyboardInputReleasedEvent> m_KeyboardInputReleasedEventHandler;
 
-	mcstring m_TestTextures[3] = 
+	smcstring m_TestTextures[3] = 
 	{
 		"terrain",
 		"cliff",
 		"rock"
 	};
 
-	mcstring m_LoadedImage = nullptr;
+	smcstring m_LoadedImage = nullptr;
 
-	mbool m_IsDebugKeyPressed = false;
+	smbool m_IsDebugKeyPressed = false;
 };
 
 END_NAMESPACE

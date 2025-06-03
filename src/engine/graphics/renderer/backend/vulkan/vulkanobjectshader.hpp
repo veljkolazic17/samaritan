@@ -40,18 +40,18 @@ namespace Graphics
 		SM_INLINE GlobalUniformObject& GetGlobalUniformObject() { return m_GlobalUbo; }
 		SM_INLINE VulkanPipeline& GetVulkanPipeline() { return m_VulkanPipeline; }
 		
-		void Create(VulkanRenderpass* renderpass, VkDevice logicalDevice, VkAllocationCallbacks* allocator, mfloat32 framebufferWidth, mfloat32 framebufferHeight);
+		void Create(VulkanRenderpass* renderpass, VkDevice logicalDevice, VkAllocationCallbacks* allocator, smfloat32 framebufferWidth, smfloat32 framebufferHeight);
 		void Destroy(VkDevice logicalDevice, VkAllocationCallbacks* allocator);
 		void Use(VulkanCommandBuffer* commandBuffer);
 		void UpdateGlobalState();
 		void UpdateModel(GeometryData data);
 
-		muint32 AcquireObjectShaderResources(Material* outMaterial);
+		smuint32 AcquireObjectShaderResources(Material* outMaterial);
 		void ReleaseObjectShaderResources(Material* material);
 
 	private:
 		//TODO : [FUCKED][GRAPHICS][SHADER] make pool of indexer or some shit.This will have unexpected behaviour when overflow
-		muint32 m_ObjectUniformBufferIndex;
+		smuint32 m_ObjectUniformBufferIndex;
 		VulkanShaderStage m_Stages[SM_OBJECT_SHADER_STAGE_COUNT];
 		VkDescriptorPool m_GlobalDescriptorPool;
 		VkDescriptorSetLayout m_GlobalDescriptorSetLayout;

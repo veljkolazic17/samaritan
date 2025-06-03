@@ -17,19 +17,19 @@
 BEGIN_NAMESPACE
 namespace Graphics
 {
-	void VulkanObjectShader::Create(VulkanRenderpass* renderpass, VkDevice logicalDevice, VkAllocationCallbacks* allocator, mfloat32 framebufferWidth, mfloat32 framebufferHeight)
+	void VulkanObjectShader::Create(VulkanRenderpass* renderpass, VkDevice logicalDevice, VkAllocationCallbacks* allocator, smfloat32 framebufferWidth, smfloat32 framebufferHeight)
 	{
 		// Shader module init per stage.
-		muint8 stageTypeNames[SM_OBJECT_SHADER_STAGE_COUNT][5] = { "vert", "frag" };
+		smuint8 stageTypeNames[SM_OBJECT_SHADER_STAGE_COUNT][5] = { "vert", "frag" };
 		VkShaderStageFlagBits stageTypes[SM_OBJECT_SHADER_STAGE_COUNT] = 
 		{ 
 			VK_SHADER_STAGE_VERTEX_BIT, 
 			VK_SHADER_STAGE_FRAGMENT_BIT 
 		};
 
-		for (muint16 i = 0; i < SM_OBJECT_SHADER_STAGE_COUNT; ++i) 
+		for (smuint16 i = 0; i < SM_OBJECT_SHADER_STAGE_COUNT; ++i) 
 		{
-			if (!VulkanShaderModule::CreateVulkanShaderModule(SM_BUILTIN_SHADER_NAME_OBJECT, (mcstring)stageTypeNames[i], stageTypes[i], i, m_Stages, logicalDevice, allocator))
+			if (!VulkanShaderModule::CreateVulkanShaderModule(SM_BUILTIN_SHADER_NAME_OBJECT, (smcstring)stageTypeNames[i], stageTypes[i], i, m_Stages, logicalDevice, allocator))
 			{
 				hardAssert(false, "Unable to create %s shader module for '%s'.", stageTypeNames[i], BUILTIN_SHADER_NAME_OBJECT);
 				return;
@@ -37,7 +37,7 @@ namespace Graphics
 		}
 #pragma region GLOBAL_UBO_CREATION
         //Descriptors used for creating global ubo
-        const muint32 imageCount = g_VulkanRenderer->GetVulkanSwapChain().GetImageCount();
+        const smuint32 imageCount = g_VulkanRenderer->GetVulkanSwapChain().GetImageCount();
 
         VkDescriptorSetLayoutBinding globalUboLayoutBinding;
         globalUboLayoutBinding.binding = 0;
@@ -83,7 +83,7 @@ namespace Graphics
 
         VkDescriptorSetLayoutBinding bindings[SM_VULKAN_OBJECT_SHADER_DESCRIPTOR_COUNT];
         smZero(&bindings, sizeof(VkDescriptorSetLayoutBinding) * SM_VULKAN_OBJECT_SHADER_DESCRIPTOR_COUNT);
-        for (muint32 i = 0; i < SM_VULKAN_OBJECT_SHADER_DESCRIPTOR_COUNT; ++i) 
+        for (smuint32 i = 0; i < SM_VULKAN_OBJECT_SHADER_DESCRIPTOR_COUNT; ++i) 
         {
             bindings[i].binding = i;
             bindings[i].descriptorCount = 1;
@@ -101,7 +101,7 @@ namespace Graphics
         );
 
         // Object descriptor pool
-        constexpr muint32 objectPoolSizesSize = 2;
+        constexpr smuint32 objectPoolSizesSize = 2;
         VkDescriptorPoolSize objectPoolSizes[objectPoolSizesSize];
         // The first section will be used for uniform buffers
         objectPoolSizes[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
@@ -137,8 +137,8 @@ namespace Graphics
         scissor.extent.height = framebufferHeight;
 
         // Attributes
-        muint32 offset = 0;
-        constexpr muint32 attributeCount = 2;
+        smuint32 offset = 0;
+        constexpr smuint32 attributeCount = 2;
         VkVertexInputAttributeDescription attributeDescriptions[attributeCount];
         // Position
         VkFormat formats[attributeCount] = 
@@ -147,13 +147,13 @@ namespace Graphics
             VK_FORMAT_R32G32_SFLOAT
         };
 
-        muint64 sizes[attributeCount] = 
+        smuint64 sizes[attributeCount] = 
         {
 			sizeof(smVec3), //pos
             sizeof(smVec2),  //texture pos
         };
 
-        for (muint32 i = 0; i < attributeCount; ++i)
+        for (smuint32 i = 0; i < attributeCount; ++i)
         {
             attributeDescriptions[i].binding = 0;   // binding index - should match binding desc
             attributeDescriptions[i].location = i;  // attrib location
@@ -163,7 +163,7 @@ namespace Graphics
         }
 
         // Desciptor set layouts
-        constexpr muint32 descriptorSetLayoutCount = 2;
+        constexpr smuint32 descriptorSetLayoutCount = 2;
         VkDescriptorSetLayout layouts[descriptorSetLayoutCount] = 
         {
             m_GlobalDescriptorSetLayout,
@@ -175,13 +175,13 @@ namespace Graphics
         VkPipelineShaderStageCreateInfo stageCreateInfos[SM_OBJECT_SHADER_STAGE_COUNT];
         smZero(stageCreateInfos, sizeof(stageCreateInfos));
 
-        for (muint32 i = 0; i < SM_OBJECT_SHADER_STAGE_COUNT; ++i) 
+        for (smuint32 i = 0; i < SM_OBJECT_SHADER_STAGE_COUNT; ++i) 
         {
             //stageCreateInfos[i].sType = m_Stages[i].m_ShaderStageCreateInfo.sType;
             stageCreateInfos[i] = m_Stages[i].m_ShaderStageCreateInfo;
         }
 
-        constexpr mbool isUsingWireframe = false;
+        constexpr smbool isUsingWireframe = false;
 
         if (
             !m_VulkanPipeline.Create
@@ -214,10 +214,10 @@ namespace Graphics
         );
 
         // Allocate global descriptor sets. We use 3 same here because we want to put same layout
-        constexpr muint32 maxImageCount = 3;
+        constexpr smuint32 maxImageCount = 3;
         VkDescriptorSetLayout globalLayouts[maxImageCount];
         smZero(globalLayouts, maxImageCount * sizeof(VkDescriptorSetLayout));
-        for (muint8 i = 0; i < imageCount; ++i)
+        for (smuint8 i = 0; i < imageCount; ++i)
         {
             globalLayouts[i] = m_GlobalDescriptorSetLayout;
         }
@@ -257,7 +257,7 @@ namespace Graphics
         vkDestroyDescriptorSetLayout(logicalDevice, m_GlobalDescriptorSetLayout, allocator);
 
         // Destroy shader modules.
-        for (muint32 i = 0; i < SM_OBJECT_SHADER_STAGE_COUNT; ++i) 
+        for (smuint32 i = 0; i < SM_OBJECT_SHADER_STAGE_COUNT; ++i) 
         {
             vkDestroyShaderModule(logicalDevice, m_Stages[i].m_Handle, allocator);
             m_Stages[i].m_Handle = 0;
@@ -271,14 +271,14 @@ namespace Graphics
 
     void VulkanObjectShader::UpdateGlobalState()
     {
-        const muint32 imageIndex = g_VulkanRenderer->GetImageIndex();
+        const smuint32 imageIndex = g_VulkanRenderer->GetImageIndex();
 
         VkCommandBuffer& commandBuffer = g_VulkanRenderer->GetGraphicsCommandBuffers()[imageIndex].GetHandle();
         VkDescriptorSet globalDescriptor = m_GlobalDescriptorSets[imageIndex];
 
         // Configure the descriptors for the given index.
-        muint32 range = sizeof(GlobalUniformObject);
-        muint64 offset = 0;
+        smuint32 range = sizeof(GlobalUniformObject);
+        smuint64 offset = 0;
 
         // Copy data to buffer
         m_GlobalUniformBuffer.LoadData(offset, range, 0, &m_GlobalUbo);
@@ -305,7 +305,7 @@ namespace Graphics
 
     void VulkanObjectShader::UpdateModel(GeometryData data)
     {
-        const muint32 imageIndex = g_VulkanRenderer->GetImageIndex();
+        const smuint32 imageIndex = g_VulkanRenderer->GetImageIndex();
 
         VkCommandBuffer commandBuffer = g_VulkanRenderer->GetGraphicsCommandBuffers()[imageIndex].GetHandle();
         vkCmdPushConstants(commandBuffer, m_VulkanPipeline.GetPipelineLayout(), VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(smMat4), &data.m_Model);
@@ -324,19 +324,19 @@ namespace Graphics
         // TODO: [GRAPHICS] if needs update
         VkWriteDescriptorSet descriptorWrites[SM_VULKAN_OBJECT_SHADER_DESCRIPTOR_COUNT];
         smZero(descriptorWrites, sizeof(VkWriteDescriptorSet) * SM_VULKAN_OBJECT_SHADER_DESCRIPTOR_COUNT);
-        muint32 descriptorCount = 0;
-        muint32 descriptorIndex = 0;
+        smuint32 descriptorCount = 0;
+        smuint32 descriptorIndex = 0;
 
         // Descriptor 0 - Uniform buffer
-        muint32 range = sizeof(ObjectUniformObject);
-        muint64 offset = sizeof(ObjectUniformObject) * material->m_InternalID;
+        smuint32 range = sizeof(ObjectUniformObject);
+        smuint64 offset = sizeof(ObjectUniformObject) * material->m_InternalID;
         ObjectUniformObject obo;
         obo.m_Color = material->m_DiffuseColor;
 
         // Load the data into the buffer.
         m_ObjectUniformBuffer.LoadData(offset, range, 0, &obo);
         // Only do this if the descriptor has not yet been updated.
-        muint32& globalUboGeneration = objectState.m_DescriptorStates[descriptorIndex].m_Generation[imageIndex];
+        smuint32& globalUboGeneration = objectState.m_DescriptorStates[descriptorIndex].m_Generation[imageIndex];
         if (globalUboGeneration == SM_INVALID_ID || globalUboGeneration != material->m_Generation)
 		{
             VkDescriptorBufferInfo bufferInfo;
@@ -357,9 +357,9 @@ namespace Graphics
         }
         ++descriptorIndex;
         //Samplers.
-        constexpr muint32 samplerCount = 1;
+        constexpr smuint32 samplerCount = 1;
         VkDescriptorImageInfo imageInfos[1];
-        for (muint32 samplerIndex = 0; samplerIndex < samplerCount; ++samplerIndex)
+        for (smuint32 samplerIndex = 0; samplerIndex < samplerCount; ++samplerIndex)
         {
             Texture* texture = nullptr;
             switch (m_SamplerUsages[samplerIndex])
@@ -376,8 +376,8 @@ namespace Graphics
             }
             }
 
-            muint32& descriptorGeneration = objectState.m_DescriptorStates[descriptorIndex].m_Generation[imageIndex];
-            muint32& descriptorID = objectState.m_DescriptorStates[descriptorIndex].m_ID[imageIndex];
+            smuint32& descriptorGeneration = objectState.m_DescriptorStates[descriptorIndex].m_Generation[imageIndex];
+            smuint32& descriptorID = objectState.m_DescriptorStates[descriptorIndex].m_ID[imageIndex];
 
             if (texture == nullptr || texture->m_Generation == SM_INVALID_ID)
             {
@@ -419,13 +419,13 @@ namespace Graphics
         vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_VulkanPipeline.GetPipelineLayout(), 1, 1, &objectDescriptorSet, 0, 0);
     }
 
-    muint32 VulkanObjectShader::AcquireObjectShaderResources(Material* outMaterial)
+    smuint32 VulkanObjectShader::AcquireObjectShaderResources(Material* outMaterial)
 	{
-        constexpr muint32 frameNumber = 3;
+        constexpr smuint32 frameNumber = 3;
         VulkanObjectShaderObjectState* objectState = &m_ObjectStates[m_ObjectUniformBufferIndex];
-        for (muint32 i = 0; i < SM_VULKAN_OBJECT_SHADER_DESCRIPTOR_COUNT; ++i) 
+        for (smuint32 i = 0; i < SM_VULKAN_OBJECT_SHADER_DESCRIPTOR_COUNT; ++i) 
         {
-            for (muint32 j = 0; j < frameNumber; ++j)
+            for (smuint32 j = 0; j < frameNumber; ++j)
             {
                 objectState->m_DescriptorStates[i].m_Generation[j] = SM_INVALID_ID;
                 objectState->m_DescriptorStates[i].m_ID[j] = SM_INVALID_ID;
@@ -466,7 +466,7 @@ namespace Graphics
         }
 
         VulkanObjectShaderObjectState* objectState = &m_ObjectStates[material->m_InternalID];
-        constexpr muint32 descriptorSetCount = 3;
+        constexpr smuint32 descriptorSetCount = 3;
         // Release object descriptor sets.
         VkResult result = vkFreeDescriptorSets(g_VulkanRenderer->GetVulkanDevice().m_LogicalDevice, m_DescriptorPool, descriptorSetCount, &objectState->m_DescriptorSet[material->m_InternalID]);
         if (result != VK_SUCCESS) 
@@ -474,10 +474,10 @@ namespace Graphics
             softAssert(false, "Could not free descriptor sets!");
         }
 
-        constexpr muint32 frameCount = 3;
-        for (muint32 i = 0; i < SM_VULKAN_OBJECT_SHADER_DESCRIPTOR_COUNT; ++i) 
+        constexpr smuint32 frameCount = 3;
+        for (smuint32 i = 0; i < SM_VULKAN_OBJECT_SHADER_DESCRIPTOR_COUNT; ++i) 
         {
-            for (muint32 j = 0; j < frameCount; ++j)
+            for (smuint32 j = 0; j < frameCount; ++j)
             {
                 objectState->m_DescriptorStates[i].m_Generation[j] = SM_INVALID_ID;
                 objectState->m_DescriptorStates[i].m_ID[j] = SM_INVALID_ID;

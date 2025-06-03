@@ -18,24 +18,24 @@ BEGIN_NAMESPACE
 	public:
 		virtual RendererType GetRendererType() = 0;
 
-		SM_INLINE muint64 GetFrameCount() { return m_FrameCount; }
-		SM_INLINE muint64 SetFrameCount(muint64 frameCount) { m_FrameCount = frameCount; }
-		SM_INLINE muint64 IncrementFrameCount() { return ++m_FrameCount; }
+		SM_INLINE smuint64 GetFrameCount() { return m_FrameCount; }
+		SM_INLINE smuint64 SetFrameCount(smuint64 frameCount) { m_FrameCount = frameCount; }
+		SM_INLINE smuint64 IncrementFrameCount() { return ++m_FrameCount; }
 
-		virtual void Resize(muint32 width, muint32 heigth) = 0;
-		virtual mbool BeginFrame(Time time) = 0;
-		virtual mbool EndFrame(Time time) = 0;
-		virtual void UpdateGlobalState(smMat4 projection, smMat4 view, smVec3 viewPosition, smVec4 ambientColor, mint32 mode) = 0;
+		virtual void Resize(smuint32 width, smuint32 heigth) = 0;
+		virtual smbool BeginFrame(Time time) = 0;
+		virtual smbool EndFrame(Time time) = 0;
+		virtual void UpdateGlobalState(smMat4 projection, smMat4 view, smVec3 viewPosition, smVec4 ambientColor, smint32 mode) = 0;
 		virtual void UpdateObject(const GeometryData& data) = 0;
-		virtual mbool CreateTexture(const muint8* pixels, Texture* texture) = 0;
+		virtual smbool CreateTexture(const smuint8* pixels, Texture* texture) = 0;
 		virtual void DestroyTexture(Texture* texture) = 0;
-		virtual mbool CreateMaterial(Material* material) = 0;
+		virtual smbool CreateMaterial(Material* material) = 0;
 		virtual void DestroyMaterial(Material* material) = 0;
 
 	protected:
 		RendererType m_RendererType;
-		mbool m_Initialized = false;
-		muint64 m_FrameCount = 0;
+		smbool m_Initialized = false;
+		smuint64 m_FrameCount = 0;
 	};
 }
 

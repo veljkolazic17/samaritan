@@ -10,8 +10,8 @@ namespace Graphics
     struct WindowResizedEvent : public Events::Event
     {
         DEFINE_EVENT("WindowResizedEvent");
-        muint32 m_Width { 0 };
-        muint32 m_Height { 0 };
+        smuint32 m_Width { 0 };
+        smuint32 m_Height { 0 };
     };
 
     struct WindowClosedEvent : public Events::Event

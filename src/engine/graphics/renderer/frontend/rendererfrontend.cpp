@@ -103,7 +103,7 @@ namespace Graphics
 		}
 	}
 
-	void Renderer::Resize(muint32 width, muint32 heigth)
+	void Renderer::Resize(smuint32 width, smuint32 heigth)
 	{
 		if (m_RendererBackend != nullptr and heigth != 0 and width != 0)
 		{
@@ -113,7 +113,7 @@ namespace Graphics
 		}
 	}
 
-	mbool Renderer::CreateTexture(const muint8* pixels, Texture* texture)
+	smbool Renderer::CreateTexture(const smuint8* pixels, Texture* texture)
 	{
 		if (m_RendererBackend != nullptr)
 		{
@@ -130,7 +130,7 @@ namespace Graphics
 		}
 	}
 
-	mbool Renderer::CreateMaterial(Material* material)
+	smbool Renderer::CreateMaterial(Material* material)
 	{
 		if (m_RendererBackend != nullptr)
 		{

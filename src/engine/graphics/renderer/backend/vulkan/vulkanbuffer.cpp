@@ -9,7 +9,7 @@ BEGIN_NAMESPACE
 
 namespace Graphics
 {
-    void VulkanBuffer::Create(muint32 size, VkBufferUsageFlagBits usage, muint32 memoryPropertyFlags, mbool bindOnCreate)
+    void VulkanBuffer::Create(smuint32 size, VkBufferUsageFlagBits usage, smuint32 memoryPropertyFlags, smbool bindOnCreate)
     {
         m_Memory = 0;
         m_Size = size;
@@ -69,7 +69,7 @@ namespace Graphics
         m_IsLocked = false;
     }
 
-    mbool VulkanBuffer::Resize(muint32 size, VkQueue queue, VkCommandPool pool)
+    smbool VulkanBuffer::Resize(smuint32 size, VkQueue queue, VkCommandPool pool)
     {
         // Create new buffer.
         VkBufferCreateInfo bufferInfo = { VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO };
@@ -125,12 +125,12 @@ namespace Graphics
         return true;
     }
 
-    void VulkanBuffer::Bind(muint64 offset)
+    void VulkanBuffer::Bind(smuint64 offset)
     {
         VulkanCheckResult(vkBindBufferMemory(g_VulkanRenderer->GetVulkanDevice().m_LogicalDevice, m_Handle, m_Memory, offset), "Could not bind vulkan buffer!");
     }
 
-    void* VulkanBuffer::LockMemory(muint64 offset, muint64 size, muint32 flags)
+    void* VulkanBuffer::LockMemory(smuint64 offset, smuint64 size, smuint32 flags)
     {
         void* data;
         VulkanCheckResult(vkMapMemory(g_VulkanRenderer->GetVulkanDevice().m_LogicalDevice, m_Memory, offset, size, flags, &data), "Could not lock memory!");
@@ -142,7 +142,7 @@ namespace Graphics
         vkUnmapMemory(g_VulkanRenderer->GetVulkanDevice().m_LogicalDevice, m_Memory);
     }
 
-    void VulkanBuffer::LoadData(muint64 offset, muint64 size, muint32 flags, void* data) 
+    void VulkanBuffer::LoadData(smuint64 offset, smuint64 size, smuint32 flags, void* data) 
     {
         void* mdata;
         VulkanCheckResult(vkMapMemory(g_VulkanRenderer->GetVulkanDevice().m_LogicalDevice, m_Memory, offset, size, flags, &mdata), "Could not load data!");
@@ -150,7 +150,7 @@ namespace Graphics
         vkUnmapMemory(g_VulkanRenderer->GetVulkanDevice().m_LogicalDevice, m_Memory);
     }
 
-    void VulkanBuffer::CopyTo(VkCommandPool pool, VkFence fence, VkQueue queue, VkBuffer destination, muint64 sourceOffset, muint64 destinationOffset, muint64 size)
+    void VulkanBuffer::CopyTo(VkCommandPool pool, VkFence fence, VkQueue queue, VkBuffer destination, smuint64 sourceOffset, smuint64 destinationOffset, smuint64 size)
     {
         vkQueueWaitIdle(queue);
         // Create a one-time-use command buffer.

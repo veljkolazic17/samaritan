@@ -11,23 +11,23 @@ namespace Graphics
 {
 	struct VPDRequirements 
 	{
-		mbool m_HasGraphicsQueue = false;
-		mbool m_HasPresentQueue = false;
-		mbool m_HasComputeQueue = false;
-		mbool m_HasTransferQueue = false;
+		smbool m_HasGraphicsQueue = false;
+		smbool m_HasPresentQueue = false;
+		smbool m_HasComputeQueue = false;
+		smbool m_HasTransferQueue = false;
 
-		mbool m_HasSamplerAnisotropy = false;
-		mbool m_IsDiscrete = false;
+		smbool m_HasSamplerAnisotropy = false;
+		smbool m_IsDiscrete = false;
 
 		std::vector<const char*> m_DeviceExtensions;
 	};
 
 	struct VPDQueues 
 	{
-		muint32 m_GraphicsIndex = 0xFFFFFFFF;
-		muint32 m_PresentIndex = 0xFFFFFFFF;
-		muint32 m_ComputeIndex = 0xFFFFFFFF;
-		muint32 m_TransferIndex = 0xFFFFFFFF;
+		smuint32 m_GraphicsIndex = 0xFFFFFFFF;
+		smuint32 m_PresentIndex = 0xFFFFFFFF;
+		smuint32 m_ComputeIndex = 0xFFFFFFFF;
+		smuint32 m_TransferIndex = 0xFFFFFFFF;
 	};
 
 	struct VulkanDevice
@@ -48,17 +48,17 @@ namespace Graphics
 
 		VkFormat m_DepthFormat;
 
-		muint32 m_FrameBufferWidth = 0;
-		muint32 m_FrameBufferHeight = 0;
+		smuint32 m_FrameBufferWidth = 0;
+		smuint32 m_FrameBufferHeight = 0;
 
 		VkCommandPool m_GraphicsCommandPool;
 
 		//SUS
-		static SM_INLINE muint32 FindMemoryIndex(VkPhysicalDevice physicalDevice, muint32 typeFilter, muint32 propertyFlags)
+		static SM_INLINE smuint32 FindMemoryIndex(VkPhysicalDevice physicalDevice, smuint32 typeFilter, smuint32 propertyFlags)
 		{
 			VkPhysicalDeviceMemoryProperties memoryProperties;
 			vkGetPhysicalDeviceMemoryProperties(physicalDevice, &memoryProperties);
-			for (muint32 i = 0; i < memoryProperties.memoryTypeCount; ++i)
+			for (smuint32 i = 0; i < memoryProperties.memoryTypeCount; ++i)
 			{
 				if (typeFilter & (1 << i) && (memoryProperties.memoryTypes[i].propertyFlags & typeFilter) == propertyFlags)
 				{

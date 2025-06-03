@@ -10,18 +10,18 @@ BEGIN_NAMESPACE
 
 namespace Graphics
 {
-    mbool VulkanPipeline::Create
+    smbool VulkanPipeline::Create
     (
         VulkanRenderpass* renderpass,
-        muint32 attributeCount,
+        smuint32 attributeCount,
         VkVertexInputAttributeDescription* attributes,
-        muint32 descriptorSetLayoutCount,
+        smuint32 descriptorSetLayoutCount,
         VkDescriptorSetLayout* descriptorSetLayouts,
-        muint32 stageCount,
+        smuint32 stageCount,
         VkPipelineShaderStageCreateInfo* stages,
         VkViewport viewport,
         VkRect2D scissor,
-        mbool isWireframe,
+        smbool isWireframe,
         VkDevice logicalDevice,
         VkAllocationCallbacks* allocator
     )
@@ -83,7 +83,7 @@ namespace Graphics
         colorBlendStateCreateInfo.pAttachments = &colorBlendAttachmentState;
 
         // Dynamic state
-        constexpr muint32 dynamicStateCount = 3;
+        constexpr smuint32 dynamicStateCount = 3;
         VkDynamicState dynamic_states[dynamicStateCount] = 
         {
             VK_DYNAMIC_STATE_VIEWPORT,

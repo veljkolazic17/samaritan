@@ -25,10 +25,10 @@ namespace Graphics
 		void Init() override;
 		void Shutdown() override;
 
-		void Resize(muint32 width, muint32 height) override;
-		mbool BeginFrame(Time time) override;
-		mbool EndFrame(Time time) override;
-		void UpdateGlobalState(smMat4 projection, smMat4 view, smVec3 viewPosition, smVec4 ambientColor, mint32 mode) override;
+		void Resize(smuint32 width, smuint32 height) override;
+		smbool BeginFrame(Time time) override;
+		smbool EndFrame(Time time) override;
+		void UpdateGlobalState(smMat4 projection, smMat4 view, smVec3 viewPosition, smVec4 ambientColor, smint32 mode) override;
 		void UpdateObject(const GeometryData& data) override;
 
 		SM_INLINE VkAllocationCallbacks* GetAllocator() { return m_Allocator; }
@@ -40,14 +40,14 @@ namespace Graphics
 		SM_INLINE VulkanSwapChain& GetVulkanSwapChain() { return m_SwapChain; }
 		SM_INLINE VulkanRenderpass& GetMainRenderpass() { return m_MainRenderPass; }
 		SM_INLINE std::vector<VulkanCommandBuffer>& GetGraphicsCommandBuffers() { return m_GraphicsCommandBuffers; }
-		SM_INLINE muint32 GetImageIndex() { return m_ImageIndex; }
+		SM_INLINE smuint32 GetImageIndex() { return m_ImageIndex; }
 
-		SM_INLINE muint64 GetCurrentFrame() { return m_CurrentFrame; }
-		SM_INLINE void SetCurrentFrame(muint64 frame) { m_CurrentFrame = frame; }
+		SM_INLINE smuint64 GetCurrentFrame() { return m_CurrentFrame; }
+		SM_INLINE void SetCurrentFrame(smuint64 frame) { m_CurrentFrame = frame; }
 
-		mbool CreateTexture(const muint8* pixels, Texture* texture) override;
+		smbool CreateTexture(const smuint8* pixels, Texture* texture) override;
 		void DestroyTexture(Texture* texture) override;
-		mbool CreateMaterial(Material* material) override;
+		smbool CreateMaterial(Material* material) override;
 		void DestroyMaterial(Material* material) override;
 	private:
 		void GetPlatformExtensions(std::vector<const char*>& platfromExtensions);
@@ -62,12 +62,12 @@ namespace Graphics
 		void DestroyCommandPool();
 		void CreateSyncObjects();
 		void DestroySyncObjects();
-		mbool RecreateSwapchain();
+		smbool RecreateSwapchain();
 		void CreateBuffers();
 		void DestroyBuffers();
-		void UploadData(VkCommandPool pool, VkFence fence, VkQueue queue, VulkanBuffer* buffer, muint64 offset, muint64 size, void* data);
+		void UploadData(VkCommandPool pool, VkFence fence, VkQueue queue, VulkanBuffer* buffer, smuint64 offset, smuint64 size, void* data);
 
-		mbool CheckDeviceRequerments
+		smbool CheckDeviceRequerments
 		(
 			const VkPhysicalDevice& device,
 			const VkPhysicalDeviceProperties& properties,
@@ -99,13 +99,13 @@ namespace Graphics
 		VulkanDevice m_VulkanDevice;
 		VkSurfaceKHR m_Surface;
 
-		muint64 m_CurrentFrame = 0;
-		muint64 m_FrameBuffferGeneration = 0;
-		muint64 m_FrameBuffferLastGeneration = 0;
-		muint64 m_GeometryIndexOffset = 0;
-		muint64 m_GeometryVertexOffset = 0;
-		muint32 m_ImageIndex = 0;
-		mbool m_IsRecreatingSwapchain = false;
+		smuint64 m_CurrentFrame = 0;
+		smuint64 m_FrameBuffferGeneration = 0;
+		smuint64 m_FrameBuffferLastGeneration = 0;
+		smuint64 m_GeometryIndexOffset = 0;
+		smuint64 m_GeometryVertexOffset = 0;
+		smuint32 m_ImageIndex = 0;
+		smbool m_IsRecreatingSwapchain = false;
 #ifdef DEBUG
 		VkDebugUtilsMessengerEXT m_DebugMessenger;
 #endif

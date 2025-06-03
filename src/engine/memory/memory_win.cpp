@@ -7,32 +7,32 @@ BEGIN_NAMESPACE
 
 namespace Memory
 {
-	void* mmaloc(muint64 size, mbool isAligned)
+	void* mmaloc(smuint64 size, smbool isAligned)
 	{
 		return malloc(size);
 	}
 
-	void mmfree(void* memoryBlock, mbool isAligned)
+	void mmfree(void* memoryBlock, smbool isAligned)
 	{
 		free(memoryBlock);
 	}
 
-	void* mmsmZero(void* memoryBlock, muint64 size)
+	void* mmsmZero(void* memoryBlock, smuint64 size)
 	{
 		return memset(memoryBlock, 0, size);
 	}
 
-	void* mmcpy(const void* source, void* destination, muint64 size)
+	void* mmcpy(const void* source, void* destination, smuint64 size)
 	{
 		return memcpy(destination, source, size);
 	}
 
-	void* mmset(void* destination, muint32 value, muint64 size)
+	void* mmset(void* destination, smuint32 value, smuint64 size)
 	{
 		return memset(destination, value, size);
 	}
 
-	void* GPAllocate(muint64 size, MemoryTag tag)
+	void* GPAllocate(smuint64 size, MemoryTag tag)
 	{
 		GP_ALLOC_CONSTRAINT(tag);
 #ifdef MEM_STATS_ENABLED
@@ -41,7 +41,7 @@ namespace Memory
 		return mmaloc(size, false);
 	}
 
-	void GPFree(void* memoryBlock, muint64 size, MemoryTag tag)
+	void GPFree(void* memoryBlock, smuint64 size, MemoryTag tag)
 	{
 		GP_ALLOC_CONSTRAINT(tag);
 #ifdef MEM_STATS_ENABLED
@@ -50,7 +50,7 @@ namespace Memory
 		mmfree(memoryBlock, false);
 	}
 
-	void* VMAllocate(muint64 size, MemoryTag tag)
+	void* VMAllocate(smuint64 size, MemoryTag tag)
 	{
 		VM_ALLOC_CONSTRAINT(tag);
 #ifdef MEM_STATS_ENABLED
@@ -60,7 +60,7 @@ namespace Memory
 		return VirtualAlloc(0, size, MEM_RESERVE | MEM_COMMIT, PAGE_READWRITE);
 	}
 
-	void VMFree(void* memory, muint64 size, MemoryTag tag)
+	void VMFree(void* memory, smuint64 size, MemoryTag tag)
 	{
 		VM_ALLOC_CONSTRAINT(tag);
 #ifdef MEM_STATS_ENABLED

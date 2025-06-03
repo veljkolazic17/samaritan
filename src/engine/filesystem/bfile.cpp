@@ -7,7 +7,7 @@
 
 BEGIN_NAMESPACE
 
-void BFile::Open(const mint8* filepath, smfilemode filemode)
+void BFile::Open(const smint8* filepath, smfilemode filemode)
 {
 	m_FileHandle.open(filepath, filemode | std::ios::binary);
 }
@@ -33,7 +33,7 @@ void BFile::Read(void* buffer)
 	m_FileHandle.read(reinterpret_cast<char*>(buffer), Length());
 }
 
-void BFile::Write(const void* buffer, muint32 size)
+void BFile::Write(const void* buffer, smuint32 size)
 {
 	if (!m_FileHandle.is_open())
 	{
@@ -49,7 +49,7 @@ void BFile::Write(const void* buffer, muint32 size)
 	m_FileHandle.write(reinterpret_cast<const char*>(buffer), size);
 }
 
-muint32 BFile::Length()
+smuint32 BFile::Length()
 {
 	m_FileHandle.seekg(0, std::ios_base::end);
 	auto length = m_FileHandle.tellg();

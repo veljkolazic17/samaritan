@@ -29,7 +29,7 @@ namespace Graphics
 		smMat4 m_Projection;
 		smMat4 m_View;
 	private:
-		muint8 m_Reserved[NVIDIA_GBO_PADDING];
+		smuint8 m_Reserved[NVIDIA_GBO_PADDING];
 	};
 
 	struct ObjectUniformObject

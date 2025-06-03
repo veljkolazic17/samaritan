@@ -34,7 +34,7 @@ namespace Graphics
         Events::AddEvent<WindowClosedEvent>({});
     }
 
-    LRESULT CALLBACK messageCallback(HWND hwnd, muint32 msg, WPARAM w_param, LPARAM l_param)
+    LRESULT CALLBACK messageCallback(HWND hwnd, smuint32 msg, WPARAM w_param, LPARAM l_param)
     {
         switch (msg) 
         {
@@ -116,13 +116,13 @@ namespace Graphics
             softAssert(false, "Cannot register window class!");
         }
 
-        muint64 window_x = m_X;
-        muint64 window_y = m_Y;
-        muint64 window_width = m_Width;
-        muint64 window_height = m_Height;
+        smuint64 window_x = m_X;
+        smuint64 window_y = m_Y;
+        smuint64 window_width = m_Width;
+        smuint64 window_height = m_Height;
 
-        mflags window_style = WS_OVERLAPPED | WS_SYSMENU | WS_CAPTION;
-        mflags window_ex_style = WS_EX_APPWINDOW;
+        smflags window_style = WS_OVERLAPPED | WS_SYSMENU | WS_CAPTION;
+        smflags window_ex_style = WS_EX_APPWINDOW;
 
         window_style |= WS_MAXIMIZEBOX;
         window_style |= WS_MINIMIZEBOX;

@@ -28,19 +28,19 @@ namespace Memory
 		delete object;
 	}
 	// GP C style memory allocation
-	void* mmaloc(muint64 size, mbool isAligned);
-	void mmfree(void* memoryBlock, mbool isAligned);
-	void* mmsmZero(void* memoryBlock, muint64 size);
-	void* mmcpy(const void* source, void* destination, muint64 size);
-	void* mmset(void* destination, muint32 value, muint64 size);
+	void* mmaloc(smuint64 size, smbool isAligned);
+	void mmfree(void* memoryBlock, smbool isAligned);
+	void* mmsmZero(void* memoryBlock, smuint64 size);
+	void* mmcpy(const void* source, void* destination, smuint64 size);
+	void* mmset(void* destination, smuint32 value, smuint64 size);
 
 	// Heap allocations ( do not use often )
-	void* GPAllocate(muint64 size, MemoryTag tag);
-	void GPFree(void* memoryBlock, muint64 size, MemoryTag tag);
+	void* GPAllocate(smuint64 size, MemoryTag tag);
+	void GPFree(void* memoryBlock, smuint64 size, MemoryTag tag);
 	
 	// Virtual memory page allocation ( allocates 4KiB )
-	void* VMAllocate(muint64 size, MemoryTag tag);
-	void VMFree(void*memory, muint64 size, MemoryTag tag);
+	void* VMAllocate(smuint64 size, MemoryTag tag);
+	void VMFree(void*memory, smuint64 size, MemoryTag tag);
 }
 
 END_NAMESPACE

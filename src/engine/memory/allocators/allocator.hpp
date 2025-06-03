@@ -9,7 +9,7 @@ namespace Memory
 	class Allocator
 	{
 	public:
-		virtual void* Allocate(muint64 size) = 0;
+		virtual void* Allocate(smuint64 size) = 0;
 		virtual void Deallocate(void* memory) = 0;
 
 		virtual SM_INLINE MemoryTag GetMemoryTag() { return m_MemoryTag; }

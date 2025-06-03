@@ -9,7 +9,7 @@
 
 BEGIN_NAMESPACE
 
-mbool MaterialSystem::Init(const MaterialSystemConfig& config)
+smbool MaterialSystem::Init(const MaterialSystemConfig& config)
 {
 	if (config.m_MaxMaterialCount == 0)
 	{
@@ -48,7 +48,7 @@ void MaterialSystem::Shutdown()
 	}
 }
 
-Material* MaterialSystem::Acquire(const mstring& name)
+Material* MaterialSystem::Acquire(const smstring& name)
 {
 	MaterialConfig materialConfig;
 	if (LoadConfigurationFile(name.data(), materialConfig))
@@ -65,7 +65,7 @@ Material* MaterialSystem::AcquireFromConfig(const MaterialConfig& materialConfig
 		return &m_DefaultMaterial;
 	}
 
-	MaterialReference& reference = m_MaterialLookup[std::string(reinterpret_cast<mcstring>(materialConfig.m_Name))];
+	MaterialReference& reference = m_MaterialLookup[std::string(reinterpret_cast<smcstring>(materialConfig.m_Name))];
 
 	if (reference.m_RefCount == 0)
 	{
@@ -78,7 +78,7 @@ Material* MaterialSystem::AcquireFromConfig(const MaterialConfig& materialConfig
 		//Find free space in array
 		//TODO : [TEXTURE] change this not to be vector
 		Material* newMaterial = nullptr;
-		for (muint64 counter = 0; counter < m_Materials.size(); ++counter)
+		for (smuint64 counter = 0; counter < m_Materials.size(); ++counter)
 		{
 			Material& material = m_Materials[counter];
 			if (material.m_ID == SM_INVALID_ID)
@@ -104,10 +104,10 @@ Material* MaterialSystem::AcquireFromConfig(const MaterialConfig& materialConfig
 		newMaterial->m_ID = reference.m_Handle;
 		return newMaterial;
 	}
-	return nullptr;
+	return &m_Materials[reference.m_Handle];
 }
 
-void MaterialSystem::Release(const mstring& name)
+void MaterialSystem::Release(const smstring& name)
 {
 	if (!std::strcmp(name.data(), SM_DEFAULT_MATERIAL_NAME))
 	{
@@ -134,9 +134,9 @@ void MaterialSystem::Release(const mstring& name)
 	}
 }
 
-mbool MaterialSystem::LoadConfigurationFile(mcstring name, MaterialConfig& config)
+smbool MaterialSystem::LoadConfigurationFile(smcstring name, MaterialConfig& config)
 {
-	constexpr mcstring pathFormat = "../../../assets/materials/{}.json";
+	constexpr smcstring pathFormat = "../../../assets/materials/{}.json";
 	std::string path = std::format(pathFormat, name);
 
 	std::ifstream f(path);
@@ -174,7 +174,7 @@ void MaterialSystem::DestroyMaterial(Material* material)
 
 	if (Texture* texture = material->m_DiffuseMap.m_Texture)
 	{
-		smTextureSystem().Release(reinterpret_cast<mcstring>(texture->m_Name));
+		smTextureSystem().Release(reinterpret_cast<smcstring>(texture->m_Name));
 	}
 
 	smRenderer().DestroyMaterial(material);
@@ -183,7 +183,7 @@ void MaterialSystem::DestroyMaterial(Material* material)
 	material->m_InternalID = SM_INVALID_ID;
 }
 
-mbool MaterialSystem::LoadMaterial(const MaterialConfig& config, Material* material)
+smbool MaterialSystem::LoadMaterial(const MaterialConfig& config, Material* material)
 {
 	smZero(material, sizeof(Material));
 	std::strncpy(reinterpret_cast<char*>(material->m_Name), reinterpret_cast<const char*>(config.m_Name), SM_MATERIAL_NAME_MAX_LENGTH);
@@ -192,8 +192,8 @@ mbool MaterialSystem::LoadMaterial(const MaterialConfig& config, Material* mater
 	if (std::strlen(reinterpret_cast<const char*>(config.m_DiffuseMapName)) > 0)
 	{
 		material->m_DiffuseMap.m_Type = TextureUsageType::TEXTURE_USAGE_MAP_DIFFUSE;
-		constexpr mbool shouldAutoRelease = true;
-		material->m_DiffuseMap.m_Texture = smTextureSystem().Acquire(reinterpret_cast<mcstring>(config.m_DiffuseMapName), shouldAutoRelease);
+		constexpr smbool shouldAutoRelease = true;
+		material->m_DiffuseMap.m_Texture = smTextureSystem().Acquire(reinterpret_cast<smcstring>(config.m_DiffuseMapName), shouldAutoRelease);
 		if (material->m_DiffuseMap.m_Texture == nullptr)
 		{
 			LogError(LogChannel::Graphics, "Failed to acquire texture");

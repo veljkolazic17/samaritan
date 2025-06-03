@@ -148,6 +148,130 @@ namespace Input
         MOUSE_MIDDLE,
         SIZE
     };
+
+#ifdef DEBUG
+    inline const char* KeyToShortString(Key key)
+    {
+        switch (key)
+        {
+        case Key::KEY_BACKSPACE: return "BACKSPACE";
+        case Key::KEY_ENTER: return "ENTER";
+        case Key::KEY_TAB: return "TAB";
+        case Key::KEY_SHIFT: return "SHIFT";
+        case Key::KEY_CONTROL: return "CONTROL";
+        case Key::KEY_PAUSE: return "PAUSE";
+        case Key::KEY_CAPITAL: return "CAPITAL";
+        case Key::KEY_ESCAPE: return "ESCAPE";
+        case Key::KEY_CONVERT: return "CONVERT";
+        case Key::KEY_NONCONVERT: return "NONCONV";
+        case Key::KEY_ACCEPT: return "ACCEPT";
+        case Key::KEY_MODECHANGE: return "MODECHNG";
+        case Key::KEY_SPACE: return "SPACE";
+        case Key::KEY_PRIOR: return "PRIOR";
+        case Key::KEY_NEXT: return "NEXT";
+        case Key::KEY_END: return "END";
+        case Key::KEY_HOME: return "HOME";
+        case Key::KEY_LEFT: return "LEFT";
+        case Key::KEY_UP: return "UP";
+        case Key::KEY_RIGHT: return "RIGHT";
+        case Key::KEY_DOWN: return "DOWN";
+        case Key::KEY_SELECT: return "SELECT";
+        case Key::KEY_PRINT: return "PRINT";
+        case Key::KEY_EXEC: return "EXEC";
+        case Key::KEY_SNAPSHOT: return "SNAPSHOT";
+        case Key::KEY_INSERT: return "INSERT";
+        case Key::KEY_DEL: return "DELETE";
+        case Key::KEY_HELP: return "HELP";
+        case Key::KEY_A: return "A";
+        case Key::KEY_B: return "B";
+        case Key::KEY_C: return "C";
+        case Key::KEY_D: return "D";
+        case Key::KEY_E: return "E";
+        case Key::KEY_F: return "F";
+        case Key::KEY_G: return "G";
+        case Key::KEY_H: return "H";
+        case Key::KEY_I: return "I";
+        case Key::KEY_J: return "J";
+        case Key::KEY_K: return "K";
+        case Key::KEY_L: return "L";
+        case Key::KEY_M: return "M";
+        case Key::KEY_N: return "N";
+        case Key::KEY_O: return "O";
+        case Key::KEY_P: return "P";
+        case Key::KEY_Q: return "Q";
+        case Key::KEY_R: return "R";
+        case Key::KEY_S: return "S";
+        case Key::KEY_T: return "T";
+        case Key::KEY_U: return "U";
+        case Key::KEY_V: return "V";
+        case Key::KEY_W: return "W";
+        case Key::KEY_X: return "X";
+        case Key::KEY_Y: return "Y";
+        case Key::KEY_Z: return "Z";
+        case Key::KEY_LWIN: return "LWIN";
+        case Key::KEY_RWIN: return "RWIN";
+        case Key::KEY_APPS: return "APPS";
+        case Key::KEY_SLEEP: return "SLEEP";
+        case Key::KEY_NUMPAD0: return "NUMPAD0";
+        case Key::KEY_NUMPAD1: return "NUMPAD1";
+        case Key::KEY_NUMPAD2: return "NUMPAD2";
+        case Key::KEY_NUMPAD3: return "NUMPAD3";
+        case Key::KEY_NUMPAD4: return "NUMPAD4";
+        case Key::KEY_NUMPAD5: return "NUMPAD5";
+        case Key::KEY_NUMPAD6: return "NUMPAD6";
+        case Key::KEY_NUMPAD7: return "NUMPAD7";
+        case Key::KEY_NUMPAD8: return "NUMPAD8";
+        case Key::KEY_NUMPAD9: return "NUMPAD9";
+        case Key::KEY_MULTIPLY: return "MULTIPLY";
+        case Key::KEY_ADD: return "ADD";
+        case Key::KEY_SEPARATOR: return "SEPARATOR";
+        case Key::KEY_SUBTRACT: return "SUBTRACT";
+        case Key::KEY_DECIMAL: return "DECIMAL";
+        case Key::KEY_DIVIDE: return "DIVIDE";
+        case Key::KEY_F1: return "F1";
+        case Key::KEY_F2: return "F2";
+        case Key::KEY_F3: return "F3";
+        case Key::KEY_F4: return "F4";
+        case Key::KEY_F5: return "F5";
+        case Key::KEY_F6: return "F6";
+        case Key::KEY_F7: return "F7";
+        case Key::KEY_F8: return "F8";
+        case Key::KEY_F9: return "F9";
+        case Key::KEY_F10: return "F10";
+        case Key::KEY_F11: return "F11";
+        case Key::KEY_F12: return "F12";
+        case Key::KEY_F13: return "F13";
+        case Key::KEY_F14: return "F14";
+        case Key::KEY_F15: return "F15";
+        case Key::KEY_F16: return "F16";
+        case Key::KEY_F17: return "F17";
+        case Key::KEY_F18: return "F18";
+        case Key::KEY_F19: return "F19";
+        case Key::KEY_F20: return "F20";
+        case Key::KEY_F21: return "F21";
+        case Key::KEY_F22: return "F22";
+        case Key::KEY_F23: return "F23";
+        case Key::KEY_F24: return "F24";
+        case Key::KEY_NUMLOCK: return "NUMLOCK";
+        case Key::KEY_SCROLL: return "SCROLL";
+        case Key::KEY_NUMPAD_EQUAL: return "NP_EQUAL";
+        case Key::KEY_LSHIFT: return "LSHIFT";
+        case Key::KEY_RSHIFT: return "RSHIFT";
+        case Key::KEY_LCONTROL: return "LCTRL";
+        case Key::KEY_RCONTROL: return "RCTRL";
+        case Key::KEY_LMENU: return "LMENU";
+        case Key::KEY_RMENU: return "RMENU";
+        case Key::KEY_SEMICOLON: return "SEMICOLON";
+        case Key::KEY_PLUS: return "PLUS";
+        case Key::KEY_COMMA: return "COMMA";
+        case Key::KEY_MINUS: return "MINUS";
+        case Key::KEY_PERIOD: return "PERIOD";
+        case Key::KEY_SLASH: return "SLASH";
+        case Key::KEY_GRAVE: return "GRAVE";
+        default: return "UNKNOWN";
+        }
+    }
+#endif
 }
 
 END_NAMESPACE

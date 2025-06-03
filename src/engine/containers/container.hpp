@@ -11,7 +11,7 @@ namespace Containers
     class Container
     {
     public:
-        virtual muint64 GetSize() = 0;
+        virtual smuint64 GetSize() = 0;
         virtual void Clear() = 0;
     };
 }

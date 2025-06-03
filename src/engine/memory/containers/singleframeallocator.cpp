@@ -4,7 +4,7 @@ BEGIN_NAMESPACE
 
 namespace Memory
 {
-    void* SingleFrameAllocator::Allocate(muint64 size)
+    void* SingleFrameAllocator::Allocate(smuint64 size)
     {
         /*static mbool hasFiredFirstAllocation = false;
         if (hasFiredFirstAllocation == false)

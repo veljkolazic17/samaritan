@@ -35,7 +35,7 @@ void ToolCameraInputHandler::HandleOnKeyboardInputPressedEvent(const Input::Keyb
 #if HACKS_ENABLED
 void ToolCameraInputHandler::UpdateSingleThreaded()
 {
-	constexpr mfloat32 moveSpeed = 40.0f;
+	constexpr smfloat32 moveSpeed = 40.0f;
 	smVec3 moveVec = smVec3_zero;
 	Time deltaTime = smEngine().GetDeltaTime();
 
@@ -43,7 +43,7 @@ void ToolCameraInputHandler::UpdateSingleThreaded()
 
 	Graphics::Renderer& renderer = smRenderer();
 
-	mbool needUpdate = false;
+	smbool needUpdate = false;
 
 	for (const auto& [key, isPressed] : m_KeyStates)
 	{
@@ -101,7 +101,7 @@ void ToolCameraInputHandler::UpdateSingleThreaded()
     {
 		moveVec.Normalize();
 		smVec3& cameraPosition = camera.GetCameraPosition();
-		mfloat32 move = deltaTime * moveSpeed;
+		smfloat32 move = deltaTime * moveSpeed;
 		cameraPosition.m_X += moveVec.m_X * move;
 		cameraPosition.m_Y += moveVec.m_Y * move;
 		cameraPosition.m_Z += moveVec.m_Z * move;

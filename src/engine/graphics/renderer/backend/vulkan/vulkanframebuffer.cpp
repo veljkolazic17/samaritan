@@ -15,9 +15,9 @@ namespace Graphics
 	{
 	}
 
-	void VulkanFramebuffer::Init(const VulkanCreateArguments& arguments, VulkanRenderpass* renderpass, muint32 width, muint32 height, muint32 attachmentCount, const VkImageView attachments[])
+	void VulkanFramebuffer::Init(const VulkanCreateArguments& arguments, VulkanRenderpass* renderpass, smuint32 width, smuint32 height, smuint32 attachmentCount, const VkImageView attachments[])
 	{
-		constexpr muint32 numberOfLayers = 1;
+		constexpr smuint32 numberOfLayers = 1;
 
 		if (renderpass == nullptr)
 		{
@@ -29,7 +29,7 @@ namespace Graphics
 
 		//TODO : Change how this is done!
 		m_Attachments.clear();
-		for (muint16 index = 0; index < attachmentCount; ++index)
+		for (smuint16 index = 0; index < attachmentCount; ++index)
 		{
 			m_Attachments.emplace_back(attachments[index]);
 		}

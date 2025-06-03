@@ -8,7 +8,7 @@ BEGIN_NAMESPACE
 
 namespace Graphics
 {
-	void VulkanFence::Create(VkDevice& device, mbool isSignaled, VkAllocationCallbacks* allocator)
+	void VulkanFence::Create(VkDevice& device, smbool isSignaled, VkAllocationCallbacks* allocator)
 	{
 		m_IsSignaled = isSignaled;
 		VkFenceCreateInfo fenceCreateInfo = { VK_STRUCTURE_TYPE_FENCE_CREATE_INFO };
@@ -29,10 +29,10 @@ namespace Graphics
 		m_IsSignaled = false;
 	}
 
-	mbool VulkanFence::Wait(VkDevice& device, muint64 timeout)
+	smbool VulkanFence::Wait(VkDevice& device, smuint64 timeout)
 	{
-        constexpr muint32 fenceCount = 1;
-        constexpr mbool waitAll = true;
+        constexpr smuint32 fenceCount = 1;
+        constexpr smbool waitAll = true;
 
         if (!m_IsSignaled) 
         {
@@ -81,7 +81,7 @@ namespace Graphics
 
 	void VulkanFence::Reset(VkDevice& device)
 	{
-        constexpr muint32 fenceCount = 1;
+        constexpr smuint32 fenceCount = 1;
 
         if (m_IsSignaled) 
         {

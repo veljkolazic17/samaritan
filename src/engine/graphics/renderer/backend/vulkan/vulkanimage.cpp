@@ -15,13 +15,13 @@ BEGIN_NAMESPACE
         const VkDevice& logicalDevice,
         const VkAllocationCallbacks* allocator,
         VkImageType imageType,
-        muint32 width,
-        muint32 height,
+        smuint32 width,
+        smuint32 height,
         VkFormat& format,
         VkImageTiling tiling,
         VkImageUsageFlags usage,
         VkMemoryPropertyFlags memoryFlags,
-        mbool shouldCreateView,
+        smbool shouldCreateView,
         VkImageAspectFlags viewAspectFlags,
         VulkanImage* outImage
     )
@@ -54,7 +54,7 @@ BEGIN_NAMESPACE
         VkPhysicalDeviceMemoryProperties memoryProperties;
         vkGetPhysicalDeviceMemoryProperties(physicalDevice, &memoryProperties);
 
-        mint32 memtype = VulkanDevice::FindMemoryIndex(physicalDevice, memoryReq.memoryTypeBits, memoryFlags);
+        smint32 memtype = VulkanDevice::FindMemoryIndex(physicalDevice, memoryReq.memoryTypeBits, memoryFlags);
         if (memtype == -1)
         {
             hardAssert(false, "Required memory type not found.");
@@ -118,7 +118,7 @@ BEGIN_NAMESPACE
         barrier.oldLayout = oldLayout;
         barrier.newLayout = newLayout;
 
-        const muint32 graphicsQueueIndex = g_VulkanRenderer->GetVulkanDevice().m_QueuesInfo.m_GraphicsIndex;
+        const smuint32 graphicsQueueIndex = g_VulkanRenderer->GetVulkanDevice().m_QueuesInfo.m_GraphicsIndex;
 
         barrier.srcQueueFamilyIndex = graphicsQueueIndex;
         barrier.dstQueueFamilyIndex = graphicsQueueIndex;
@@ -185,7 +185,7 @@ BEGIN_NAMESPACE
         //TODO : [GRAPHICS] make this configurable when we want to use 3D textures
         region.imageExtent.depth = 1;
 
-        constexpr muint32 regionCount = 1;
+        constexpr smuint32 regionCount = 1;
 
         vkCmdCopyBufferToImage
     	(

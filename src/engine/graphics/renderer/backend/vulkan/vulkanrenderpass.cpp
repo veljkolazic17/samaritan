@@ -9,7 +9,7 @@ BEGIN_NAMESPACE
 
 namespace Graphics
 {
-	void VulkanRenderpass::Create(smVec4 renderArea, smVec4 color, mfloat32 depth, mfloat32 stencil)
+	void VulkanRenderpass::Create(smVec4 renderArea, smVec4 color, smfloat32 depth, smfloat32 stencil)
 	{
 		hardAssert(g_VulkanRenderer != nullptr, "Renderer is not set!");
 
@@ -53,7 +53,7 @@ namespace Graphics
 		depthAttachment.finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
 
 		// Attachments
-		constexpr muint32 attachmentDescriptionCount = 2;
+		constexpr smuint32 attachmentDescriptionCount = 2;
 		VkAttachmentDescription attachmentDescriptions[attachmentDescriptionCount] =
 		{
 			colorAttachment,

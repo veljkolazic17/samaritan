@@ -8,13 +8,13 @@ BEGIN_NAMESPACE
 
 namespace Math
 {
-	constexpr mfloat32			PI = 3.14159265358979323846f;
-	constexpr mfloat32			E = 2.71828182845904523536f;
-	constexpr mfloat32			Deg2RadMultiplier = PI / 180.0f;
-	constexpr mfloat32			Rad2DegMultiplier = 180.0f / PI;
+	constexpr smfloat32			PI = 3.14159265358979323846f;
+	constexpr smfloat32			E = 2.71828182845904523536f;
+	constexpr smfloat32			Deg2RadMultiplier = PI / 180.0f;
+	constexpr smfloat32			Rad2DegMultiplier = 180.0f / PI;
 
-	SM_INLINE mfloat32			Deg2Rad(mfloat32 a) { return a * Deg2RadMultiplier; }
-	SM_INLINE mfloat32			Rad2Deg(mfloat32 a) { return a * Rad2DegMultiplier; }
+	SM_INLINE smfloat32			Deg2Rad(smfloat32 a) { return a * Deg2RadMultiplier; }
+	SM_INLINE smfloat32			Rad2Deg(smfloat32 a) { return a * Rad2DegMultiplier; }
 
 	#define smVec3_up			(smVec3) { 0.0f, 1.0f, 0.0f }
 	#define smVec3_down			(smVec3) { 0.0f, -1.0f, 0.0f }
@@ -23,20 +23,20 @@ namespace Math
 	#define smVec3_forward		(smVec3) { 0.0f, 0.0f, -1.0f }
 	#define smVec3_back			(smVec3) { 0.0f, 0.0f, 1.0f }
 
-	SM_INLINE mint32 Abs(mint32 x)
+	SM_INLINE smint32 Abs(smint32 x)
 	{
 		int y = x >> 31;
 		return ((x ^ y) - y);
 	}
 
-	SM_INLINE mfloat32 Fabs(mfloat32 f) 
+	SM_INLINE smfloat32 Fabs(smfloat32 f) 
 	{
 		int tmp = *reinterpret_cast<int*>(&f);
 		tmp &= 0x7FFFFFFF;
 		return *reinterpret_cast<float*>(&tmp);
 	}
 
-	SM_INLINE mint8 ClampChar(mint8 i) 
+	SM_INLINE smint8 ClampChar(smint8 i) 
 	{
 		if (i < -128) 
 		{
@@ -49,7 +49,7 @@ namespace Math
 		return i;
 	}
 
-	SM_INLINE mint16 ClampShort(mint16 i) 
+	SM_INLINE smint16 ClampShort(smint16 i) 
 	{
 		if (i < -32768) 
 		{
@@ -62,7 +62,7 @@ namespace Math
 		return i;
 	}
 
-	SM_INLINE mint32 ClampInt(mint32 min, mint32 max, mint32 value) 
+	SM_INLINE smint32 ClampInt(smint32 min, smint32 max, smint32 value) 
 	{
 		if (value < min) 
 		{
@@ -75,7 +75,7 @@ namespace Math
 		return value;
 	}
 
-	SM_INLINE mfloat32 ClampFloat(mfloat32 min, mfloat32 max, mfloat32 value) 
+	SM_INLINE smfloat32 ClampFloat(smfloat32 min, smfloat32 max, smfloat32 value) 
 	{
 		if (value < min) 
 		{
@@ -88,22 +88,22 @@ namespace Math
 		return value;
 	}
 
-	SM_INLINE mfloat32 Tan(mfloat32 a) 
+	SM_INLINE smfloat32 Tan(smfloat32 a) 
 	{
 		return std::tanf(a);
 	}
 
-	SM_INLINE mfloat32 Sin(mfloat32 a)
+	SM_INLINE smfloat32 Sin(smfloat32 a)
 	{
 		return std::sinf(a);
 	}
 
-	SM_INLINE mfloat32 Cos(mfloat32 a)
+	SM_INLINE smfloat32 Cos(smfloat32 a)
 	{
 		return std::cosf(a);
 	}
 
-	SM_INLINE mfloat32 DOOM_InvSqrt(mfloat32 a)
+	SM_INLINE smfloat32 DOOM_InvSqrt(smfloat32 a)
 	{
 		long i;
 		float x2, y;
