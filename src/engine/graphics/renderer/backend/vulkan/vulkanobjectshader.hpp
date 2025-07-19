@@ -44,7 +44,9 @@ namespace Graphics
 		void Destroy(VkDevice logicalDevice, VkAllocationCallbacks* allocator);
 		void Use(VulkanCommandBuffer* commandBuffer);
 		void UpdateGlobalState();
-		void UpdateModel(GeometryData data);
+
+		void UpdateModel(const smMat4& model);
+		void UpdateMaterial(const Material& material);
 
 		smuint32 AcquireObjectShaderResources(Material* outMaterial);
 		void ReleaseObjectShaderResources(Material* material);

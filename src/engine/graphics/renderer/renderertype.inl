@@ -5,6 +5,7 @@
 //TODO : [GRAPHICS] maybe do fdeclare
 #include <engine/resources/graphics/texture.hpp>
 #include <engine/resources/graphics/material.hpp>
+#include <engine/resources/graphics/geometry.hpp>
 
 
 #define	NVIDIA_GBO_PADDING	128
@@ -42,7 +43,7 @@ namespace Graphics
 	struct GeometryData
 	{
 		smMat4 m_Model;
-		Material* m_Material = nullptr;
+        Geometry* m_Geometry = nullptr;
 	};
 }
 

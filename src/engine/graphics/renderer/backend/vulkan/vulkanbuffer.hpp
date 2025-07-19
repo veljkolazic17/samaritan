@@ -16,6 +16,7 @@ namespace Graphics
 	{
     public:
         SM_INLINE VkBuffer& GetHandle() { return m_Handle; }
+        SM_INLINE const VkBuffer& GetHandle() const { return m_Handle; }
 
         void Create(smuint32 size, VkBufferUsageFlagBits usage,smuint32 memoryPropertyFlags, smbool bindOnCreate);
         void Destroy();
@@ -23,8 +24,9 @@ namespace Graphics
         void Bind(smuint64 offset);
         void* LockMemory(smuint64 offset, smuint64 size, smuint32 flags);
         void UnlockMemory();
-        void LoadData(smuint64 offset, smuint64 size, smuint32 flags, void* data);
+        void LoadData(smuint64 offset, smuint64 size, smuint32 flags, const void* data);
         void CopyTo(VkCommandPool pool, VkFence fence, VkQueue queue, VkBuffer destination, smuint64 sourceOffset, smuint64 destinationOffset, smuint64 size);
+        void Free(smuint32 offset, smuint32 size);
 
 	private:
         smuint64 m_Size;

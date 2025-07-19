@@ -11,6 +11,7 @@ namespace Memory
 	{
 		softAssert(tag < MemoryTag::SIZE, "Memory tag not defined!");
 		softAssert(tag != MemoryTag::MEM_UNKNOW, "Using uknown memory tag!");
+
 		m_MemoryTagSizes[(smuint16)tag] += size;
 	}
 

@@ -7,6 +7,7 @@
 #include <engine/input/events/keyboardevents.hpp>
 
 #define TEXTURE_DEBUG_KEY	::samaritan::Input::Key::KEY_T
+#define smMaterialDebugSystem()     ::samaritan::MaterialSystemDebug::GetInstance()
 
 BEGIN_NAMESPACE
 
@@ -15,6 +16,9 @@ class MaterialSystemDebug SINGLETON(MaterialSystemDebug)
 public:
 	SINGLETON_CONSTRUCTOR_INIT(MaterialSystemDebug)
 	void SingletonInit() override;
+
+    const Material* GetMaterial() const { return m_Material; }
+    Material* GetMaterial() { return m_Material; }
 
 private:
 	void HandleOnKeyboardInputPressedEvent(const Input::KeyboardInputPressedEvent & event);
@@ -31,6 +35,8 @@ private:
 	};
 
 	smcstring m_LoadedImage = nullptr;
+
+	Material* m_Material = nullptr;
 
 	smbool m_IsDebugKeyPressed = false;
 };

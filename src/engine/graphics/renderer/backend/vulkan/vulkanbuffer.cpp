@@ -142,7 +142,7 @@ namespace Graphics
         vkUnmapMemory(g_VulkanRenderer->GetVulkanDevice().m_LogicalDevice, m_Memory);
     }
 
-    void VulkanBuffer::LoadData(smuint64 offset, smuint64 size, smuint32 flags, void* data) 
+    void VulkanBuffer::LoadData(smuint64 offset, smuint64 size, smuint32 flags, const void* data) 
     {
         void* mdata;
         VulkanCheckResult(vkMapMemory(g_VulkanRenderer->GetVulkanDevice().m_LogicalDevice, m_Memory, offset, size, flags, &mdata), "Could not load data!");
@@ -167,6 +167,11 @@ namespace Graphics
 
         // Submit the buffer for execution and wait for it to complete.
         tempcmdbuff.EndSingleUseBuffer(g_VulkanRenderer->GetVulkanDevice().m_LogicalDevice, pool, queue);
+    }
+
+    void VulkanBuffer::Free(smuint32 offset, smuint32 size)
+    {
+        //TODO: [GRAPHICS] implement this
     }
 }
 

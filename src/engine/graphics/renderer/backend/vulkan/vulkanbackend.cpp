@@ -1,11 +1,13 @@
 #include <engine/graphics/renderer/backend/vulkan/vulkanbackend.hpp>
+
 #include <engine/graphics/renderer/backend/vulkan/vulkantexturedata.hpp>
+#include <engine/graphics/systems/materialsystem.hpp>
 #include <engine/memory/memory.hpp>
 #include <engine/resources/graphics/material.hpp>
 
+#include <set>
 #include <utils/asserts/assert.hpp>
 #include <utils/logger/log.hpp>
-#include <set>
 
 //TODO : [FUCKED][GRAPHICS] changing screen size makes objects look weird
 
@@ -150,43 +152,11 @@ namespace Graphics
 
         CreateBuffers();
 
-#ifdef TEST_CODE_ENABLED
-        const smuint32 vert_count = 4;
-        smVert3D verts[vert_count];
-        smZero(verts, sizeof(smVert3D) * vert_count);
-
-        constexpr smuint32 f = 10;
-
-        constexpr smuint32 z = 0.0f;
-
-        verts[0].m_Position.m_X = -0.5 * f;
-        verts[0].m_Position.m_Y = -0.5 * f;
-        verts[0].m_TextureCoordinates.m_X = 0.0f;
-        verts[0].m_TextureCoordinates.m_Y = 0.0f;
-
-        verts[1].m_Position.m_X = 0.5 * f;
-        verts[1].m_Position.m_Y = 0.5 * f;
-        verts[1].m_TextureCoordinates.m_X = 1.0f;
-        verts[1].m_TextureCoordinates.m_Y = 1.0f;
-
-        verts[2].m_Position.m_X = -0.5 * f;
-        verts[2].m_Position.m_Y = 0.5 * f;
-        verts[2].m_TextureCoordinates.m_X = 0.0f;
-        verts[2].m_TextureCoordinates.m_Y = 1.0f;
-
-        verts[3].m_Position.m_X = 0.5 * f;
-        verts[3].m_Position.m_Y = -0.5 * f;
-        verts[3].m_TextureCoordinates.m_X = 1.0f;
-        verts[3].m_TextureCoordinates.m_Y = 0.0f;
-
-        constexpr smuint32 indexCount = 6;
-        smuint32 indices[indexCount] = { 0, 1, 2, 0, 3, 1 };
-
-        UploadData(m_VulkanDevice.m_GraphicsCommandPool, 0, m_VulkanDevice.m_GraphicsQueue, &m_VertexBuffer, 0, sizeof(smVert3D) * vert_count, verts);
-        UploadData(m_VulkanDevice.m_GraphicsCommandPool, 0, m_VulkanDevice.m_GraphicsQueue, &m_IndexBuffer, 0, sizeof(smuint32) * indexCount, indices);
-#endif
+        for (smuint32 i = 0; i < SM_VULKAN_MAX_GEOMETRY_COUNT; ++i)
+        {
+            m_GeometryData[i].m_Id = SM_INVALID_ID;
+        }
     }
-
 
     void VulkanRenderer::Shutdown()
     {
@@ -800,7 +770,7 @@ namespace Graphics
         m_VertexBuffer.Destroy();
     }
 
-    void VulkanRenderer::UploadData(VkCommandPool pool, VkFence fence, VkQueue queue, VulkanBuffer* buffer, smuint64 offset, smuint64 size, void* data)
+    void VulkanRenderer::UploadData(VkCommandPool pool, VkFence fence, VkQueue queue,const VulkanBuffer& buffer, smuint64 offset, smuint64 size, const void* data)
     {
         // Create a host-visible staging buffer to upload to. Mark it as the source of the transfer.
         VkBufferUsageFlags flags = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT;
@@ -809,7 +779,7 @@ namespace Graphics
         staging.LoadData(0, size, 0, data);
 
         // Perform the copy from staging to the device local buffer.
-        staging.CopyTo(pool, fence, queue, buffer->GetHandle(), 0, offset, size);
+        staging.CopyTo(pool, fence, queue, buffer.GetHandle(), 0, offset, size);
 
         // Clean up the staging buffer.
         staging.Destroy();
@@ -829,23 +799,47 @@ namespace Graphics
         m_ObjectShader.UpdateGlobalState();
     }
 
-    void VulkanRenderer::UpdateObject(const GeometryData& data)
+    void VulkanRenderer::DrawGeometry(const GeometryData& data)
     {
-        m_ObjectShader.UpdateModel(data);
+        if (data.m_Geometry != nullptr && data.m_Geometry->m_Id == SM_INVALID_ID) 
+        {
+            return;
+        }
 
-#ifdef TEST_CODE_ENABLED
-        m_ObjectShader.Use(&m_GraphicsCommandBuffers[m_ImageIndex]);
+        Vulkan::Types::GeometryData& geometryData = m_GeometryData[data.m_Geometry->m_Handle];
+        VulkanCommandBuffer& commandBuffer = m_GraphicsCommandBuffers[m_ImageIndex];
+
+        m_ObjectShader.Use(&commandBuffer); 
+        m_ObjectShader.UpdateModel(data.m_Model);
+
+        
+        if (const Material* material = data.m_Geometry->m_Material)
+        {
+            m_ObjectShader.UpdateMaterial(*material);
+        }
+        else
+        {
+            m_ObjectShader.UpdateMaterial(smMaterialSystem().GetDefaultMaterial());
+        }
+        
 
         // Bind vertex buffer at offset.
-        VkDeviceSize offsets[1] = { 0 };
-        vkCmdBindVertexBuffers(m_GraphicsCommandBuffers[m_ImageIndex].GetHandle(), 0, 1, &(m_VertexBuffer.GetHandle()), (VkDeviceSize*)offsets);
+        VkDeviceSize offsets[1] = { geometryData.m_VertexBufferOffset };
+        vkCmdBindVertexBuffers(commandBuffer.GetHandle(), 0, 1, &m_VertexBuffer.GetHandle(), offsets);
 
-        // Bind index buffer at offset.
-        vkCmdBindIndexBuffer(m_GraphicsCommandBuffers[m_ImageIndex].GetHandle(), m_IndexBuffer.GetHandle(), 0, VK_INDEX_TYPE_UINT32);
+        // Draw indexed or non-indexed.
+        if (geometryData.m_IndexCount > 0) 
+        {
+            // Bind index buffer at offset.
+            vkCmdBindIndexBuffer(commandBuffer.GetHandle(), m_IndexBuffer.GetHandle(), geometryData.m_IndexBufferOffset, VK_INDEX_TYPE_UINT32);
 
-        // Issue the draw.
-        vkCmdDrawIndexed(m_GraphicsCommandBuffers[m_ImageIndex].GetHandle(), 6, 1, 0, 0, 0);
-#endif
+            // Issue the draw.
+            vkCmdDrawIndexed(commandBuffer.GetHandle(), geometryData.m_IndexCount, 1, 0, 0, 0);
+        }
+        else 
+        {
+            vkCmdDraw(commandBuffer.GetHandle(), geometryData.m_VertexCount, 1, 0, 0);
+        }
     }
 
     smbool VulkanRenderer::CreateTexture(const smuint8* pixels, Texture* texture)
@@ -996,6 +990,103 @@ namespace Graphics
         m_ObjectShader.ReleaseObjectShaderResources(material);
     }
 
+    smbool VulkanRenderer::CreateGeometry(Geometry* geometry, smuint32 vertexCount, const smVert3D* vertices, smuint32 indexCount, const smuint32* indices)
+    {
+        if (vertexCount == 0 || vertices == nullptr || geometry == nullptr) 
+        {
+            LogError(LogChannel::Graphics, "CreateGeometry called with 0 vertex count or nullptr vertices or geometry nullptr");
+            return false;
+        }
+
+        smbool isNewUpload = geometry->m_Handle == SM_INVALID_ID;
+        Vulkan::Types::GeometryData oldData;
+
+        Vulkan::Types::GeometryData* data = nullptr;
+        
+        if (isNewUpload)
+        {
+            smuint32 newId = 0;
+            for (Vulkan::Types::GeometryData& d : m_GeometryData)
+            {
+                if (d.m_Id == SM_INVALID_ID)
+                {
+                    geometry->m_Handle = newId;
+                    data = &d;
+                    data->m_Id = newId;
+                    break;
+                }
+                ++newId;
+            }
+        }
+        else 
+        {
+            
+            data = &m_GeometryData[geometry->m_Handle];
+            oldData = *data;
+        }
+
+        hardAssert(data != nullptr, "Could not find free geometry data slot!");
+
+        VkCommandPool pool = m_VulkanDevice.m_GraphicsCommandPool;
+        VkQueue queue = m_VulkanDevice.m_GraphicsQueue;
+
+        data->m_VertexBufferOffset = m_GeometryVertexOffset;
+        data->m_VertexCount = vertexCount;
+        data->m_VertexSize = sizeof(smVert3D) * vertexCount;
+
+        UploadData(pool, 0, queue, m_VertexBuffer, data->m_VertexBufferOffset, data->m_VertexSize, vertices);
+        //TODO : [GRAPHICS][GEOMETRY] This is a hack, we should use freelist
+        m_GeometryVertexOffset += data->m_VertexSize;
+
+        if (indexCount != 0 && indices != nullptr)
+        {
+            data->m_IndexBufferOffset = m_GeometryIndexOffset;
+            data->m_IndexCount = indexCount;
+            data->m_IndexSize = sizeof(smuint32) * indexCount;
+            UploadData(pool, 0, queue, m_IndexBuffer, data->m_IndexBufferOffset, data->m_IndexSize, indices);
+
+            m_GeometryIndexOffset += data->m_IndexSize;
+            //TODO : [GRAPHICS][GEOMETRY] This is a hack, we should use freelist
+        }
+
+        if (data->m_Generation == SM_INVALID_ID) 
+        {
+            data->m_Generation = 0;
+        }
+        else 
+        {
+            data->m_Generation++;
+        }
+
+        if (!isNewUpload) 
+        {
+            m_VertexBuffer.Free(oldData.m_VertexBufferOffset, oldData.m_VertexSize);
+            if (oldData.m_IndexSize > 0) 
+            {
+                m_IndexBuffer.Free(oldData.m_IndexBufferOffset, oldData.m_IndexSize);
+            }
+        }
+
+        return true;
+    }
+
+    void VulkanRenderer::DestroyGeometry(Geometry* geometry)
+    {
+        if (geometry != nullptr && geometry->m_Handle != SM_INVALID_ID) 
+        {
+            vkDeviceWaitIdle(m_VulkanDevice.m_LogicalDevice);
+            Vulkan::Types::GeometryData& geometryData = m_GeometryData[geometry->m_Handle];
+
+            m_VertexBuffer.Free(geometryData.m_VertexBufferOffset, geometryData.m_VertexSize);
+
+            if (geometryData.m_IndexSize > 0)
+            {
+                m_IndexBuffer.Free(geometryData.m_IndexBufferOffset, geometryData.m_IndexSize);
+            }
+
+            geometryData.m_Id = geometryData.m_Generation = SM_INVALID_ID;
+        }
+    }
 }
 
 END_NAMESPACE

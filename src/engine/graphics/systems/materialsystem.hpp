@@ -43,7 +43,8 @@ public:
 	Material* Acquire(const smstring& name);
 	void Release(const smstring& name);
 
-	const Material& GetDefaultMaterial() { return m_DefaultMaterial; }
+	const Material& GetDefaultMaterial() const { return m_DefaultMaterial; }
+	Material& GetDefaultMaterial() { return m_DefaultMaterial; }
 private:
 	void DestroyMaterial(Material * material);
 	smbool LoadMaterial(const MaterialConfig & config, Material * material);

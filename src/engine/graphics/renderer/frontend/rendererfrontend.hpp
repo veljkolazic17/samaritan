@@ -39,8 +39,12 @@ namespace Graphics
 		smbool CreateMaterial(Material* material);
 		void DestroyMaterial(Material* material);
 
+		smbool CreateGeometry(Geometry* geometry, smuint32 vertexCount, const smVert3D* vertices, smuint32 indexCount, const smuint32* indices);
+		void DestroyGeometry(Geometry* geometry);
+
 #ifdef TEST_CODE_ENABLED
-		SM_INLINE void SetTestMaterial(Material* material) { m_TestMaterial = material; }
+		SM_INLINE void SetGeometry(Geometry* geometry) { m_Geometry = geometry; }
+		SM_INLINE Geometry* GetGeometry() { return m_Geometry; }
 #endif
 	private:
 		smMat4 m_Projection;
@@ -49,7 +53,7 @@ namespace Graphics
 		smfloat32 m_NearClip;
 		smfloat32 m_FarClip;
 #ifdef TEST_CODE_ENABLED
-		Material* m_TestMaterial;
+		Geometry* m_Geometry = nullptr;
 #endif
 	};
 }

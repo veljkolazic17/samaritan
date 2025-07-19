@@ -13,40 +13,40 @@ BEGIN_NAMESPACE
 
 smbool TextureSystem::Init(const TextureSystemConfing& config)
 {
-	if (config.m_MaxTextureCount == 0)
-	{
-		softAssert(false, "Texture System Config has max texture count 0!");
-		return false;
-	}
+    if (config.m_MaxTextureCount == 0)
+    {
+        softAssert(false, "Texture System Config has max texture count 0!");
+        return false;
+    }
 
-	m_Config = config;
+    m_Config = config;
 
     //TODO : [FUCKED][TEXTURE] This is bad. Why? Idk it feels bad check this later
     Texture temp;
     std::fill_n(std::back_inserter(m_Textures), config.m_MaxTextureCount, temp);
 
     //Create default texture
-	constexpr smuint64 textureDimension = 256;
-	constexpr smuint64 channels = 4;
-	constexpr smuint64 pixelCount = textureDimension * textureDimension;
+    constexpr smuint64 textureDimension = 256;
+    constexpr smuint64 channels = 4;
+    constexpr smuint64 pixelCount = textureDimension * textureDimension;
 
-	constexpr smuint64 textureSize = pixelCount * channels;
-	smuint8 pixels[textureSize];
-	smSet(pixels, 255, sizeof(smuint8) * textureSize);
+    constexpr smuint64 textureSize = pixelCount * channels;
+    smuint8 pixels[textureSize];
+    smSet(pixels, 255, sizeof(smuint8) * textureSize);
 
-	for (smuint64 row = 0; row < textureDimension; ++row)
-	{
-		bool rowIsOdd = row % 2; // Precompute row parity
-		for (smuint64 col = 0; col < textureDimension; ++col)
-		{
-			if (col % 2 == rowIsOdd) // Check if row and column parity match
-			{
-				smuint64 index_bpp = (row * textureDimension + col) * channels;
-				pixels[index_bpp + 0] = 0;
-				pixels[index_bpp + 1] = 0;
-			}
-		}
-	}
+    for (smuint64 row = 0; row < textureDimension; ++row)
+    {
+        bool rowIsOdd = row % 2; // Precompute row parity
+        for (smuint64 col = 0; col < textureDimension; ++col)
+        {
+            if (col % 2 == rowIsOdd) // Check if row and column parity match
+            {
+                smuint64 index_bpp = (row * textureDimension + col) * channels;
+                pixels[index_bpp + 0] = 0;
+                pixels[index_bpp + 1] = 0;
+            }
+        }
+    }
     
     std::strncpy(reinterpret_cast<char*>(m_DefaultTexture.m_Name), SM_DEFAULT_TEXTURE_NAME, SM_TEXTURE_NAME_MAX_LENGTH);
     m_DefaultTexture.m_HasTransparency = false;
@@ -61,19 +61,19 @@ smbool TextureSystem::Init(const TextureSystemConfing& config)
         return false;
     }
 
-	m_DefaultTexture.m_Generation = SM_INVALID_ID;
+    m_DefaultTexture.m_Generation = SM_INVALID_ID;
 
-	return true;
+    return true;
 }
 
 void TextureSystem::Shutdown()
 {
     Graphics::Renderer& renderer = smRenderer();
     renderer.DestroyTexture(&m_DefaultTexture);
-	for (Texture& texture : m_Textures)
-	{
-		renderer.DestroyTexture(&texture);
-	}
+    for (Texture& texture : m_Textures)
+    {
+        renderer.DestroyTexture(&texture);
+    }
 }
 
 Texture* TextureSystem::Acquire(const smstring& name, smbool shouldAutoRelease)
@@ -173,11 +173,11 @@ smbool TextureSystem::LoadTexture(const smstring& textureName, Texture* texture)
     Texture temp;
     smuint8* data = stbi_load
     (
-		path.data(),
-		reinterpret_cast<int*>(&temp.m_Width),
-		reinterpret_cast<int*>(&temp.m_Height),
-		reinterpret_cast<int*>(&temp.m_ChannelCount),
-		channelCount
+        path.data(),
+        reinterpret_cast<int*>(&temp.m_Width),
+        reinterpret_cast<int*>(&temp.m_Height),
+        reinterpret_cast<int*>(&temp.m_ChannelCount),
+        channelCount
     );
 
     //Generation of default texture
