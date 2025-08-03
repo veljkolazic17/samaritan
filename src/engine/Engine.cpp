@@ -86,8 +86,7 @@ BEGIN_NAMESPACE
         //This should be configurable
         Graphics::Renderer::GetInstance().Init(m_DeafualtRenderer);
 
-        TextureSystemConfing texutreSystemConfig = { 65536 };
-        TextureSystem::GetInstance().Init(texutreSystemConfig);
+        TextureSystem::GetInstance().Init();
 
         MaterialSystemConfig materialSystemConfig = { 4096 };
         MaterialSystem::GetInstance().Init(materialSystemConfig);

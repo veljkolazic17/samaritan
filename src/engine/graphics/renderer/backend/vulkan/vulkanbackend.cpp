@@ -924,7 +924,6 @@ namespace Graphics
         samplerInfo.compareOp = VK_COMPARE_OP_ALWAYS;
         samplerInfo.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
         samplerInfo.mipLodBias = 0.0f;
-        //TODO : [GRAPHICS][TEXTURE] HAHA fucking lod
         samplerInfo.minLod = 0.0f;
         samplerInfo.maxLod = 0.0f;
 
@@ -935,17 +934,14 @@ namespace Graphics
             return false;
         }
 
-        texture->m_Generation++;
-
         return true;
     }
 
     void VulkanRenderer::DestroyTexture(Texture* texture)
     {
-        if (texture == nullptr || texture->m_ID == SM_INVALID_ID)
+        if (texture == nullptr)
         {
-            //TODO : [GRAPHICS][TEXTURE] Maybe do this check before every call of DestroyTexture
-            //softAssert(false, "Invalid texture");
+            softAssert(false, "[VulkanRenderer]: Texture is null!");
             return;
         }
 
@@ -959,7 +955,6 @@ namespace Graphics
 
         gpFreeTexture(data, sizeof(VulkanTextureData));
         smZero(texture, sizeof(Texture));
-        texture->m_Generation = SM_INVALID_ID;
     }
 
     smbool VulkanRenderer::CreateMaterial(Material* material)

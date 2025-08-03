@@ -1,7 +1,7 @@
 #pragma once
 #include <defines.hpp>
 
-#define SM_DEFAULT_GEOMETRY_NAME    "DEFAULT"
+#define SM_DEFAULT_GEOMETRY_NAME    "DEFAULT_GEOMETRY"
 #define SM_GEOMETRY_NAME_MAX_LENGTH 1024
 
 BEGIN_NAMESPACE

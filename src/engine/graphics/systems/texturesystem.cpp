@@ -2,29 +2,15 @@
 
 #include <engine/graphics/renderer/frontend/rendererfrontend.hpp>
 
+#include <engine/resources/resourcesystem.hpp>
+
 #include <format>
 #include <cstring>
 
-//HACK
-#define STB_IMAGE_IMPLEMENTATION
-#include <museum/museum.hpp>
-
 BEGIN_NAMESPACE
 
-smbool TextureSystem::Init(const TextureSystemConfing& config)
+smbool TextureSystem::Init()
 {
-    if (config.m_MaxTextureCount == 0)
-    {
-        softAssert(false, "Texture System Config has max texture count 0!");
-        return false;
-    }
-
-    m_Config = config;
-
-    //TODO : [FUCKED][TEXTURE] This is bad. Why? Idk it feels bad check this later
-    Texture temp;
-    std::fill_n(std::back_inserter(m_Textures), config.m_MaxTextureCount, temp);
-
     //Create default texture
     constexpr smuint64 textureDimension = 256;
     constexpr smuint64 channels = 4;
@@ -48,194 +34,66 @@ smbool TextureSystem::Init(const TextureSystemConfing& config)
         }
     }
     
-    std::strncpy(reinterpret_cast<char*>(m_DefaultTexture.m_Name), SM_DEFAULT_TEXTURE_NAME, SM_TEXTURE_NAME_MAX_LENGTH);
-    m_DefaultTexture.m_HasTransparency = false;
-    m_DefaultTexture.m_Generation = SM_INVALID_ID;
-    m_DefaultTexture.m_Width = textureDimension;
-    m_DefaultTexture.m_Height = textureDimension;
-    m_DefaultTexture.m_ChannelCount = 4;
+    m_DefaultTextureData.m_Name = std::string(SM_DEFAULT_TEXTURE_NAME);
+    m_DefaultTextureData.m_HasTransparency = false;
+    m_DefaultTextureData.m_Width = textureDimension;
+    m_DefaultTextureData.m_Height = textureDimension;
+    m_DefaultTextureData.m_ChannelCount = 4;
 
-    if (!smRenderer().CreateTexture(pixels, &m_DefaultTexture))
+    if (!smRenderer().CreateTexture(pixels, &m_DefaultTextureData))
     {
         softAssert(false, "Cannot create default texutre!");
         return false;
     }
 
-    m_DefaultTexture.m_Generation = SM_INVALID_ID;
+    constexpr smbool shouldAutoRelease = false;
 
-    return true;
+    m_DefaultTexture = smResourceSystem().Load<Texture>(&m_DefaultTextureData, shouldAutoRelease);
 }
 
 void TextureSystem::Shutdown()
 {
-    Graphics::Renderer& renderer = smRenderer();
-    renderer.DestroyTexture(&m_DefaultTexture);
-    for (Texture& texture : m_Textures)
-    {
-        renderer.DestroyTexture(&texture);
-    }
+    smRenderer().DestroyTexture(&m_DefaultTextureData);
+    m_TextureLookup.clear();
 }
 
-Texture* TextureSystem::Acquire(const smstring& name, smbool shouldAutoRelease)
+const ResourceHandle<Texture>& TextureSystem::Acquire(const smstring& name, smbool shouldAutoRelease)
 {
     if (!std::strcmp(name.data(), SM_DEFAULT_TEXTURE_NAME))
     {
-        softAssert(false, "Trying to acquire default texture!");
-        return &m_DefaultTexture;
+        softAssert(false, "TextureSystem: Trying to acquire default texture!");
+        return ResourceHandle<Texture>::InvalidReference();
     }
 
-    TextureReference& reference = m_TextureLookup[name];
+    ResourceHandle<Texture>& texture = m_TextureLookup[name];
 
-    if (reference.m_RefCount == 0)
+    if (!texture.IsValid())
     {
-        reference.m_ShouldAutoRelease = shouldAutoRelease;
+        texture = std::move(smResourceSystem().Load<Texture>(name, shouldAutoRelease));
+        if (!texture.IsValid())
+        {
+            softAssert(false, "TextureSystem: Could not load texture %s", name);
+            return ResourceHandle<Texture>::InvalidReference();
+        }
     }
-
-    ++reference.m_RefCount;
-    //First time getting texture
-    if (reference.m_Handle == SM_INVALID_ID)
-    {
-        //Find free space in array
-        //TODO : [TEXTURE] change this not to be vector
-        Texture* newTexture = nullptr;
-        for (smuint64 counter = 0; counter < m_Textures.size(); ++counter)
-        {
-            Texture& texture = m_Textures[counter];
-            if (texture.m_ID == SM_INVALID_ID)
-            {
-                newTexture = &texture;
-                reference.m_Handle = counter;
-                break;
-            }
-        }
-
-        if (newTexture == nullptr)
-        {
-            softAssert(false, "Can't load more textures!");
-            return &m_DefaultTexture;
-        }
-
-        if (!LoadTexture(name, newTexture))
-        {
-            softAssert(false, "Failed to load texture %s", name);
-            return &m_DefaultTexture;
-        }
-        newTexture->m_ID = reference.m_Handle;
-    }
-    return &m_Textures[reference.m_Handle];
+    return texture;
 }
 
 void TextureSystem::Release(const smstring& name)
 {
     if (!std::strcmp(name.data(), SM_DEFAULT_TEXTURE_NAME))
     {
-        softAssert(false, "Trying to release default texture!");
+        softAssert(false, "TextureSystem: Trying to release default texture!");
     }
 
     if (m_TextureLookup.contains(name))
     {
-        TextureReference& reference = m_TextureLookup[name];
-        --reference.m_RefCount;
-
-        if (reference.m_RefCount == 0 && reference.m_ShouldAutoRelease)
-        {
-            Texture* texture = &m_Textures[reference.m_Handle];
-            smRenderer().DestroyTexture(texture);
-            smZero(texture, sizeof(Texture));
-            //Texture is destroyed
-            texture->m_ID = SM_INVALID_ID;
-            texture->m_Generation = SM_INVALID_ID;
-            reference.m_Handle = SM_INVALID_ID;
-            reference.m_ShouldAutoRelease = false;
-        }
-        //TODO : [TEXTURE] Check when reference should be removed from entries
+        m_TextureLookup.erase(name);
     }
     else
     {
         softAssert(false, "Texture not loaded!");
     }
 }
-
-smbool TextureSystem::LoadTexture(const smstring& textureName, Texture* texture)
-{
-#if SM_USE_MUSEUM_STB
-
-    //TODO : [SYSTEM][TEXTURE] Support dynamic file paths
-    constexpr smcstring pathFormat = "../../../assets/textures/{}.{}";
-    constexpr smint32 channelCount = 4;
-
-    stbi_set_flip_vertically_on_load(true);
-    char full_file_path[512];
-
-    //TODO : [SYSTEM][TEXUTRE] Support multiple formats
-    std::string path = std::format(pathFormat, textureName.data(), "png");
-
-    Texture temp;
-    smuint8* data = stbi_load
-    (
-        path.data(),
-        reinterpret_cast<int*>(&temp.m_Width),
-        reinterpret_cast<int*>(&temp.m_Height),
-        reinterpret_cast<int*>(&temp.m_ChannelCount),
-        channelCount
-    );
-
-    //Generation of default texture
-    temp.m_ChannelCount = channelCount;
-    if (data != nullptr)
-    {
-        smuint32 generation = texture->m_Generation;
-        texture->m_Generation = SM_INVALID_ID;
-
-        smuint64 size = temp.m_Width * temp.m_Height * channelCount;
-
-        smbool isTransparent = false;
-        for (smuint64 i = 0; i < size; i += channelCount)
-        {
-            smuint8 alpha = data[i + 3];
-            if (alpha < 255)
-            {
-                isTransparent = true;
-                break;
-            }
-        }
-
-        // Acquire internal texture resources and upload to GPU.
-        Graphics::Renderer& renderer = smRenderer();
-
-        //TODO : [CRITICAL] check this shit code later!!!!
-        std::strncpy(reinterpret_cast<char*>(temp.m_Name), textureName.data(), SM_TEXTURE_NAME_MAX_LENGTH);
-        renderer.CreateTexture
-        (
-            data,
-            &temp
-        );
-
-        Texture oldTexture = *texture;
-        *texture = temp;
-        renderer.DestroyTexture(&oldTexture);
-
-        //Check generation
-        if (generation == SM_INVALID_ID)
-        {
-            texture->m_Generation = 0;
-        }
-        else
-        {
-            texture->m_Generation = generation + 1;
-        }
-
-        stbi_image_free(data);
-        return true;
-    }
-    if (const char* reason = stbi_failure_reason())
-    {
-        //TODO [TEXTURE] Add support for asserts messages {} or %s
-        softAssert(false, "Failed to load texture", path.data(), reason);
-        stbi__err(0, 0);
-    }
-#endif
-    return false;
-};
 
 END_NAMESPACE

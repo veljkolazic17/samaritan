@@ -18,7 +18,7 @@ namespace Memory
 	void MemoryStats::MemoryTagFree(smuint64 size, MemoryTag tag)
 	{
 		softAssert(tag < MemoryTag::SIZE, "Memory tag not defined!");
-		m_MemoryTagSizes[(smuint16)tag] += size;
+		m_MemoryTagSizes[(smuint16)tag] -= size;
 	}
 
 	void MemoryStats::Clear()

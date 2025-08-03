@@ -86,13 +86,8 @@ namespace Graphics
                 {
                     m_Geometry = const_cast<Geometry*>(smGeometrySystem().GetDefaultGeometry());
                 }
-                else
-                {
-                    data.m_Geometry = m_Geometry;
-                    m_RendererBackend->DrawGeometry(data);
-                }
-
-                
+                data.m_Geometry = m_Geometry;
+                m_RendererBackend->DrawGeometry(data);
 #endif
 
                 if (!m_RendererBackend->EndFrame(renderData.m_Time))

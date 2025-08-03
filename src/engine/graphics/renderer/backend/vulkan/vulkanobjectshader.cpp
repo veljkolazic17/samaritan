@@ -367,7 +367,8 @@ namespace Graphics
             {
             case TextureUsageType::TEXTURE_USAGE_MAP_DIFFUSE:
             {
-                texture = material.m_DiffuseMap.m_Texture;
+                const ResourceHandle<Texture>& textureRef = material.m_DiffuseMap.m_Texture;
+                texture = textureRef.GetResource();
                 break;
             }
             default:
@@ -380,14 +381,14 @@ namespace Graphics
             smuint32& descriptorGeneration = objectState.m_DescriptorStates[descriptorIndex].m_Generation[imageIndex];
             smuint32& descriptorID = objectState.m_DescriptorStates[descriptorIndex].m_ID[imageIndex];
 
-            if (texture == nullptr || texture->m_Generation == SM_INVALID_ID)
+            if (texture == nullptr)//TODO : [FUCKED][GRPAHICS]  //|| texture->m_Generation == SM_INVALID_ID)
             {
-                texture = &smTextureSystem().GetDefaultTexture();
+                texture = smTextureSystem().GetDefaultTexture().GetResource();
                 descriptorGeneration = SM_INVALID_ID;
             }
 
             // Check if the descriptor needs updating first.
-            if (texture != nullptr && (descriptorID != texture->m_ID || descriptorGeneration != texture->m_Generation || descriptorGeneration == SM_INVALID_ID))
+            if (texture != nullptr && (descriptorID != texture->m_Id || descriptorGeneration != texture->m_Generation || descriptorGeneration == SM_INVALID_ID))
             {
                 VulkanTextureData* textureData = static_cast<VulkanTextureData*>(texture->m_Data);
                 // Assign view and sampler.
@@ -407,7 +408,7 @@ namespace Graphics
                 if (texture->m_Generation != SM_INVALID_ID)
                 {
                     descriptorGeneration = texture->m_Generation;
-                    descriptorID = texture->m_ID;
+                    descriptorID = texture->m_Id;
                 }
                 ++descriptorIndex;
             }

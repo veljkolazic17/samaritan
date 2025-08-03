@@ -1,12 +1,12 @@
 #pragma once
 #include <defines.hpp>
 
-#define SM_DEFAULT_TEXTURE_NAME     "DEFAULT"
+#include <engine/resources/resource.hpp>
+
+#define SM_DEFAULT_TEXTURE_NAME     "DEFAULT_TEXTURE"
 #define SM_TEXTURE_NAME_MAX_LENGTH  1024
 
 BEGIN_NAMESPACE
-
-class Texture;
 
 enum class TextureUsageType
 {
@@ -15,22 +15,29 @@ enum class TextureUsageType
     TEXTURE_USAGE_UNKNOWN
 };
 
-struct TextureMap
+struct Texture : Resource
 {
-    Texture* m_Texture = nullptr;
-    TextureUsageType m_Type = TextureUsageType::TEXTURE_USAGE_UNKNOWN;
-};
+    using Resource::Resource;
 
-struct Texture
-{
-    smuint8 m_Name[SM_TEXTURE_NAME_MAX_LENGTH];
-    smuint32 m_ID = SM_INVALID_ID;
     smuint32 m_Width = 0;
     smuint32 m_Height = 0;
     smuint32 m_ChannelCount = 0;
     smbool m_HasTransparency = false;
-    smuint32 m_Generation = SM_INVALID_ID;
     void* m_Data = nullptr;
+
+    smuint32 m_Id = SM_INVALID_ID;
+    smuint32 m_Generation = SM_INVALID_ID;
+
+    void OnUnload() override;
+    void OnLoad() override;
 };
+
+struct TextureMap
+{
+    ResourceHandle<Texture> m_Texture;
+    TextureUsageType m_Type = TextureUsageType::TEXTURE_USAGE_UNKNOWN;
+};
+
+
 
 END_NAMESPACE
