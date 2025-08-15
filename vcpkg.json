@@ -3,6 +3,14 @@
         "glfw3",
         "hiredis",
         "glm",
-        "nlohmann-json"
+        "nlohmann-json",
+        {
+            "name": "imgui",
+            "default-features": false,
+            "features": [
+                "vulkan-binding",
+                "win32-binding"
+            ]
+        }
     ]
 }

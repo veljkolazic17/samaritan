@@ -35,13 +35,14 @@ namespace Graphics
         void DrawGeometry(const GeometryData& data) override;
 
         SM_INLINE VkAllocationCallbacks* GetAllocator() { return m_Allocator; }
+        SM_INLINE VkInstance GetInstance() { return m_Instance; }
         SM_INLINE VulkanDevice& GetVulkanDevice() { return m_VulkanDevice; }
         SM_INLINE VkSurfaceKHR& GetSurface() { return m_Surface; }
         SM_INLINE std::vector<VkSurfaceFormatKHR>& GetSurfaceFormats() { return m_SurfaceFormats; }
         SM_INLINE std::vector<VkPresentModeKHR>& GetPresentModes() { return m_PresentModes; }
         SM_INLINE VkSurfaceCapabilitiesKHR& GetCapabilities() { return m_Capabilities; }
         SM_INLINE VulkanSwapChain& GetVulkanSwapChain() { return m_SwapChain; }
-        SM_INLINE VulkanRenderpass& GetMainRenderpass() { return m_MainRenderPass; }
+        SM_INLINE VulkanRenderpass& GetRenderpass(const smuint32 renderpassId) { return m_RenderPasses[renderpassId]; }
         SM_INLINE std::vector<VulkanCommandBuffer>& GetGraphicsCommandBuffers() { return m_GraphicsCommandBuffers; }
         SM_INLINE smuint32 GetImageIndex() { return m_ImageIndex; }
 
@@ -90,9 +91,9 @@ namespace Graphics
         std::vector<VkSemaphore> m_RenderFinishedSemaphores;
         std::vector<VulkanFence> m_InFlightFences;
         std::vector<VulkanFence*> m_ImagesInFlight;
+        std::vector<VulkanRenderpass> m_RenderPasses;
 
         VulkanSwapChain m_SwapChain;
-        VulkanRenderpass m_MainRenderPass;
         VkSurfaceCapabilitiesKHR m_Capabilities;
 
         VulkanObjectShader m_ObjectShader;

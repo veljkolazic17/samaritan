@@ -15,6 +15,10 @@
 #include <engine/threads/iupdatable.hpp>
 #endif
 
+#if IMGUI_DISPLAY_ENABLED
+#include <imgui/imguidrawmodule.hpp>
+#endif
+
 #ifdef SM_TOOL
 #include <engine/camera/tool/toolcamerainputhandler.hpp>
 #endif
@@ -110,6 +114,10 @@ BEGIN_NAMESPACE
         SM_INVOKE_SINGLETON_INIT(MaterialSystemDebug);
         SM_INVOKE_SINGLETON_INIT(GeometrySystemDebug);
 #endif
+#endif
+
+#if IMGUI_DISPLAY_ENABLED
+        smImguiDrawModule().Init();
 #endif
         clock.Start();
         ENGINE_RUN();

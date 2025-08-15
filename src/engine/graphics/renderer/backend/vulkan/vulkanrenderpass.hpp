@@ -24,10 +24,18 @@ namespace Graphics
 		SIZE
 	};
 
+	enum VulkanRenderpassClearFlag : smuint8
+	{
+		CLEAR_NONE = 1 << 0,
+		CLEAR_COLOR_BUFFER = 1 << 1,
+		CLEAR_DEPTH_BUFFER = 1 << 2,
+		CLEAR_STENCIL_BUFFER = 1 << 3
+	};
+
 	class VulkanRenderpass
 	{
 	public:
-		void Create(smVec4 renderArea, smVec4 color, smfloat32 depth, smfloat32 stencil);
+		void Create(smVec4 renderArea, smVec4 color, smfloat32 depth, smfloat32 stencil, smuint8 clearFlags, smbool hasPreviousPass, smbool hasNextPass);
 		void Destroy();
 
 		void Begin(smVec4 renderArea, VulkanCommandBuffer& commandBuffer, VkFramebuffer frameBuffer);
@@ -40,6 +48,10 @@ namespace Graphics
 		smfloat32 m_Depth;
 		smfloat32 m_Stencil;
 		VulkanRenderpassState m_State = VulkanRenderpassState::NOT_ALLOCATED;
+
+		smuint8 m_ClearFlags = 0;
+		smbool m_HasPreviousPass = false;
+		smbool m_HasNextPass = false;
 
 		VkRenderPass m_Handle;
 	};

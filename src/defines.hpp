@@ -2,6 +2,10 @@
 #include <types.hpp>
 #include <config.hpp>
 
+#include <vector>
+#include <unordered_map>
+#include <unordered_set>
+
 #define STATIC_ASSERT(condition)                    static_assert(condition, "static_assert: "  #condition)
 #define STATIC_ASSERT_MESSAGE(condition, message)   static_assert(condition, "static_assert: "  message)
 

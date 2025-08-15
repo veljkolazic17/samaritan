@@ -29,3 +29,10 @@ typedef                 std::string smstring;
 
 // Engine
 typedef double			            Time;
+
+// Complex types
+struct Range
+{
+    smuint64 m_Offset = 0;
+    smuint64 m_Size = 0;
+};

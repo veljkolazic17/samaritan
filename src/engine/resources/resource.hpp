@@ -32,9 +32,9 @@ enum class ResourceType
 
 struct Resource
 {
-    Resource() = default;
-    Resource(const std::string& name) : m_Name(name), m_Type(ResourceType::Undefined), m_State(ResourceState::Unloaded) {}
-    Resource(ResourceType type, const std::string& name, const std::string& filePath) : m_Type(type), m_Name(name), m_FilePath(filePath) {}
+    Resource(){ m_ResourceId = Resource::GenerateResourceId(); };
+    Resource(const std::string& name) : m_Name(name), m_Type(ResourceType::Undefined), m_State(ResourceState::Unloaded) { m_ResourceId = Resource::GenerateResourceId(); }
+    Resource(ResourceType type, const std::string& name, const std::string& filePath) : m_Type(type), m_Name(name), m_FilePath(filePath) { m_ResourceId = Resource::GenerateResourceId(); }
 
     virtual void OnUnload() = 0;
     virtual void OnLoad() = 0;
@@ -43,6 +43,16 @@ struct Resource
     ResourceState m_State = ResourceState::Unloaded;
     std::string m_Name;
     std::string m_FilePath;
+    smuint64 m_ResourceId = SM_INVALID_ID;
+
+
+    // TODO : [FUCKED] Not good can run out of ids
+    static smuint64 GenerateResourceId()
+    {
+        static std::atomic<smuint64> resourceId = SM_INVALID_ID;
+        resourceId.fetch_add(1, std::memory_order_relaxed);
+        return resourceId;
+    }
 };
 
 struct ResourceControlBlock 
