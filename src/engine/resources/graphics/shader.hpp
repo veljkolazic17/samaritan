@@ -4,6 +4,8 @@
 #include <engine/resources/resource.hpp>
 
 #include <engine/resources/graphics/texture.hpp>
+#include <engine/math/vector.hpp>
+#include <engine/math/matrix.hpp>
 
 #include <vector>
 #include <unordered_map>
@@ -49,8 +51,76 @@ enum class ShaderScopeType : smuint8
     LOCAL
 };
 
+namespace ShaderHelper
+{
+    SM_INLINE ShaderDataType ShaderDataTypeFromString(const std::string& type)
+    {
+        static const std::unordered_map<std::string, ShaderDataType> typeMap =
+        {
+            {"float", ShaderDataType::FLOAT32},
+            {"vec2", ShaderDataType::FLOAT32_2},
+            {"vec3", ShaderDataType::FLOAT32_3},
+            {"vec4", ShaderDataType::FLOAT32_4},
+            {"mat4", ShaderDataType::MATRIX_4},
+            {"int8", ShaderDataType::INT8},
+            {"uint8", ShaderDataType::UINT8},
+            {"int16", ShaderDataType::INT16},
+            {"uint16", ShaderDataType::UINT16},
+            {"int32", ShaderDataType::INT32},
+            {"uint32", ShaderDataType::UINT32},
+            {"sampler", ShaderDataType::SAMPLER}
+        };
+
+        auto it = typeMap.find(type);
+        if (it != typeMap.end())
+            return it->second;
+
+        softAssert(false, "Unknown shader data type: %s", type.c_str());
+        return ShaderDataType::FLOAT32; // Default fallback
+    }
+
+    SM_INLINE smuint32 ShaderDataTypeSize(ShaderDataType type)
+    {
+        switch (type)
+        {
+        case ShaderDataType::FLOAT32:      return sizeof(smfloat32);
+        case ShaderDataType::FLOAT32_2:    return sizeof(smVec2);
+        case ShaderDataType::FLOAT32_3:    return sizeof(smVec3);
+        case ShaderDataType::FLOAT32_4:    return sizeof(smVec4);
+        case ShaderDataType::MATRIX_4:     return sizeof(smMat4);
+        case ShaderDataType::INT8:         return sizeof(smint8);
+        case ShaderDataType::UINT8:        return sizeof(smuint8);
+        case ShaderDataType::INT16:        return sizeof(smint16);
+        case ShaderDataType::UINT16:       return sizeof(smuint16);
+        case ShaderDataType::INT32:        return sizeof(smint32);
+        case ShaderDataType::UINT32:       return sizeof(smuint32);
+        case ShaderDataType::SAMPLER:      return 0; // Samplers have no size
+        }
+        softAssert(false, "Unknown shader data type size!");
+        return 0;
+    }
+
+    SM_INLINE ShaderScopeType ShaderScopeTypeFromString(const std::string& scopeType)
+    {
+        static const std::unordered_map<std::string, ShaderScopeType> scopeMap =
+        {
+            {"global", ShaderScopeType::GLOBAL},
+            {"instance", ShaderScopeType::INSTANCE},
+            {"local", ShaderScopeType::LOCAL}
+        };
+
+        auto it = scopeMap.find(scopeType);
+        if (it != scopeMap.end())
+            return it->second;
+
+        softAssert(false, "Unknown shader scope type: %s", scopeType.c_str());
+        return ShaderScopeType::GLOBAL; // Default fallback
+    }
+}
+
 struct ShaderUniform
 {
+    std::string m_Name;
     smuint64 m_Offset;
     /**
      * @brief The location to be used as a lookup. Typically the same as the index except for samplers,
@@ -83,6 +153,9 @@ struct Shader : Resource
 
     smbool m_IsUsingInsance = false;
     smbool m_IsUsingLocals = false;
+
+    //TODO : [SHADER] Make this be ID somehow
+    std::string m_RenderpassName;
 
     /**
      * @brief The amount of bytes that are required for UBO alignment.
@@ -150,7 +223,10 @@ struct Shader : Resource
     /** @brief An opaque pointer to hold renderer API specific data. Renderer is responsible for creation and destruction of this.  */
     void* m_InternalData;
 
-
+private:
+    void LoadShaderInfo(void* data);
+    void LoadShaderAttributes(void* data);
+    void LoadShaderUniforms(void* data);
 };
 
 END_NAMESPACE

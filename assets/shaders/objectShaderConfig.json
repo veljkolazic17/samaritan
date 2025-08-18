@@ -1,0 +1,57 @@
+{
+    "version": 1.0,
+    "name": "ObjectShader",
+    "renderpass": "WorldDefault",
+
+    "stages": {
+        "vertex": "Builtin.ObjectShader.vert.glsl",
+        "fragment": "Builtin.ObjectShader.frag.glsl"
+    },
+
+    "isUsingInstance": true,
+    "isUsingLocal": true,
+
+    "attributes": [
+        {
+            "name": "in_position",
+            "type": "vec3"
+        },
+        {
+            "name": "in_texcoord",
+            "type": "vec3"
+        }
+    ],
+
+    //Scopes global, instance, local
+    //Global = used for all shaders
+    //Instance = used for each this type of shader
+    //Local = used for each object
+    "uniforms": [
+        {
+            "name": "projection",
+            "type": "mat4",
+            "scope": "global"
+        },
+        {
+            "name": "view",
+            "type": "mat4",
+            "scope": "global"
+        },
+        {
+            "name": "diffuse_color",
+            "type": "vec4",
+            "scope": "instance"
+        },
+        {
+            "name": "diffuse_texture",
+            "type": "sampler",
+            "scope": "instance"
+        },
+        {
+            "name": "model",
+            "type": "mat4",
+            "scope": "local"
+        }
+    ]
+
+}

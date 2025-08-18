@@ -22,6 +22,7 @@ smbool ShaderSystem::Create(const std::string& shaderName)
     shaderPtr->m_State = ShaderState::NOT_CREATED;
 
     //Continue tommorow [CHECKPOINT]
+    //Create Shader;
 
 }
 
