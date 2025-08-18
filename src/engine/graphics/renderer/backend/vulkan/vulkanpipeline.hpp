@@ -18,6 +18,8 @@ namespace Graphics
         smbool Create
         (
             VulkanRenderpass* renderpass,
+            smuint32 stride,
+            smbool depthTestEnabled,
             smuint32 attributeCount,
             VkVertexInputAttributeDescription* attributes,
             smuint32 descriptorSetLayoutCount,

@@ -13,6 +13,8 @@ namespace Graphics
     smbool VulkanPipeline::Create
     (
         VulkanRenderpass* renderpass,
+        smuint32 stride,
+        smbool depthTestEnabled,
         smuint32 attributeCount,
         VkVertexInputAttributeDescription* attributes,
         smuint32 descriptorSetLayoutCount,
@@ -58,11 +60,14 @@ namespace Graphics
 
         // Depth and stencil testing.
         VkPipelineDepthStencilStateCreateInfo depthStencil = { VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO };
-        depthStencil.depthTestEnable = VK_TRUE;
-        depthStencil.depthWriteEnable = VK_TRUE;
-        depthStencil.depthCompareOp = VK_COMPARE_OP_LESS;
-        depthStencil.depthBoundsTestEnable = VK_FALSE;
-        depthStencil.stencilTestEnable = VK_FALSE;
+        if (depthTestEnabled)
+        {
+            depthStencil.depthTestEnable = VK_TRUE;
+            depthStencil.depthWriteEnable = VK_TRUE;
+            depthStencil.depthCompareOp = VK_COMPARE_OP_LESS;
+            depthStencil.depthBoundsTestEnable = VK_FALSE;
+            depthStencil.stencilTestEnable = VK_FALSE;
+        }
 
         VkPipelineColorBlendAttachmentState colorBlendAttachmentState;
         smZero(&colorBlendAttachmentState, sizeof(VkPipelineColorBlendAttachmentState));
@@ -98,7 +103,7 @@ namespace Graphics
         // Vertex input
         VkVertexInputBindingDescription bindingDescription;
         bindingDescription.binding = 0;  // Binding index
-        bindingDescription.stride = sizeof(smVert3D);
+        bindingDescription.stride = stride;
         bindingDescription.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;  // Move to next data entry for each vertex.
 
         // Attributes
@@ -151,7 +156,7 @@ namespace Graphics
         pipelineCreateInfo.pViewportState = &viewportState;
         pipelineCreateInfo.pRasterizationState = &rasterizerCreateInfo;
         pipelineCreateInfo.pMultisampleState = &multisamplingCreateInfo;
-        pipelineCreateInfo.pDepthStencilState = &depthStencil;
+        pipelineCreateInfo.pDepthStencilState = depthTestEnabled ? &depthStencil : 0;
         pipelineCreateInfo.pColorBlendState = &colorBlendStateCreateInfo;
         pipelineCreateInfo.pDynamicState = &dynamicStateCreateInfo;
         pipelineCreateInfo.pTessellationState = 0;
