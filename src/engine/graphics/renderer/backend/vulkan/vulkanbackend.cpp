@@ -1082,6 +1082,18 @@ namespace Graphics
             geometryData.m_Id = geometryData.m_Generation = SM_INVALID_ID;
         }
     }
+
+    smbool VulkanRenderer::CreateObjectShader(Shader* shader)
+    {
+        softAssert(false, "Not implemented!");
+        return false;
+    }
+
+    void VulkanRenderer::DestroyObjectShader(Shader* shader)
+    {
+        softAssert(false, "Not implemented!");
+    }
+
 }
 
 END_NAMESPACE

@@ -55,6 +55,9 @@ namespace Graphics
         void DestroyMaterial(Material* material) override;
         smbool CreateGeometry(Geometry* geometry, smuint32 vertexCount, const smVert3D* vertices, smuint32 indexCount, const smuint32* indices) override;
         void DestroyGeometry(Geometry* geometry) override;
+        smbool CreateObjectShader(Shader* shader) override;
+        void DestroyObjectShader(Shader* shader) override;
+
     private:
         void GetPlatformExtensions(std::vector<const char*>& platfromExtensions);
         void CreatePlatformSurface();

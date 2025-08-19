@@ -39,7 +39,7 @@ public:
 
 private:
     std::unordered_map<smstring, ResourceHandle<Shader>> m_ShaderLookup;
-    smuint32 m_CurrentShaderId = SM_INVALID_ID; 
+    smstring m_CurrentShaderName; 
 };
 
 END_NAMESPACE

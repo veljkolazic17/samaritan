@@ -163,6 +163,23 @@ namespace Graphics
             m_RendererBackend->DestroyGeometry(geometry);
         }
     }
+
+    smbool Renderer::CreateObjectShader(Shader* shader)
+    {
+        if (m_RendererBackend != nullptr)
+        {
+            return m_RendererBackend->CreateObjectShader(shader);
+        }
+        return false;
+    }
+
+    void Renderer::DestroyObjectShader(Shader* shader)
+    {
+        if (m_RendererBackend != nullptr)
+        {
+            m_RendererBackend->DestroyObjectShader(shader);
+        }
+    }
 }
 
 END_NAMESPACE
