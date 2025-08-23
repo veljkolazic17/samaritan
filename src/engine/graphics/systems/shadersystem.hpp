@@ -38,6 +38,11 @@ public:
     smbool BindInstanceByIndex(smuint32 instanceId);
 
 private:
+
+    void InitAttribute(Shader& shader, ShaderAttribute& attribute);
+    void InitUniform(Shader& shader, ShaderUniform& uniform);
+    void InitSampler(Shader & shader, ShaderUniform & sampler);
+
     std::unordered_map<smstring, ResourceHandle<Shader>> m_ShaderLookup;
     smstring m_CurrentShaderName; 
 };
