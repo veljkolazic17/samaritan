@@ -842,6 +842,7 @@ namespace Graphics
         }
     }
 
+#pragma region Texture
     smbool VulkanRenderer::CreateTexture(const smuint8* pixels, Texture* texture)
     {
         // TODO: [GRAPHICS][ALLOCATION] use allocators
@@ -956,7 +957,9 @@ namespace Graphics
         gpFreeTexture(data, sizeof(VulkanTextureData));
         smZero(texture, sizeof(Texture));
     }
+#pragma endregion
 
+#pragma region Material
     smbool VulkanRenderer::CreateMaterial(Material* material)
     {
         if (material == nullptr)
@@ -984,7 +987,9 @@ namespace Graphics
 
         m_ObjectShader.ReleaseObjectShaderResources(material);
     }
+#pragma endregion
 
+#pragma region Geometry
     smbool VulkanRenderer::CreateGeometry(Geometry* geometry, smuint32 vertexCount, const smVert3D* vertices, smuint32 indexCount, const smuint32* indices)
     {
         if (vertexCount == 0 || vertices == nullptr || geometry == nullptr) 
@@ -1082,7 +1087,9 @@ namespace Graphics
             geometryData.m_Id = geometryData.m_Generation = SM_INVALID_ID;
         }
     }
+#pragma endregion
 
+#pragma region ObjectShader
     smbool VulkanRenderer::CreateObjectShader(Shader* shader)
     {
         softAssert(false, "Not implemented!");
@@ -1093,6 +1100,42 @@ namespace Graphics
     {
         softAssert(false, "Not implemented!");
     }
+
+    smbool VulkanRenderer::UseObjectShader(Shader* shader)
+    {
+        return smbool();
+    }
+
+    smbool VulkanRenderer::ObjectShaderBindGlobals(Shader* shader)
+    {
+        return smbool();
+    }
+
+    smbool VulkanRenderer::ObjectShaderBindInstances(Shader* shader)
+    {
+        return smbool();
+    }
+
+    smbool VulkanRenderer::ObjectShaderSetUniform(Shader* shader, const ShaderUniform& uniform, void* value)
+    {
+        return smbool();
+    }
+
+    smbool VulkanRenderer::ObjectShaderApplyGlobals(Shader* shader)
+    {
+        return smbool();
+    }
+
+    smbool VulkanRenderer::ObjectShaderApplyInstances(Shader* shader)
+    {
+        return smbool();
+    }
+
+    smbool VulkanRenderer::ObjectShaderBindInstance(Shader* shader, smuint32 instanceId)
+    {
+        return smbool();
+    }
+#pragma endregion
 
 }
 

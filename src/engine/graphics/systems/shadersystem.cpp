@@ -1,6 +1,8 @@
 #include <engine/graphics/systems/shadersystem.hpp>
 #include <engine/resources/resourcesystem.hpp>
 
+#include <utils/typeutils.hpp>
+
 BEGIN_NAMESPACE
 
 smbool ShaderSystem::Init()

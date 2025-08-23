@@ -55,8 +55,17 @@ namespace Graphics
         void DestroyMaterial(Material* material) override;
         smbool CreateGeometry(Geometry* geometry, smuint32 vertexCount, const smVert3D* vertices, smuint32 indexCount, const smuint32* indices) override;
         void DestroyGeometry(Geometry* geometry) override;
+        
+        //ObjectShader
         smbool CreateObjectShader(Shader* shader) override;
         void DestroyObjectShader(Shader* shader) override;
+        smbool UseObjectShader(Shader* shader) override;
+        smbool ObjectShaderBindGlobals(Shader* shader) override;
+        smbool ObjectShaderBindInstances(Shader* shader) override;
+        smbool ObjectShaderSetUniform(Shader* shader, const ShaderUniform& uniform, void* value) override;
+        smbool ObjectShaderApplyGlobals(Shader* shader) override;
+        smbool ObjectShaderApplyInstances(Shader* shader) override;
+        smbool ObjectShaderBindInstance(Shader* shader, smuint32 instanceId) override;
 
     private:
         void GetPlatformExtensions(std::vector<const char*>& platfromExtensions);
