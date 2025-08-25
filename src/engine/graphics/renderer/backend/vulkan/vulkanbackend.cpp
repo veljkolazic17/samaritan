@@ -1097,23 +1097,21 @@ namespace Graphics
     {
         shader->m_InternalData = gpAllocRenderer(sizeof(VulkanShader));
         VulkanShader* vkShader = static_cast<VulkanShader*>(shader->m_InternalData);
-
         const VulkanRenderpass& renderpass = m_RenderPasses[shader->m_RenderpassName];
-        // Mapping common shader stages to Vulkan stages
-        VkShaderStageFlags* stages = vkShader->m_Stages;
+
         smuint32 stageIndex = 0;
         for (const ShaderStage& shaderStage : shader->m_Stages)
         {
             switch (shaderStage.m_StageType)
             {
             case ShaderStageType::Vertex:
-                stages[stageIndex++] = VK_SHADER_STAGE_VERTEX_BIT;
+                vkShader->m_Stages[stageIndex++].m_StageFlag = VK_SHADER_STAGE_VERTEX_BIT;
                 break;
             case ShaderStageType::Fragment:
-                stages[stageIndex++] = VK_SHADER_STAGE_FRAGMENT_BIT;
+                vkShader->m_Stages[stageIndex++].m_StageFlag = VK_SHADER_STAGE_FRAGMENT_BIT;
                 break;
             case ShaderStageType::Geometry:
-                stages[stageIndex++] = VK_SHADER_STAGE_GEOMETRY_BIT;
+                vkShader->m_Stages[stageIndex++].m_StageFlag = VK_SHADER_STAGE_GEOMETRY_BIT;
                 break;
             //case ShaderStageType::TessellationControl:
             //    stages[stageIndex++] = VK_SHADER_STAGE_TESSELLATION_CONTROL_BIT;
@@ -1122,11 +1120,11 @@ namespace Graphics
             //    stages[stageIndex++] = VK_SHADER_STAGE_TESSELLATION_EVALUATION_BIT;
             //    break;
             case ShaderStageType::Compute:
-                stages[stageIndex++] = VK_SHADER_STAGE_COMPUTE_BIT;
+                vkShader->m_Stages[stageIndex++].m_StageFlag = VK_SHADER_STAGE_COMPUTE_BIT;
                 break;
             default:
                 softAssert(false, "Unknown shader stage!");
-                break;
+                continue;
             }
         }
         vkShader->m_StageCount = stageIndex;
@@ -1140,15 +1138,15 @@ namespace Graphics
         //UBO
         //Global Descriptor Set
         VkDescriptorSetLayoutBinding globalBindingLayout = {};
-        globalBindingLayout.binding = smVulkanBindingUBO;
+        globalBindingLayout.binding = SM_VULKAN_BINDING_UBO;
         globalBindingLayout.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
         globalBindingLayout.descriptorCount = 1;
         globalBindingLayout.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
         globalBindingLayout.pImmutableSamplers = nullptr;
 
         ++globalDescriptorSet.m_Bindings;
-        globalDescriptorSet.m_BindingLayouts[smVulkanBindingUBO] = globalBindingLayout;
-        vkShader->m_DescriptorSetData[smVulkanDescriptorSetGlobal] = globalDescriptorSet;
+        globalDescriptorSet.m_BindingLayouts[SM_VULKAN_BINDING_UBO] = globalBindingLayout;
+        vkShader->m_DescriptorSetData[SM_VULKAN_DESCRIPTOR_SET_GLOBAL] = globalDescriptorSet;
         ++vkShader->m_DescriptorSetCount;
 
         //Instance Descritpror Set
@@ -1156,19 +1154,19 @@ namespace Graphics
         {
             VulkanDescriptorSetData instanceDescriptorSet;
             VkDescriptorSetLayoutBinding instanceBindingLayout = {};
-            instanceBindingLayout.binding = smVulkanBindingUBO;
+            instanceBindingLayout.binding = SM_VULKAN_BINDING_UBO;
             instanceBindingLayout.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
             instanceBindingLayout.descriptorCount = 1;
             instanceBindingLayout.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
             instanceBindingLayout.pImmutableSamplers = nullptr;
             
             ++instanceDescriptorSet.m_Bindings;
-            instanceDescriptorSet.m_BindingLayouts[smVulkanBindingUBO] = instanceBindingLayout;
-            vkShader->m_DescriptorSetData[smVulkanDescriptorSetInstance] = instanceDescriptorSet;
+            instanceDescriptorSet.m_BindingLayouts[SM_VULKAN_BINDING_UBO] = instanceBindingLayout;
+            vkShader->m_DescriptorSetData[SM_VULKAN_DESCRIPTOR_SET_INSTANCE] = instanceDescriptorSet;
             ++vkShader->m_DescriptorSetCount;
         }
 
-        for (smuint32 i = 0; i < smVulkanShaderMaxInstanceCount; ++i)
+        for (smuint32 i = 0; i < SM_VULKAN_SHADER_MAX_INSTANCE_COUNT; ++i)
         {
             vkShader->m_InstanceStates[i].m_Id = vkShader->m_InstanceStates[i].m_Generation = SM_INVALID_ID;
         }
@@ -1181,43 +1179,49 @@ namespace Graphics
         VulkanShader* vkShader = static_cast<VulkanShader*>(shader->m_InternalData);
         for (smuint32 stageIndex = 0; stageIndex < vkShader->m_StageCount; ++stageIndex)
         {
-            vkShader->m_Stages[stageIndex].m_CrateInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
-
-            // Obtain file handle.
             //TODO : Should Open return bool?
             BFile file;
-            file.Open(fileName.c_str(), std::ios::in);
+            file.Open(shader->m_Stages[stageIndex].m_FilePath.c_str(), std::ios::in);
             smuint64 fileLength = file.Length();
-
-            // Read the entire file as binary.
-            //Allocate memory for this
             void* buffer = (void*)gpAllocRenderer(fileLength);
             file.Read(buffer);
-
-            shaderStages[stageIndex].m_CrateInfo.codeSize = fileLength;
-            shaderStages[stageIndex].m_CrateInfo.pCode = (smuint32*)buffer;
-
-            // Close the file.
             file.Close();
+
+            VulkanShaderStage& stage = vkShader->m_Stages[stageIndex];
+
+            stage.m_CrateInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
+            stage.m_CrateInfo.codeSize = fileLength;
+            stage.m_CrateInfo.pCode = static_cast<smuint32*>(buffer);
 
             VulkanCheckResult
             (
                 vkCreateShaderModule
                 (
-                    logicalDevice,
-                    &shaderStages[stageIndex].m_CrateInfo,
-                    allocator,
-                    &shaderStages[stageIndex].m_Handle
+                    m_VulkanDevice.m_LogicalDevice,
+                    &stage.m_CrateInfo,
+                    m_Allocator,
+                    &stage.m_Handle
                 ),
                 "Failed to create shader module"
             );
 
             // Shader stage info
-            smZero(&shaderStages[stageIndex].m_ShaderStageCreateInfo, sizeof(VkPipelineShaderStageCreateInfo));
-            shaderStages[stageIndex].m_ShaderStageCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
-            shaderStages[stageIndex].m_ShaderStageCreateInfo.stage = stageFlags;
-            shaderStages[stageIndex].m_ShaderStageCreateInfo.module = shaderStages[stageIndex].m_Handle;
-            shaderStages[stageIndex].m_ShaderStageCreateInfo.pName = "main";
+            smZero(&stage.m_ShaderStageCreateInfo, sizeof(VkPipelineShaderStageCreateInfo));
+            stage.m_ShaderStageCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+            switch (stage.m_StageFlag)
+            {
+            case VK_SHADER_STAGE_VERTEX_BIT:
+                stage.m_ShaderStageCreateInfo.stage = VK_SHADER_STAGE_VERTEX_BIT;
+                break;
+            case VK_SHADER_STAGE_FRAGMENT_BIT:
+                stage.m_ShaderStageCreateInfo.stage = VK_SHADER_STAGE_FRAGMENT_BIT;
+                break;
+            default:
+                softAssert(false, "Unknown shader stage!");
+                continue;
+            }
+            stage.m_ShaderStageCreateInfo.module = stage.m_Handle;
+            stage.m_ShaderStageCreateInfo.pName = "main";
 
             if (buffer != nullptr)
             {
@@ -1228,13 +1232,70 @@ namespace Graphics
         return true;
     }
 
+    void VulkanRenderer::InitAttributes(Shader* shader)
+    {
+        smuint32 offset = 0;
+        smuint32 index = 0;
+        VulkanShader* vkShader = static_cast<VulkanShader*>(shader->m_InternalData);
+        for (const ShaderAttribute& shaderAttribute : shader->m_Attributes) 
+        {
+            VkVertexInputAttributeDescription attribute;
+            attribute.location = index;
+            attribute.binding = 0;
+            attribute.offset = offset;
+            attribute.format = Vulkan::Utils::ShaderDataTypeToVkFormat(shaderAttribute.m_DataType);
+
+            // Push into the config's attribute collection and add to the stride.
+            vkShader->m_Attributes[index] = attribute;
+
+            offset += shaderAttribute.m_Size;
+            ++index;
+        }
+    }
+
+    void VulkanRenderer::InitUniforms(Shader* shader)
+    {
+        VulkanShader* vkShader = static_cast<VulkanShader*>(shader->m_InternalData);
+        for (const ShaderUniform& uniform : shader->m_Uniforms)
+        {
+            if (uniform.m_DataType == ShaderDataType::SAMPLER)
+            {
+                const smuint32 setIndex = uniform.m_ScopeType == ShaderScopeType::GLOBAL ? SM_VULKAN_DESCRIPTOR_SET_GLOBAL : SM_VULKAN_DESCRIPTOR_SET_INSTANCE
+                VulkanDescriptorSetData& setData = vkShader->m_DescriptorSetData[setIndex];
+                VkDescriptorSetLayoutBinding& setBinding = setData.m_BindingLayouts[SM_VULKAN_BINDING_SAMPLER];
+                if (setData.m_Bindings < 2) //Note: This means that we have not added a sampler binding yet
+                {
+                    setBinding.binding = SM_VULKAN_BINDING_SAMPLER;
+                    setBinding.descriptorCount = 1;
+                    setBinding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+                    setBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
+                    ++setData.m_Bindings;
+                }
+                else 
+                {
+                    ++setBinding.descriptorCount;
+                }
+            }
+        }
+    }
+
     smbool VulkanRenderer::InitObjectShader(Shader* shader)
     {
         VulkanShader* vkShader = static_cast<VulkanShader*>(shader->m_InternalData);
 
         //Create Modules
+        if(!CreateVulkanModules(shader))
+        {
+            softAssert(false, "Could not create vulkan shader modules!");
+            return false;
+        }
 
+        //Add Attributes
+        InitAttributes(shader);
+        //Add Uniforms
+        InitUniforms(shader);
 
+        return true;
     }
 
     void VulkanRenderer::DestroyObjectShader(Shader* shader)

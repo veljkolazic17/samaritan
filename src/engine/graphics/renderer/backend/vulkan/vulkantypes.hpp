@@ -14,6 +14,7 @@ BEGIN_NAMESPACE
 
 class Shader;
 class VulkanRenderpass;
+enum ShaderDataType;
 
 namespace Graphics
 {
@@ -32,6 +33,7 @@ namespace Graphics
     {
         smbool IsResultSuccess(VkResult result);
         const char* ResultToString(VkResult result);
+        VkFormat ShaderDataTypeToVkFormat(ShaderDataType type);
     }
 
     namespace Vulkan::Types

@@ -1,12 +1,14 @@
 #include <defines.hpp>
-#include <engine/graphics/renderer/backend/vulkan/vulkantypes.inl>
+#include <engine/graphics/renderer/backend/vulkan/vulkantypes.hpp>
+
+#include <engine/resources/graphics/shader.hpp>
 
 BEGIN_NAMESPACE
 
 namespace Graphics
 {
-	namespace Vulkan::Utils
-	{
+    namespace Vulkan::Utils
+    {
         smbool IsResultSuccess(VkResult result)
         {
             switch (result)
@@ -138,7 +140,28 @@ namespace Graphics
                 return "VK_ERROR_UNKNOWN";
             }
         }
-	}
+        VkFormat ShaderDataTypeToVkFormat(ShaderDataType type)
+        {
+            switch (type)
+            {
+            case ShaderDataType::FLOAT32:    return VK_FORMAT_R32_SFLOAT;
+            case ShaderDataType::FLOAT32_2:  return VK_FORMAT_R32G32_SFLOAT;
+            case ShaderDataType::FLOAT32_3:  return VK_FORMAT_R32G32B32_SFLOAT;
+            case ShaderDataType::FLOAT32_4:  return VK_FORMAT_R32G32B32A32_SFLOAT;
+            case ShaderDataType::MATRIX_4:   return VK_FORMAT_R32G32B32A32_SFLOAT; // Note: Matrices are typically represented as arrays of vectors
+            case ShaderDataType::INT8:       return VK_FORMAT_R8_SINT;
+            case ShaderDataType::UINT8:      return VK_FORMAT_R8_UINT;
+            case ShaderDataType::INT16:      return VK_FORMAT_R16_SINT;
+            case ShaderDataType::UINT16:     return VK_FORMAT_R16_UINT;
+            case ShaderDataType::INT32:      return VK_FORMAT_R32_SINT;
+            case ShaderDataType::UINT32:     return VK_FORMAT_R32_UINT;
+            case ShaderDataType::SAMPLER:    return VK_FORMAT_UNDEFINED; // Samplers don't have a direct format representation
+            default:
+                softAssert(false, "Unknown shader data type!");
+                return VK_FORMAT_UNDEFINED;
+            }
+        }
+    }
 }
 
 END_NAMESPACE

@@ -25,13 +25,6 @@ class Material;
 namespace Graphics
 {
 
-	struct VulkanShaderStage
-	{
-		VkShaderModuleCreateInfo m_CrateInfo;
-		VkShaderModule m_Handle;
-		VkPipelineShaderStageCreateInfo m_ShaderStageCreateInfo;
-	};
-
 	//TODO : Make this a struct
 	class VulkanObjectShader
 	{

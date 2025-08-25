@@ -7,11 +7,14 @@
 
 #define SM_VULKAN_MAX_SHADER_STAGES_COUNT           8
 #define SM_VULKAN_MAX_BINDING_LAYOUTS_COUNT         32
+#define SM_VULKAN_MAX_SADER_ATTRIBUTES              16
 
-constexpr auto smVulkanBindingUBO                   = 0;
-constexpr auto smVulkanDescriptorSetGlobal          = 0;
-constexpr auto smVulkanDescriptorSetInstance        = 1;
-constexpr auto smVulkanShaderMaxInstanceCount       = 4096;;
+#define SM_VULKAN_BINDING_UBO                      0
+#define SM_VULKAN_BINDING_SAMPLER                  1
+
+#define SM_VULKAN_DESCRIPTOR_SET_GLOBAL             0
+#define SM_VULKAN_DESCRIPTOR_SET_INSTANCE           1
+#define SM_VULKAN_SHADER_MAX_INSTANCE_COUNT         4096
 
 BEGIN_NAMESPACE
 
@@ -83,9 +86,9 @@ struct VulkanShader
     constexpr auto vulkanDescriptorSetTypeMax = 2; // 0 - global, 1 - instance
     VulkanDescriptorSetData m_DescriptorSetData[vulkanDescriptorSetTypeMax];
 
-    VulkanShaderInstanceState m_InstanceStates[smVulkanShaderMaxInstanceCount];
+    VulkanShaderInstanceState m_InstanceStates[SM_VULKAN_SHADER_MAX_INSTANCE_COUNT];
 
-
+    VkVertexInputAttributeDescription m_Attributes[SM_VULKAN_MAX_SADER_ATTRIBUTES];
 };
 
 END_NAMESPACE
