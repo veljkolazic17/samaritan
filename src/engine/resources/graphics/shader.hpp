@@ -12,12 +12,18 @@
 
 BEGIN_NAMESPACE
 
-enum class ShaderStage : smuint8
+enum ShaderStageType : smuint8
 {
-    VERTEX_STAGE    = 1 << 0,
-    GEOMETRY_STAGE  = 1 << 1,
-    FRAGMENT_STAGE  = 1 << 2,
-    COMPUTE_STAGE   = 1 << 3
+    Vertex    = 1 << 0,
+    Geometry  = 1 << 1,
+    Fragment  = 1 << 2,
+    Compute   = 1 << 3
+};
+
+struct ShaderStage
+{
+    ShaderStageType m_StageType;
+    std::string m_FilePath;
 };
 
 // Used for attributes and uniforms
@@ -211,7 +217,7 @@ struct Shader : Resource
     std::vector<ShaderAttribute> m_Attributes;
 
     /** @brief The internal state of the shader. */
-    ShaderStage m_Stage;
+    std::vector<ShaderStage> m_Stages;
 
     /** @brief The number of push constant ranges. */
     smuint8 m_PushConstantRangeCount;

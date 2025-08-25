@@ -1,6 +1,6 @@
 #pragma once
 #include <defines.hpp>
-#include <engine/graphics/renderer/backend/vulkan/vulkantypes.inl>
+#include <engine/graphics/renderer/backend/vulkan/vulkantypes.hpp>
 #include <engine/graphics/renderer/backend/rendererbackend.hpp>
 #include <engine/graphics/renderer/backend/vulkan/vulkanbuffer.hpp>
 #include <engine/graphics/renderer/backend/vulkan/vulkandevice.hpp>
@@ -103,7 +103,7 @@ namespace Graphics
         std::vector<VkSemaphore> m_RenderFinishedSemaphores;
         std::vector<VulkanFence> m_InFlightFences;
         std::vector<VulkanFence*> m_ImagesInFlight;
-        std::vector<VulkanRenderpass> m_RenderPasses;
+        std::unordered_map<smstring, VulkanRenderpass> m_RenderPasses;
 
         VulkanSwapChain m_SwapChain;
         VkSurfaceCapabilitiesKHR m_Capabilities;

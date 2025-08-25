@@ -6,7 +6,6 @@
 
 #include <math/matrix.hpp>
 #include <math/vector.hpp>
-#include <objecttemplates/singleton.hpp>
 #include <objecttemplates/shutdownable.hpp>
 
 
@@ -44,6 +43,7 @@ BEGIN_NAMESPACE
         virtual smbool ObjectShaderApplyGlobals(Shader* shader) = 0;
         virtual smbool ObjectShaderApplyInstances(Shader* shader) = 0;
         virtual smbool ObjectShaderBindInstance(Shader* shader, smuint32 instanceId) = 0;
+        virtual smbool InitObjectShader(Shader* shader) = 0;
 
     protected:
         RendererType m_RendererType;
