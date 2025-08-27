@@ -67,7 +67,7 @@ struct VulkanShader
 
     VkDescriptorPool m_DescriptorPool = 0;
     VkDescriptorSetLayout m_DescriptorSetLayouts[2] = { 0, 0 };
-    VkDescriptorSet m_DescriptorSets[3] = { 0, 0, 0 };
+    VkDescriptorSet m_GlobalDescriptorSets[3] = { 0, 0, 0 };
 
     Graphics::VulkanBuffer m_VulkanUniformBuffer;
     Graphics::VulkanPipeline m_VulkanPipeline;

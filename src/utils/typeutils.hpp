@@ -17,7 +17,7 @@ namespace TypeUtils
     // value = 64, alignment = 32
     // Expected result: 64
     // Calculation: ((64 + (32 - 1)) & ~(32 - 1)) = (95 & ~31) = (95 & 0xFFFFFFE0) = 64
-    SM_INLINE smuint64 GetAlignedVAlue(smuint64 value, smuint64 alignment)
+    SM_INLINE smuint64 GetAlignedValue(smuint64 value, smuint64 alignment)
     {
         return ((value + (alignment - 1)) & ~(alignment - 1));
     }
@@ -25,8 +25,8 @@ namespace TypeUtils
     SM_INLINE Range GetAllignedRange(smuint32 offset, smuint32 size, smuint32 alligment)
     {
         Range range;
-        range.m_Offset = GetAlignedVAlue(offset, alligment);
-        range.m_Size = GetAlignedVAlue(size, alligment);
+        range.m_Offset = GetAlignedValue(offset, alligment);
+        range.m_Size = GetAlignedValue(size, alligment);
         return range;
     }
 }

@@ -1,7 +1,7 @@
 #pragma once
 #include <defines.hpp>
 
-#include <engine/graphics/renderer/backend/vulkan/vulkantypes.inl>
+#include <engine/graphics/renderer/backend/vulkan/vulkantypes.hpp>
 #include <engine/graphics/renderer/backend/vulkan/vulkanrenderpass.hpp>
 #include <engine/graphics/renderer/backend/vulkan/vulkancommandbuffer.hpp>
 
@@ -28,6 +28,8 @@ namespace Graphics
             VkPipelineShaderStageCreateInfo* stages,
             VkViewport viewport,
             VkRect2D scissor,
+            smuint8 pushConstantsCount,
+            Range pushConstantRanges[],
             smbool isWireframe,
             VkDevice logicalDevice,
             VkAllocationCallbacks* allocator

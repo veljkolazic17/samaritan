@@ -1,5 +1,6 @@
 #include <engine/graphics/renderer/backend/vulkan/vulkanbackend.hpp>
 
+#include <engine/filesystem/bfile.hpp>
 #include <engine/graphics/renderer/backend/vulkan/vulkanshader.hpp>
 #include <engine/graphics/renderer/backend/vulkan/vulkantexturedata.hpp>
 #include <engine/graphics/systems/materialsystem.hpp>
@@ -9,8 +10,8 @@
 #include <set>
 #include <utils/asserts/assert.hpp>
 #include <utils/logger/log.hpp>
+#include <utils/typeutils.hpp>
 
-#include "engine/filesystem/bfile.hpp"
 
 //TODO : [FUCKED][GRAPHICS] changing screen size makes objects look weird
 
@@ -1174,7 +1175,7 @@ namespace Graphics
         return true;
     }
 
-    smbool VulkanRenderer::CreateVulkanModules(Shader* shader)
+    void VulkanRenderer::InitVulkanModules(Shader* shader)
     {
         VulkanShader* vkShader = static_cast<VulkanShader*>(shader->m_InternalData);
         for (smuint32 stageIndex = 0; stageIndex < vkShader->m_StageCount; ++stageIndex)
@@ -1229,7 +1230,6 @@ namespace Graphics
                 buffer = nullptr;
             }
         }
-        return true;
     }
 
     void VulkanRenderer::InitAttributes(Shader* shader)
@@ -1260,7 +1260,7 @@ namespace Graphics
         {
             if (uniform.m_DataType == ShaderDataType::SAMPLER)
             {
-                const smuint32 setIndex = uniform.m_ScopeType == ShaderScopeType::GLOBAL ? SM_VULKAN_DESCRIPTOR_SET_GLOBAL : SM_VULKAN_DESCRIPTOR_SET_INSTANCE
+                const smuint32 setIndex = uniform.m_ScopeType == ShaderScopeType::GLOBAL ? SM_VULKAN_DESCRIPTOR_SET_GLOBAL : SM_VULKAN_DESCRIPTOR_SET_INSTANCE;
                 VulkanDescriptorSetData& setData = vkShader->m_DescriptorSetData[setIndex];
                 VkDescriptorSetLayoutBinding& setBinding = setData.m_BindingLayouts[SM_VULKAN_BINDING_SAMPLER];
                 if (setData.m_Bindings < 2) //Note: This means that we have not added a sampler binding yet
@@ -1279,22 +1279,142 @@ namespace Graphics
         }
     }
 
-    smbool VulkanRenderer::InitObjectShader(Shader* shader)
+    void VulkanRenderer::InitDescriptorPools(Shader* shader)
     {
         VulkanShader* vkShader = static_cast<VulkanShader*>(shader->m_InternalData);
 
-        //Create Modules
-        if(!CreateVulkanModules(shader))
+        VkDescriptorPoolCreateInfo poolInfo = { VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO };
+        poolInfo.poolSizeCount = 2;
+        poolInfo.pPoolSizes = vkShader->m_PoolSizes;
+        poolInfo.maxSets = vkShader->m_MaxDescriptorSetCount;
+        poolInfo.flags = VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT;
+
+        // Create descriptor pool.
+        const VkResult result = vkCreateDescriptorPool(m_VulkanDevice.m_LogicalDevice, &poolInfo, m_Allocator, &vkShader->m_DescriptorPool);
+
+        softAssert(Vulkan::Utils::IsResultSuccess(result), "Could not create descriptor pool! Error : %s", Vulkan::Utils::ResultToString(result));
+    }
+
+    void VulkanRenderer::InitDescriptorSetLayout(Shader* shader)
+    {
+        VulkanShader* vkShader = static_cast<VulkanShader*>(shader->m_InternalData);
+
+        for (smuint32 index = 0; index < vkShader->m_DescriptorSetCount; ++index) 
         {
-            softAssert(false, "Could not create vulkan shader modules!");
-            return false;
+            VkDescriptorSetLayoutCreateInfo layoutInfo = { VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO };
+            layoutInfo.bindingCount = vkShader->m_DescriptorSetData[index].m_Bindings;
+            layoutInfo.pBindings = vkShader->m_DescriptorSetData[index].m_BindingLayouts;
+
+            const VkResult result = vkCreateDescriptorSetLayout(m_VulkanDevice.m_LogicalDevice, &layoutInfo, m_Allocator, &vkShader->m_DescriptorSetLayouts[index]);
+
+            softAssert(Vulkan::Utils::IsResultSuccess(result), "Could not create descriptor set layout! Error : %s", Vulkan::Utils::ResultToString(result));
+        }
+    }
+
+    void VulkanRenderer::InitPipeline(Shader* shader)
+    {
+        VulkanShader* vkShader = static_cast<VulkanShader*>(shader->m_InternalData);
+
+        VkViewport viewport;
+        viewport.x = 0.0f;
+        viewport.y = static_cast<smfloat32>(m_VulkanDevice.m_FrameBufferHeight);
+        viewport.width = static_cast<smfloat32>(m_VulkanDevice.m_FrameBufferWidth);
+        viewport.height = -static_cast<smfloat32>(m_VulkanDevice.m_FrameBufferHeight);
+        viewport.minDepth = 0.0f;
+        viewport.maxDepth = 1.0f;
+
+        VkRect2D scissor;
+        scissor.offset.x = scissor.offset.y = 0;
+        scissor.extent.width = m_VulkanDevice.m_FrameBufferWidth;
+        scissor.extent.height = m_VulkanDevice.m_FrameBufferHeight;
+
+        VkPipelineShaderStageCreateInfo stageCreateInfos[SM_VULKAN_MAX_SHADER_STAGES_COUNT]{};
+        for (smuint32 index = 0; index < vkShader->m_StageCount; ++index)
+        {
+            stageCreateInfos[index] = vkShader->m_Stages[index].m_ShaderStageCreateInfo;
         }
 
-        //Add Attributes
-        InitAttributes(shader);
-        //Add Uniforms
-        InitUniforms(shader);
+        VulkanPipeline& pipeline = vkShader->m_VulkanPipeline;
+        constexpr smbool isWireframe = false;
+        constexpr smbool depthTestEnabled = false;
 
+        smbool result = pipeline.Create
+        (
+            &m_RenderPasses[shader->m_RenderpassName],
+            shader->m_AttributeStride,
+            depthTestEnabled,
+            static_cast<smuint32>(shader->m_Attributes.size()),
+            vkShader->m_Attributes,
+            vkShader->m_DescriptorSetCount,
+            vkShader->m_DescriptorSetLayouts,
+            vkShader->m_StageCount,
+            stageCreateInfos,
+            viewport,
+            scissor,
+            shader->m_PushConstantRangeCount,
+            shader->m_PushConstantRanges,
+            isWireframe,
+            m_VulkanDevice.m_LogicalDevice,
+            m_Allocator
+        );
+
+        softAssert(result, "Could not create graphics pipeline!");
+    }
+
+    void VulkanRenderer::InitBuffer(Shader* shader)
+    {
+        VulkanShader* vkShader = static_cast<VulkanShader*>(shader->m_InternalData);
+
+        shader->m_UBOAlignment = m_VulkanDevice.m_Properties.limits.minUniformBufferOffsetAlignment;
+        shader->m_GlobalUBOStride = TypeUtils::GetAlignedValue(shader->m_GlobalUBOSize, shader->m_UBOAlignment);
+        shader->m_UBOStride = TypeUtils::GetAlignedValue(shader->m_UBOSize, shader->m_UBOAlignment);
+
+        //TODO : [GRAPHICS][SHADER] Make this configurable
+        const smuint32 deviceLocalBits = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT;
+
+        //Note : not using size for calculating buffer size because we have to allign everything!
+        smuint64 bufferSize = shader->m_GlobalUBOStride + (shader->m_UBOStride * SM_VULKAN_SHADER_MAX_INSTANCE_COUNT);
+
+        constexpr smbool bindOnCreate = true;
+
+        vkShader->m_VulkanUniformBuffer.Create(
+        bufferSize, 
+        static_cast<VkBufferUsageFlagBits>(VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT),
+        VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT | deviceLocalBits, 
+            bindOnCreate);
+
+        vkShader->m_UniformBufferData = vkShader->m_VulkanUniformBuffer.LockMemory(0, VK_WHOLE_SIZE, 0);
+    }
+
+    void VulkanRenderer::AllocateDescriptorSetLayouts(Shader* shader)
+    {
+        VulkanShader* vkShader = static_cast<VulkanShader*>(shader->m_InternalData);
+
+        VkDescriptorSetLayout globalDescriptorSetLayouts[3] = 
+        {
+            vkShader->m_DescriptorSetLayouts[SM_VULKAN_DESCRIPTOR_SET_GLOBAL],
+            vkShader->m_DescriptorSetLayouts[SM_VULKAN_DESCRIPTOR_SET_GLOBAL],
+            vkShader->m_DescriptorSetLayouts[SM_VULKAN_DESCRIPTOR_SET_GLOBAL]
+        };
+
+        VkDescriptorSetAllocateInfo descriptorSetAllocateInfo = { VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO };
+        descriptorSetAllocateInfo.descriptorPool = vkShader->m_DescriptorPool;
+        descriptorSetAllocateInfo.descriptorSetCount = 3;
+        descriptorSetAllocateInfo.pSetLayouts = globalDescriptorSetLayouts;
+
+        VulkanCheckResult(vkAllocateDescriptorSets(m_VulkanDevice.m_LogicalDevice, &descriptorSetAllocateInfo, vkShader->m_GlobalDescriptorSets), "Could not allocate global descriptor sets!");
+    }
+
+    smbool VulkanRenderer::InitObjectShader(Shader* shader)
+    {
+        InitVulkanModules(shader);
+        InitAttributes(shader);
+        InitUniforms(shader);
+        InitDescriptorPools(shader);
+        InitDescriptorSetLayout(shader);
+        InitPipeline(shader);
+        InitBuffer(shader);
+        AllocateDescriptorSetLayouts(shader);
         return true;
     }
 
@@ -1305,17 +1425,25 @@ namespace Graphics
 
     smbool VulkanRenderer::UseObjectShader(Shader* shader)
     {
-        return smbool();
+        VulkanShader* vkShader = static_cast<VulkanShader*>(shader->m_InternalData);
+        vkShader->m_VulkanPipeline.Bind(&m_GraphicsCommandBuffers[m_ImageIndex], VK_PIPELINE_BIND_POINT_GRAPHICS);
+        return true;
     }
 
     smbool VulkanRenderer::ObjectShaderBindGlobals(Shader* shader)
     {
-        return smbool();
+        shader->m_BoundUBOOffset = shader->m_GlobalUBOOfset;
+        return true;
     }
 
     smbool VulkanRenderer::ObjectShaderBindInstances(Shader* shader)
     {
-        return smbool();
+        vulkan_shader* internal = s->internal_data;
+
+        s->bound_instance_id = instance_id;
+        vulkan_shader_instance_state* object_state = &internal->instance_states[instance_id];
+        s->bound_ubo_offset = object_state->offset;
+        return true;
     }
 
     smbool VulkanRenderer::ObjectShaderSetUniform(Shader* shader, const ShaderUniform& uniform, void* value)

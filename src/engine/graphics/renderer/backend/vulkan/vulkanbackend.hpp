@@ -68,10 +68,14 @@ namespace Graphics
         smbool ObjectShaderBindInstance(Shader* shader, smuint32 instanceId) override;
         smbool InitObjectShader(Shader* shader) override;
 
-        smbool CreateVulkanModules(Shader* shader);
+        void InitVulkanModules(Shader* shader);
         void InitAttributes(Shader* shader);
         void InitUniforms(Shader* shader);
-
+        void InitDescriptorPools(Shader* shader);
+        void InitDescriptorSetLayout(Shader* shader);
+        void InitPipeline(Shader* shader);
+        void InitBuffer(Shader* shader);
+        void AllocateDescriptorSetLayouts(Shader* shader);
 
     private:
         void GetPlatformExtensions(std::vector<const char*>& platfromExtensions);

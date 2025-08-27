@@ -23,6 +23,8 @@ namespace Graphics
         VkPipelineShaderStageCreateInfo* stages,
         VkViewport viewport,
         VkRect2D scissor,
+        smuint8 pushConstantsCount,
+        Range pushConstantRanges[],
         smbool isWireframe,
         VkDevice logicalDevice,
         VkAllocationCallbacks* allocator

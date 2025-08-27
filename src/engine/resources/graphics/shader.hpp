@@ -222,7 +222,7 @@ struct Shader : Resource
     /** @brief The number of push constant ranges. */
     smuint8 m_PushConstantRangeCount;
     /** @brief An array of push constant ranges. */
-    Range PushConstantRanges[32];
+    Range m_PushConstantRanges[32];
     /** @brief The size of all attributes combined, a.k.a. the size of a vertex. */
     smuint16 m_AttributeStride;
 
