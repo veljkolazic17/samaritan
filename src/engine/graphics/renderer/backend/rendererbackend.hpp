@@ -8,10 +8,11 @@
 #include <math/vector.hpp>
 #include <objecttemplates/shutdownable.hpp>
 
-
-
 BEGIN_NAMESPACE
-    namespace Graphics
+
+class Geometry;
+
+namespace Graphics
 {
     //TODO : [GRAPHICS][RENDERER] Make this compile time polymorphic
     class RendererBackend : public Shutdownable
@@ -34,6 +35,7 @@ BEGIN_NAMESPACE
         virtual void DestroyMaterial(Material* material) = 0;
         virtual smbool CreateGeometry(Geometry* geometry, smuint32 vertexCount, const smVert3D* vertices, smuint32 indexCount, const smuint32* indices) = 0;
         virtual void DestroyGeometry(Geometry* geometry) = 0;
+
         virtual smbool CreateObjectShader(Shader* shader) = 0;
         virtual void DestroyObjectShader(Shader* shader) = 0;
         virtual smbool UseObjectShader(Shader* shader) = 0;
@@ -44,6 +46,8 @@ BEGIN_NAMESPACE
         virtual smbool ObjectShaderApplyInstances(Shader* shader) = 0;
         virtual smbool ObjectShaderBindInstance(Shader* shader, smuint32 instanceId) = 0;
         virtual smbool InitObjectShader(Shader* shader) = 0;
+        virtual smbool ObjectShaderAcquireInstanceResources(Shader* shader, smuint32& instanceId) = 0;
+        virtual smbool ObjectShaderReleaseInstanceResources(Shader* shader, smuint32 instanceId) = 0;
 
     protected:
         RendererType m_RendererType;

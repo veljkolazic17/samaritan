@@ -83,6 +83,7 @@ public:
     ResourceHandle(ResourceControlBlock* controlBlock, smbool shouldAutoRelease = true) : m_ControlBlock(controlBlock), m_ShouldAutoRelease(shouldAutoRelease) {}
     ResourceHandle(const ResourceHandle& other);
     ResourceHandle(ResourceHandle&& other) noexcept;
+    explicit ResourceHandle(T* resource, smbool shouldAutoRelease = true);
     ResourceHandle& operator=(const ResourceHandle& other);
     ResourceHandle& operator=(ResourceHandle&& other) noexcept;
     ~ResourceHandle();

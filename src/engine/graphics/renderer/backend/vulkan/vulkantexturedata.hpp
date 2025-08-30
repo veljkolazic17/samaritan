@@ -2,7 +2,6 @@
 #include <defines.hpp>
 
 #include <engine/graphics/renderer/backend/vulkan/vulkanimage.hpp>
-#include <engine/graphics/renderer/backend/vulkan/vulkantypes.inl>
 
 BEGIN_NAMESPACE
 namespace Graphics

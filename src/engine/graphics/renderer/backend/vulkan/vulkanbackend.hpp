@@ -8,7 +8,6 @@
 #include <engine/graphics/renderer/backend/vulkan/vulkanrenderpass.hpp>
 #include <engine/graphics/renderer/backend/vulkan/vulkancommandbuffer.hpp>
 #include <engine/graphics/renderer/backend/vulkan/vulkanfence.hpp>
-#include <engine/graphics/renderer/backend/vulkan/vulkanobjectshader.hpp>
 
 #include <engine/resources/graphics/texture.hpp>
 #include <vector>
@@ -42,7 +41,7 @@ namespace Graphics
         SM_INLINE std::vector<VkPresentModeKHR>& GetPresentModes() { return m_PresentModes; }
         SM_INLINE VkSurfaceCapabilitiesKHR& GetCapabilities() { return m_Capabilities; }
         SM_INLINE VulkanSwapChain& GetVulkanSwapChain() { return m_SwapChain; }
-        SM_INLINE VulkanRenderpass& GetRenderpass(const smuint32 renderpassId) { return m_RenderPasses[renderpassId]; }
+        SM_INLINE VulkanRenderpass& GetRenderpass(const smstring& renderpassName) { return m_RenderPasses[renderpassName]; }
         SM_INLINE std::vector<VulkanCommandBuffer>& GetGraphicsCommandBuffers() { return m_GraphicsCommandBuffers; }
         SM_INLINE smuint32 GetImageIndex() { return m_ImageIndex; }
 
@@ -61,21 +60,13 @@ namespace Graphics
         void DestroyObjectShader(Shader* shader) override;
         smbool UseObjectShader(Shader* shader) override;
         smbool ObjectShaderBindGlobals(Shader* shader) override;
-        smbool ObjectShaderBindInstances(Shader* shader) override;
         smbool ObjectShaderSetUniform(Shader* shader, const ShaderUniform& uniform, void* value) override;
         smbool ObjectShaderApplyGlobals(Shader* shader) override;
         smbool ObjectShaderApplyInstances(Shader* shader) override;
         smbool ObjectShaderBindInstance(Shader* shader, smuint32 instanceId) override;
         smbool InitObjectShader(Shader* shader) override;
-
-        void InitVulkanModules(Shader* shader);
-        void InitAttributes(Shader* shader);
-        void InitUniforms(Shader* shader);
-        void InitDescriptorPools(Shader* shader);
-        void InitDescriptorSetLayout(Shader* shader);
-        void InitPipeline(Shader* shader);
-        void InitBuffer(Shader* shader);
-        void AllocateDescriptorSetLayouts(Shader* shader);
+        smbool ObjectShaderAcquireInstanceResources(Shader* shader, smuint32& instanceId) override;
+        smbool ObjectShaderReleaseInstanceResources(Shader* shader, smuint32 instanceId) override;
 
     private:
         void GetPlatformExtensions(std::vector<const char*>& platfromExtensions);
@@ -94,6 +85,15 @@ namespace Graphics
         void CreateBuffers();
         void DestroyBuffers();
         void UploadData(VkCommandPool pool, VkFence fence, VkQueue queue, const VulkanBuffer& buffer, smuint64 offset, smuint64 size, const void* data);
+
+        void InitVulkanModules(Shader* shader);
+        void InitAttributes(Shader* shader);
+        void InitUniforms(Shader* shader);
+        void InitDescriptorPools(Shader* shader);
+        void InitDescriptorSetLayout(Shader* shader);
+        void InitPipeline(Shader* shader);
+        void InitBuffer(Shader* shader);
+        void AllocateDescriptorSetLayouts(Shader* shader);
 
         smbool CheckDeviceRequerments
         (
@@ -118,7 +118,7 @@ namespace Graphics
         VulkanSwapChain m_SwapChain;
         VkSurfaceCapabilitiesKHR m_Capabilities;
 
-        VulkanObjectShader m_ObjectShader;
+        //VulkanObjectShader m_ObjectShader;
         VulkanBuffer m_IndexBuffer;
         VulkanBuffer m_VertexBuffer;
         Vulkan::Types::GeometryData m_GeometryData[SM_VULKAN_MAX_GEOMETRY_COUNT];

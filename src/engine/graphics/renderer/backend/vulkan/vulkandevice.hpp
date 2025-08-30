@@ -1,6 +1,6 @@
 #pragma once
 #include <defines.hpp>
-#include <engine/graphics/renderer/backend/vulkan/vulkantypes.inl>
+#include <engine/graphics/renderer/backend/vulkan/vulkantypes.hpp>
 #include <objecttemplates/shutdownable.hpp>
 
 #include <vector>

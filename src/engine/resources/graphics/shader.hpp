@@ -2,10 +2,10 @@
 #include <defines.hpp>
 
 #include <engine/resources/resource.hpp>
-
 #include <engine/resources/graphics/texture.hpp>
-#include <engine/math/vector.hpp>
-#include <engine/math/matrix.hpp>
+
+#include <math/vector.hpp>
+#include <math/matrix.hpp>
 
 #include <vector>
 #include <unordered_map>
@@ -14,10 +14,10 @@ BEGIN_NAMESPACE
 
 enum ShaderStageType : smuint8
 {
-    Vertex    = 1 << 0,
-    Geometry  = 1 << 1,
-    Fragment  = 1 << 2,
-    Compute   = 1 << 3
+    VERTEX      = 1 << 0,
+    GEOMETRY    = 1 << 1,
+    FRAGMENT    = 1 << 2,
+    COMPUTE     = 1 << 3
 };
 
 struct ShaderStage
@@ -27,7 +27,7 @@ struct ShaderStage
 };
 
 // Used for attributes and uniforms
-enum class ShaderDataType : smuint8
+enum ShaderDataType
 {
     FLOAT32,
     FLOAT32_2,
@@ -43,14 +43,14 @@ enum class ShaderDataType : smuint8
     SAMPLER
 };
 
-enum class ShaderState 
+enum ShaderState
 {
     NOT_CREATED,
     UNINITIALIZED,
     INITIALIZED,
 };
 
-enum class ShaderScopeType : smuint8
+enum ShaderScopeType
 {
     GLOBAL,
     INSTANCE,
@@ -208,10 +208,7 @@ struct Shader : Resource
     smuint32 m_BoundUBOOffset;
 
     /** @brief A hashtable to store uniform index/locations by name. */
-    std::unordered_map<std::string, smuint16> m_UniformLookupTable;
-
-    /** @brief An array of uniforms in this shader. Darray. */
-    std::vector<ShaderUniform> m_Uniforms;
+    std::unordered_map<std::string, ShaderUniform> m_UniformLookupTable;
 
     /** @brief An array of attributes. Darray. */
     std::vector<ShaderAttribute> m_Attributes;

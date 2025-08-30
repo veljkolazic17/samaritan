@@ -1,6 +1,8 @@
 #include <engine/graphics/systems/shadersystem.hpp>
 #include <engine/resources/resourcesystem.hpp>
 
+#include <engine/graphics/renderer/frontend/rendererfrontend.hpp>
+#include <engine/graphics/systems/texturesystem.hpp>
 #include <utils/typeutils.hpp>
 
 BEGIN_NAMESPACE
@@ -193,16 +195,16 @@ smbool ShaderSystem::SetUniformByName(const std::string& uniformName, const void
             {
                 if (shaderUniform.m_ScopeType == ShaderScopeType::GLOBAL)
                 {
-                    smRenderer().ObjectShaderBindGlobals(shader);
+                    HACK(smRenderer().GetRendererBackend()->ObjectShaderBindGlobals(shaderPtr);)
                 }
                 else if (shaderUniform.m_ScopeType == ShaderScopeType::INSTANCE)
                 {
-                    smRenderer().ObjectShaderBindInstances(shader);
+                    HACK(smRenderer().GetRendererBackend()->ObjectShaderBindInstances(shaderPtr);)
                 }
                 shaderPtr->m_ScopeType = shaderUniform.m_ScopeType;
             }
 
-            return smRenderer().ObjectShaderSetUniform(shader, uniform, value)
+            HACK(return smRenderer().GetRendererBackend()->ObjectShaderSetUniform(shaderPtr, uniform, value);)
         }
     }
     return false;
@@ -227,13 +229,13 @@ smbool ShaderSystem::ApplyGlobalUniforms()
         const ResourceHandle<Shader>& shader = it->second;
         if (shader.IsValid())
         {
-            return smRenderer().ObjectShaderApplyGlobals(shader.GetResource());
+            HACK(return smRenderer().GetRendererBackend()->ObjectShaderApplyGlobals(shader.GetResource());)
         }
         LogError(LogChannel::Graphics, "Shader %s is not valid!", m_CurrentShaderName);
         return false;
     }
     LogError(LogChannel::Graphics, "Shader %s not found!", m_CurrentShaderName);
-    return false
+    return false;
 }
 
 smbool ShaderSystem::ApplyInstanceUniforms()

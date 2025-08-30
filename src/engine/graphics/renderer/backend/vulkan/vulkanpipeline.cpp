@@ -124,12 +124,31 @@ namespace Graphics
         VkPipelineLayoutCreateInfo pipelineLayoutCreateInfo = { VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO };
 
         // Push constants
-        VkPushConstantRange pushConstant;
-        pushConstant.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
-        pushConstant.offset = sizeof(smMat4) * 0;
-        pushConstant.size = sizeof(smMat4) * 2;
-        pipelineLayoutCreateInfo.pushConstantRangeCount = 1;
-        pipelineLayoutCreateInfo.pPushConstantRanges = &pushConstant;
+        if (pushConstantsCount > 0) 
+        {
+            if (pushConstantsCount > 32) 
+            {
+                softAssert(false, "Too many push constant ranges! Max is 32.");
+                return false;
+            }
+
+            // NOTE: 32 is the max number of ranges we can ever have, since spec only guarantees 128 bytes with 4-byte alignment.
+            VkPushConstantRange ranges[32];
+            for (smuint32 index = 0; index < pushConstantsCount; ++index)
+            {
+                ranges[index].stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
+                ranges[index].offset = pushConstantRanges[index].m_Offset;
+                ranges[index].size = pushConstantRanges[index].m_Size;
+            }
+
+            pipelineLayoutCreateInfo.pushConstantRangeCount = pushConstantsCount;
+            pipelineLayoutCreateInfo.pPushConstantRanges = ranges;
+        }
+        else 
+        {
+            pipelineLayoutCreateInfo.pushConstantRangeCount = 0;
+            pipelineLayoutCreateInfo.pPushConstantRanges = 0;
+        }
 
         // Descriptor set layouts
         pipelineLayoutCreateInfo.setLayoutCount = descriptorSetLayoutCount;

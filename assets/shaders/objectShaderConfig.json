@@ -1,7 +1,7 @@
 {
     "version": 1.0,
     "name": "ObjectShader",
-    "renderpass": "WorldDefault",
+    "renderpass": "world",
 
     "stages": {
         "vertex": "Builtin.ObjectShader.vert.glsl",

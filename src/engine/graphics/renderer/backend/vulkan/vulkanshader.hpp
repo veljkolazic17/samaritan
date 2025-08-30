@@ -5,16 +5,21 @@
 #include <engine/graphics/renderer/backend/vulkan/vulkanbuffer.hpp>
 #include <engine/graphics/renderer/backend/vulkan/vulkanpipeline.hpp>
 
-#define SM_VULKAN_MAX_SHADER_STAGES_COUNT           8
-#define SM_VULKAN_MAX_BINDING_LAYOUTS_COUNT         32
-#define SM_VULKAN_MAX_SADER_ATTRIBUTES              16
+#define SM_VULKAN_MAX_SHADER_STAGES_COUNT               8
+#define SM_VULKAN_MAX_BINDINGS_COUNT                    32
+#define SM_VULKAN_MAX_SADER_ATTRIBUTES                  16
 
-#define SM_VULKAN_BINDING_UBO                      0
-#define SM_VULKAN_BINDING_SAMPLER                  1
+#define SM_VULKAN_BINDING_UBO                           0
+#define SM_VULKAN_BINDING_SAMPLER                       1
 
-#define SM_VULKAN_DESCRIPTOR_SET_GLOBAL             0
-#define SM_VULKAN_DESCRIPTOR_SET_INSTANCE           1
-#define SM_VULKAN_SHADER_MAX_INSTANCE_COUNT         4096
+#define SM_VULKAN_DESCRIPTOR_SET_GLOBAL                 0
+#define SM_VULKAN_DESCRIPTOR_SET_INSTANCE               1
+#define SM_VULKAN_SHADER_MAX_INSTANCE_COUNT             4096
+
+#define SM_VULKAN_SHADER_MAX_GLOBAL_TEXTURES_COUNT      32
+#define SM_VULKAN_SHADER_MAX_INSTANCE_TEXTURES_COUNT    32
+
+#define SM_VULKAN_DESCRIPTOR_SET_TYPE_MAX               2 // 0 - global, 1 - instance
 
 BEGIN_NAMESPACE
 
@@ -24,19 +29,19 @@ class VulkanRenderpass;
 struct VulkanDescriptorSetData
 {
     smuint32 m_Bindings = 0;
-    VkDescriptorSetLayoutBinding m_BindingLayouts[SM_VULKAN_MAX_BINDING_LAYOUTS_COUNT];
+    VkDescriptorSetLayoutBinding m_BindingLayouts[SM_VULKAN_MAX_BINDINGS_COUNT];
 };
 
 struct VulkanDescriptorState
 {
-    smuint32 m_Generation = SM_INVALID_ID;
-    smuint32 m_Id = SM_INVALID_ID;
+    smuint32 m_Generation[3] = { SM_INVALID_ID, SM_INVALID_ID, SM_INVALID_ID };
+    smuint32 m_Id[3] = { SM_INVALID_ID, SM_INVALID_ID, SM_INVALID_ID };
 };
 
 struct VulkanDescriptorSetState
 {
     VkDescriptorSet m_DescriptorSets[3] = { 0, 0, 0 };
-    VulkanDescriptorState m_DescriptorStates[3];
+    VulkanDescriptorState m_DescriptorStates[SM_VULKAN_MAX_BINDINGS_COUNT];
 };
 
 struct VulkanShaderInstanceState
@@ -47,7 +52,7 @@ struct VulkanShaderInstanceState
     smuint32 m_Size = 0;
 
     VulkanDescriptorSetState m_DescriptorSetState;
-    std::vector<Texture*> m_Textures;
+    std::vector<ResourceHandle<Texture>> m_Textures;
 };
 
 struct VulkanShaderStage
@@ -83,8 +88,7 @@ struct VulkanShader
     smuint8 m_StageCount = 0;
     VulkanShaderStage m_Stages[SM_VULKAN_MAX_SHADER_STAGES_COUNT];
 
-    constexpr auto vulkanDescriptorSetTypeMax = 2; // 0 - global, 1 - instance
-    VulkanDescriptorSetData m_DescriptorSetData[vulkanDescriptorSetTypeMax];
+    VulkanDescriptorSetData m_DescriptorSetData[SM_VULKAN_DESCRIPTOR_SET_TYPE_MAX];
 
     VulkanShaderInstanceState m_InstanceStates[SM_VULKAN_SHADER_MAX_INSTANCE_COUNT];
 

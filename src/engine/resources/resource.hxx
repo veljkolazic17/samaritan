@@ -1,4 +1,5 @@
 #pragma once
+#include <engine/resources/resourcesystem.hpp>
 
 BEGIN_NAMESPACE
 
@@ -16,6 +17,23 @@ ResourceHandle<T>::ResourceHandle<T>(ResourceHandle<T>&& other) noexcept : m_Con
 {
     other.m_ControlBlock = nullptr;
 }
+
+template<typename T>
+ResourceHandle<T>::ResourceHandle<T>(T* resource, smbool shouldAutoRelease) : m_ShouldAutoRelease(shouldAutoRelease)
+{
+    auto& controlBlocks = smResourceSystem().m_ControlBlocks;
+    auto it = controlBlocks.find(resource->m_Name);
+    if (it != controlBlocks.end()) 
+    {
+        m_ControlBlock = it->second.get();
+        m_ControlBlock->Increment();
+    } 
+    else
+    {
+        hardAssert(false, "ResourceHandle: Resource not found in ResourceSystem. Use ResourceSystem::Load to create a handle for a resource.");
+    }
+}
+
 
 template<typename T>
 T* ResourceHandle<T>::operator->() const

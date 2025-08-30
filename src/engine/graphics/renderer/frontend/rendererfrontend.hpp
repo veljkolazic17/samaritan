@@ -52,6 +52,7 @@ namespace Graphics
         SM_INLINE void SetGeometry(Geometry* geometry) { m_Geometry = geometry; }
         SM_INLINE Geometry* GetGeometry() { return m_Geometry; }
 #endif
+        HACK(SM_INLINE RendererBackend* GetRendererBackend() { return m_RendererBackend; })
     private:
         smMat4 m_Projection;
         smMat4 m_View;

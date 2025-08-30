@@ -1,6 +1,6 @@
 #include <engine/graphics/renderer/backend/vulkan/vulkandevice.hpp>
 #include <engine/graphics/renderer/backend/vulkan/vulkanimage.hpp>
-#include <engine/graphics/renderer/backend/vulkan/vulkantypes.inl>
+#include <engine/graphics/renderer/backend/vulkan/vulkantypes.hpp>
 
 #include <utils/logger/log.hpp>
 
