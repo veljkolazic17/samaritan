@@ -33,7 +33,6 @@ public:
 
     smbool ApplyGlobalUniforms();
     smbool ApplyInstanceUniforms();
-    smbool ApplyInstanceUniforms();
 
     smbool BindInstanceByIndex(smuint32 instanceId);
 

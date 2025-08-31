@@ -109,6 +109,9 @@ private:
     std::unordered_map<std::string, std::unique_ptr<Resource>> m_Resources;
     //this is allocated in heap from resource system
     std::unordered_map<std::string, std::unique_ptr<ResourceControlBlock>> m_ControlBlocks;
+
+    template <typename T>
+    friend class ResourceHandle;
 };
 
 END_NAMESPACE

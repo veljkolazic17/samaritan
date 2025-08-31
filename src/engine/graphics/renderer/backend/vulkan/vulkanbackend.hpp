@@ -60,7 +60,7 @@ namespace Graphics
         void DestroyObjectShader(Shader* shader) override;
         smbool UseObjectShader(Shader* shader) override;
         smbool ObjectShaderBindGlobals(Shader* shader) override;
-        smbool ObjectShaderSetUniform(Shader* shader, const ShaderUniform& uniform, void* value) override;
+        smbool ObjectShaderSetUniform(Shader* shader, const ShaderUniform& uniform, const void* value) override;
         smbool ObjectShaderApplyGlobals(Shader* shader) override;
         smbool ObjectShaderApplyInstances(Shader* shader) override;
         smbool ObjectShaderBindInstance(Shader* shader, smuint32 instanceId) override;

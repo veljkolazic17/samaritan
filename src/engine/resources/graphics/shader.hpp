@@ -157,6 +157,15 @@ struct Shader : Resource
     void OnUnload() override;
     void OnLoad() override;
 
+    // Add a default constructor to Shader to resolve the error
+    Shader() = default;
+
+    Shader(const std::string& name)
+        : Resource(name)
+    {
+        // All other members are default-initialized
+    }
+
     smbool m_IsUsingInsance = false;
     smbool m_IsUsingLocals = false;
 

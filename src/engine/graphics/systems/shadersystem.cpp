@@ -9,7 +9,7 @@ BEGIN_NAMESPACE
 
 smbool ShaderSystem::Init()
 {
-
+    return true;
 }
 
 void ShaderSystem::Shutdown()
@@ -19,20 +19,20 @@ void ShaderSystem::Shutdown()
 
 smbool ShaderSystem::Create(const std::string& shaderName)
 {
-    ResourceHandle<Shader> shader = smResourceSystem().Load(shaderName);
+    ResourceHandle<Shader> shader = smResourceSystem().Load<Shader>(shaderName);
     m_ShaderLookup[shaderName] = std::move(shader);
 
     Shader* shaderPtr = shader.GetResource();
-    shaderPtr->m_State = ShaderState::NOT_CREATED;
+   // shaderPtr->m_State = ShaderState::NOT_CREATED;
 
     //Create Shader;
 
     shaderPtr->m_PushConstantStride = 128;
     shaderPtr->m_PushConstantSize = 0;
 
-    shaderPtr->m_State = ShaderState::UNINITIALIZED;
+    //shaderPtr->m_State = ShaderState::UNINITIALIZED;
 
-    if (!smRenderer().CreateShader(shaderPtr))
+    HACK(if (!smRenderer().GetRendererBackend()->CreateObjectShader(shaderPtr)))
     {
         softAssert(false, "Failed to create shader: %s", shaderName);
         return false;
@@ -43,19 +43,20 @@ smbool ShaderSystem::Create(const std::string& shaderName)
         InitAttribute(*shaderPtr, attribute);
     }
 
-    for (ShaderUniform& uniform : shaderPtr->m_Uniforms)
+    for (const std::pair<smstring, ShaderUniform>& uniformPair : shaderPtr->m_UniformLookupTable)
     {
-        if (uniform.m_Type == ShaderDataType::SAMPLER)
+        const ShaderUniform& uniform = uniformPair.second;
+        if (uniform.m_DataType == ShaderDataType::SAMPLER)
         {
-            InitSampler(*shaderPtr, uniform);
+            InitSampler(*shaderPtr, const_cast<ShaderUniform&>(uniform));
         }
         else
         {
-            InitUniform(*shaderPtr, uniform);
+            InitUniform(*shaderPtr, const_cast<ShaderUniform&>(uniform));
         }
     }
-
-    shaderPtr->m_State = ShaderState::INITIALIZED;
+    return true;
+    //shaderPtr->m_State = ShaderState::INITIALIZED;
 }
 
 void ShaderSystem::InitAttribute(Shader& shader, ShaderAttribute& attribute)
@@ -146,13 +147,15 @@ smbool ShaderSystem::Use(const std::string& shaderName)
             const ResourceHandle<Shader>& shader = it->second;
             if (shader.IsValid())
             {
-                if (!smRenderer().UseObjectShader(shader.GetResource()))
+                Shader* shadrerPtr = shader.GetResource();
+
+                if (!smRenderer().UseObjectShader(shadrerPtr))
                 {
                     softAssert(false, "Failed to use shader: %s", shaderName);
                     return false;
                 }
 
-                if (!smRenderer().ObjectShaderBindGlobals(shader))
+                HACK(if (!smRenderer().GetRendererBackend()->ObjectShaderBindGlobals(shadrerPtr)))
                 {
                     softAssert(false, "Failed to bind global uniforms for shader: %s", shaderName);
                     return false;
@@ -199,12 +202,12 @@ smbool ShaderSystem::SetUniformByName(const std::string& uniformName, const void
                 }
                 else if (shaderUniform.m_ScopeType == ShaderScopeType::INSTANCE)
                 {
-                    HACK(smRenderer().GetRendererBackend()->ObjectShaderBindInstances(shaderPtr);)
+                    HACK(smRenderer().GetRendererBackend()->ObjectShaderBindInstance(shaderPtr, shaderPtr->m_BoundInstancId);)
                 }
                 shaderPtr->m_ScopeType = shaderUniform.m_ScopeType;
             }
 
-            HACK(return smRenderer().GetRendererBackend()->ObjectShaderSetUniform(shaderPtr, uniform, value);)
+            HACK(return smRenderer().GetRendererBackend()->ObjectShaderSetUniform(shaderPtr, shaderUniform, value);)
         }
     }
     return false;
@@ -213,6 +216,7 @@ smbool ShaderSystem::SetUniformByName(const std::string& uniformName, const void
 smbool ShaderSystem::SetSamplerByName(const std::string& samplerName, const ResourceHandle<Texture>& texture)
 {
     SetUniformByName(samplerName, texture.GetResource());
+    return true;
 }
 
 smbool ShaderSystem::ApplyGlobalUniforms()
@@ -252,7 +256,7 @@ smbool ShaderSystem::ApplyInstanceUniforms()
         const ResourceHandle<Shader>& shader = it->second;
         if (shader.IsValid())
         {
-            return smRenderer().ObjectShaderApplyInstances(shader.GetResource());
+            HACK(return smRenderer().GetRendererBackend()->ObjectShaderApplyInstances(shader.GetResource());)
         }
         LogError(LogChannel::Graphics, "Shader %s is not valid!", m_CurrentShaderName);
         return false;
@@ -269,7 +273,7 @@ smbool ShaderSystem::BindInstanceByIndex(smuint32 instanceId)
         const ResourceHandle<Shader>& shader = it->second;
         if (shader.IsValid())
         {
-            return smRenderer().ObjectShaderBindInstance(shader.GetResource(), instanceId);
+            HACK(return smRenderer().GetRendererBackend()->ObjectShaderBindInstance(shader.GetResource(), instanceId);)
         }
         LogError(LogChannel::Graphics, "Shader %s is not valid!", m_CurrentShaderName);
         return false;

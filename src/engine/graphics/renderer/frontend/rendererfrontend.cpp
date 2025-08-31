@@ -180,6 +180,14 @@ namespace Graphics
             m_RendererBackend->DestroyObjectShader(shader);
         }
     }
+    smbool Renderer::UseObjectShader(Shader* shader)
+    {
+        if (m_RendererBackend != nullptr)
+        {
+            return m_RendererBackend->UseObjectShader(shader);
+        }
+        return false;
+    }
 }
 
 END_NAMESPACE

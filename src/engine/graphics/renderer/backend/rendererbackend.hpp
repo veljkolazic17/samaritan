@@ -40,8 +40,7 @@ namespace Graphics
         virtual void DestroyObjectShader(Shader* shader) = 0;
         virtual smbool UseObjectShader(Shader* shader) = 0;
         virtual smbool ObjectShaderBindGlobals(Shader* shader) = 0;
-        virtual smbool ObjectShaderBindInstances(Shader* shader) = 0;
-        virtual smbool ObjectShaderSetUniform(Shader* shader, const ShaderUniform& uniform, void* value) = 0;
+        virtual smbool ObjectShaderSetUniform(Shader* shader, const ShaderUniform& uniform, const void* value) = 0;
         virtual smbool ObjectShaderApplyGlobals(Shader* shader) = 0;
         virtual smbool ObjectShaderApplyInstances(Shader* shader) = 0;
         virtual smbool ObjectShaderBindInstance(Shader* shader, smuint32 instanceId) = 0;
@@ -59,7 +58,7 @@ namespace Graphics
 END_NAMESPACE
 
 #define DEFINE_RENDERER(rendererType)				\
-    RendererType GetRendererType() = 0			\
+    RendererType GetRendererType() override			\
     {                                           	\
         return rendererType;            			\
     }

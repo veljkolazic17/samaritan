@@ -368,7 +368,7 @@ namespace Graphics
 			VulkanFramebuffer framebuffer;
 			framebuffer.Init(
 				arguments, 
-				&g_VulkanRenderer->GetMainRenderpass(),
+				&g_VulkanRenderer->GetRenderpass("world"),
 				g_VulkanRenderer->GetVulkanDevice().m_FrameBufferWidth,
 				g_VulkanRenderer->GetVulkanDevice().m_FrameBufferHeight,
 				attachmentCount, 

@@ -1446,13 +1446,13 @@ namespace Graphics
         return true;
     }
 
-    smbool VulkanRenderer::ObjectShaderSetUniform(Shader* shader, const ShaderUniform& uniform, void* value)
+    smbool VulkanRenderer::ObjectShaderSetUniform(Shader* shader, const ShaderUniform& uniform, const void* value)
     {
         VulkanShader* vkShader = static_cast<VulkanShader*>(shader->m_InternalData);
 
         if (uniform.m_DataType == ShaderDataType::SAMPLER) 
         {
-            Texture* textureValue = static_cast<Texture*>(value);
+            Texture* textureValue = reinterpret_cast<Texture*>(const_cast<void*>(value));
             ResourceHandle<Texture> textureHandle(textureValue);
 
             //Should there be check for index in array?
@@ -1703,7 +1703,7 @@ namespace Graphics
 
     smbool VulkanRenderer::ObjectShaderReleaseInstanceResources(Shader* shader, smuint32 instanceId)
     {
-
+        return false;
     }
 
 #pragma endregion

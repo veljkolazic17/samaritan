@@ -1,5 +1,7 @@
-#include <nlohmann/json.hpp>
 #include <engine/resources/graphics/shader.hpp>  
+
+#include <nlohmann/json.hpp>
+#include <fstream>
 
 BEGIN_NAMESPACE  
 
@@ -74,7 +76,7 @@ void Shader::LoadShaderUniforms(void* data)
            shaderUniform.m_Size = ShaderHelper::ShaderDataTypeSize(shaderUniform.m_DataType);  
            shaderUniform.m_ScopeType = ShaderHelper::ShaderScopeTypeFromString(uniform["scope"].template get<std::string>());  
 
-           m_Uniforms.push_back(std::move(shaderUniform));  
+           m_UniformLookupTable[name] = std::move(shaderUniform);  
        }  
    }  
    else  
