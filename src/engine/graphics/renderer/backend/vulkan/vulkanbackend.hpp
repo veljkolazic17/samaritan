@@ -30,7 +30,6 @@ namespace Graphics
         void Resize(smuint32 width, smuint32 height) override;
         smbool BeginFrame(Time time) override;
         smbool EndFrame(Time time) override;
-        void UpdateGlobalState(smMat4 projection, smMat4 view, smVec3 viewPosition, smVec4 ambientColor, smint32 mode) override;
         void DrawGeometry(const GeometryData& data) override;
 
         SM_INLINE VkAllocationCallbacks* GetAllocator() { return m_Allocator; }
@@ -50,8 +49,6 @@ namespace Graphics
 
         smbool CreateTexture(const smuint8* pixels, Texture* texture) override;
         void DestroyTexture(Texture* texture) override;
-        smbool CreateMaterial(Material* material) override;
-        void DestroyMaterial(Material* material) override;
         smbool CreateGeometry(Geometry* geometry, smuint32 vertexCount, const smVert3D* vertices, smuint32 indexCount, const smuint32* indices) override;
         void DestroyGeometry(Geometry* geometry) override;
         

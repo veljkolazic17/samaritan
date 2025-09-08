@@ -15,11 +15,24 @@ void Shader::OnLoad()
    std::string path = std::format(pathFormat, m_Name);  
 
    std::ifstream f(path);  
-   if (f.fail())  
-   {  
-       LogError(LogChannel::Graphics, "Cannot open shader file!");  
-       return;  
-   }  
+    if (f.fail())  
+    {
+#ifdef DEBUG
+        std::string reason;
+        if (!std::filesystem::exists(path)) 
+        {
+            reason = "File does not exist.";
+        } else if (!std::filesystem::is_regular_file(path)) 
+        {
+            reason = "Path is not a regular file.";
+        } else 
+        {
+            reason = "File could not be opened (permission issue or locked).";
+        }
+        LogError(LogChannel::Graphics, std::format("Cannot open shader file '{}': {}", path, reason).c_str());
+#endif
+        return;
+    }
 
    nlohmann::json data = nlohmann::json::parse(f);  
 
@@ -32,7 +45,7 @@ void Shader::LoadShaderInfo(void* data)
 {  
    const nlohmann::json& dataJson = *reinterpret_cast<nlohmann::json*>(data);  
 
-   m_Name = dataJson["name"].template get<std::string>();  
+   m_ShaderName = dataJson["name"].template get<std::string>();  
    m_RenderpassName = dataJson["renderpass"].template get<std::string>();  
    m_IsUsingInsance = dataJson["isUsingInstance"].template get<smbool>();  
    m_IsUsingLocals = dataJson["isUsingLocal"].template get<smbool>();  

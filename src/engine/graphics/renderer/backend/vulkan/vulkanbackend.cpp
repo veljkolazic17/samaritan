@@ -798,20 +798,6 @@ namespace Graphics
         staging.Destroy();
     }
 
-    void VulkanRenderer::UpdateGlobalState(smMat4 projection, smMat4 view, smVec3 viewPosition, smVec4 ambientColor, smint32 mode)
-    {
-        VulkanCommandBuffer* commandBuffer = &g_VulkanRenderer->GetGraphicsCommandBuffers()[g_VulkanRenderer->GetImageIndex()];
-
-        /*m_ObjectShader.Use(commandBuffer);
-
-        m_ObjectShader.GetGlobalUniformObject().m_Projection = projection;
-        m_ObjectShader.GetGlobalUniformObject().m_View = view;*/
-
-        // TODO: other ubo properties
-
-        //m_ObjectShader.UpdateGlobalState();
-    }
-
     void VulkanRenderer::DrawGeometry(const GeometryData& data)
     {
         if (data.m_Geometry != nullptr && data.m_Geometry->m_Id == SM_INVALID_ID) 
@@ -969,36 +955,6 @@ namespace Graphics
 
         gpFreeTexture(data, sizeof(VulkanTextureData));
         smZero(texture, sizeof(Texture));
-    }
-#pragma endregion
-
-#pragma region Material
-    smbool VulkanRenderer::CreateMaterial(Material* material)
-    {
-        if (material == nullptr)
-        {
-            softAssert(false, "Trying to create material on nullptr!");
-            return false;
-        }
-
-        /*if (m_ObjectShader.AcquireObjectShaderResources(material) == SM_INVALID_ID)
-        {
-            softAssert(false, "Failed to acquire material shader resources!");
-            return false;
-        }*/
-
-        return true;
-    }
-
-    void VulkanRenderer::DestroyMaterial(Material* material)
-    {
-        if (material == nullptr || material->m_ID == SM_INVALID_ID)
-        {
-            softAssert(false, "Invalid material (nullptr or invalid id)");
-            return;
-        }
-
-        //m_ObjectShader.ReleaseObjectShaderResources(material);
     }
 #pragma endregion
 
@@ -1703,7 +1659,32 @@ namespace Graphics
 
     smbool VulkanRenderer::ObjectShaderReleaseInstanceResources(Shader* shader, smuint32 instanceId)
     {
-        return false;
+        VulkanShader* vkShader = static_cast<VulkanShader*>(shader->m_InternalData);
+        VulkanShaderInstanceState& instanceState = vkShader->m_InstanceStates[instanceId];
+
+        vkDeviceWaitIdle(m_VulkanDevice.m_LogicalDevice);
+
+        // Free 3 descriptor sets (one per frame)
+        VkResult result = vkFreeDescriptorSets
+        (
+            m_VulkanDevice.m_LogicalDevice,
+            vkShader->m_DescriptorPool,
+            3,
+            instanceState.m_DescriptorSetState.m_DescriptorSets
+        );
+
+        if (result != VK_SUCCESS) 
+        {
+            softAssert(false, "Could not free instance descriptor sets! Error : %s", Vulkan::Utils::ResultToString(result));
+            return false;
+        }
+
+        instanceState.m_Textures.clear();
+        vkShader->m_VulkanUniformBuffer.Free(shader->m_UBOStride, instanceState.m_Offset);
+        instanceState.m_Id = SM_INVALID_ID;
+        instanceState.m_Offset = SM_INVALID_ID;
+
+        return true;
     }
 
 #pragma endregion

@@ -11,6 +11,7 @@
 #include <engine/graphics/systems/texturesystem.hpp>
 #include <engine/graphics/systems/materialsystem.hpp>
 #include <engine/graphics/systems/geometrysystem.hpp>
+#include <engine/graphics/systems/shadersystem.hpp>
 #if HACKS_ENABLED
 #include <engine/threads/iupdatable.hpp>
 #endif
@@ -97,6 +98,8 @@ BEGIN_NAMESPACE
 
         GeometrySystemConfig geometryConfig = { 4096 };
         GeometrySystem::GetInstance().Init(geometryConfig);
+
+        ShaderSystem::GetInstance().Init();
     }
 
     void Engine::Run(void)
@@ -162,6 +165,7 @@ BEGIN_NAMESPACE
         m_Window->Shutdown();
         Memory::mdelete<Graphics::Window>(m_Window);
 
+        ShaderSystem::GetInstance().Shutdown();
         Input::InputManager::GetInstance().Shutdown();
         Events::EventManager::GetInstance().Shutdown();
 

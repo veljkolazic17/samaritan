@@ -1,11 +1,12 @@
 #include <engine/graphics/systems/materialsystem.hpp>
 
 #include <engine/graphics/renderer/frontend/rendererfrontend.hpp>
+#include <engine/graphics/systems/shadersystem.hpp>
 #include <engine/graphics/systems/texturesystem.hpp>
 
-#include <utils/logger/log.hpp>
 #include <fstream>
 #include <nlohmann/json.hpp>
+#include <utils/logger/log.hpp>
 
 BEGIN_NAMESPACE
 
@@ -29,22 +30,25 @@ smbool MaterialSystem::Init(const MaterialSystemConfig& config)
     m_DefaultMaterial.m_DiffuseColor = smVec4_one;
     m_DefaultMaterial.m_DiffuseMap.m_Type = TextureUsageType::TEXTURE_USAGE_MAP_DIFFUSE;
     m_DefaultMaterial.m_DiffuseMap.m_Texture = smTextureSystem().GetDefaultTexture();
+    HACK(m_DefaultMaterial.m_ShaderName = SM_DEFAULT_SHADER_NAME;)
     
-    if (!smRenderer().CreateMaterial(&m_DefaultMaterial))
+    const ResourceHandle<Shader>& shader = smShaderSystem().GetShader(m_DefaultMaterial.m_ShaderName);
+    if (!shader.IsValid())
     {
-        softAssert(false, "Cannot create default material!");
+        softAssert(false, "Shader %s not found!", m_DefaultMaterial.m_ShaderName.c_str());
         return false;
     }
+
+    HACK(smRenderer().GetRendererBackend()->ObjectShaderAcquireInstanceResources(shader.GetResource(), m_DefaultMaterial.m_InternalID);)
+
     return true;
 }
 
 void MaterialSystem::Shutdown()
 {
-    Graphics::Renderer& renderer = smRenderer();
-    renderer.DestroyMaterial(&m_DefaultMaterial);
     for (Material& material : m_Materials)
     {
-        renderer.DestroyMaterial(&material);
+        DestroyMaterial(&material);
     }
 }
 
@@ -156,9 +160,11 @@ smbool MaterialSystem::LoadConfigurationFile(smcstring name, MaterialConfig& con
 
     const std::string& jname = data["name"].template get<std::string>();
     const std::string& jdiffuseMapName = data["diffusemapname"].template get<std::string>();
+    const std::string& shaderName = data["shader"].template get<std::string>();
 
     std::strncpy(reinterpret_cast<char*>(config.m_Name), jname.data(), SM_MATERIAL_NAME_MAX_LENGTH);
     std::strncpy(reinterpret_cast<char*>(config.m_DiffuseMapName), jdiffuseMapName.data(), SM_TEXTURE_NAME_MAX_LENGTH);
+    config.m_ShaderName = shaderName;
     config.m_DiffuseColor = smVec4::StringToVec4(data["diffusecolor"]);
 
     return true;
@@ -172,13 +178,14 @@ void MaterialSystem::DestroyMaterial(Material* material)
         return;
     }
 
-
     if (Texture* texture = material->m_DiffuseMap.m_Texture.GetResource())
     {
         smTextureSystem().Release(texture->m_Name);
     }
 
-    smRenderer().DestroyMaterial(material);
+    const ResourceHandle<Shader>& shader = smShaderSystem().GetShader(material->m_ShaderName);
+    HACK(smRenderer().GetRendererBackend()->ObjectShaderReleaseInstanceResources(shader.GetResource(), material->m_InternalID);)
+
     material->m_ID = SM_INVALID_ID;
     material->m_Generation = SM_INVALID_ID;
     material->m_InternalID = SM_INVALID_ID;
@@ -188,6 +195,8 @@ smbool MaterialSystem::LoadMaterial(const MaterialConfig& config, Material* mate
 {
     smZero(material, sizeof(Material));
     std::strncpy(reinterpret_cast<char*>(material->m_Name), reinterpret_cast<const char*>(config.m_Name), SM_MATERIAL_NAME_MAX_LENGTH);
+
+    material->m_ShaderName = config.m_ShaderName;
 
     material->m_DiffuseColor = config.m_DiffuseColor;
     if (std::strlen(reinterpret_cast<const char*>(config.m_DiffuseMapName)) > 0)
@@ -207,11 +216,14 @@ smbool MaterialSystem::LoadMaterial(const MaterialConfig& config, Material* mate
         material->m_DiffuseMap.m_Texture = ResourceHandle<Texture>::InvalidReference();
     }
 
-    if (!smRenderer().CreateMaterial(material))
+    const ResourceHandle<Shader>& shader = smShaderSystem().GetShader(config.m_ShaderName);
+    if (!shader.IsValid())
     {
-        softAssert(false, "Failed to acquire resources for material!");
+        softAssert(false, "Shader %s not found!", config.m_ShaderName.c_str());
         return false;
     }
+
+    HACK(smRenderer().GetRendererBackend()->ObjectShaderAcquireInstanceResources(shader.GetResource(), material->m_InternalID);)
 
     if (material->m_ID == SM_INVALID_ID)
     {
@@ -223,6 +235,28 @@ smbool MaterialSystem::LoadMaterial(const MaterialConfig& config, Material* mate
     }
 
     return true;
+}
+
+smbool MaterialSystem::ApplyGlobal(const smstring& shaderName, const smMat4& projection, const smMat4& view)
+{
+    ShaderSystem& shaderSystem = smShaderSystem();
+    shaderSystem.SetUniformByName("projection", &projection);
+    shaderSystem.SetUniformByName("view", &view);
+    return shaderSystem.ApplyGlobalUniforms();
+}
+
+smbool MaterialSystem::ApplyInstance(Material* material)
+{
+    ShaderSystem& shaderSystem = smShaderSystem();
+    shaderSystem.BindInstanceByIndex(material->m_InternalID);
+    shaderSystem.SetUniformByName("diffuse_colour", &material->m_DiffuseColor);
+    shaderSystem.SetSamplerByName("diffuse_texture", material->m_DiffuseMap.m_Texture);
+    return shaderSystem.ApplyInstanceUniforms();
+}
+
+smbool MaterialSystem::ApplyLocal(Material* material, const smMat4& model)
+{
+    return smShaderSystem().SetUniformByName("model", &model);
 }
 
 END_NAMESPACE

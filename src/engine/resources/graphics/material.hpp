@@ -12,6 +12,7 @@ BEGIN_NAMESPACE
 struct Material
 {
 	smuint8 m_Name[SM_MATERIAL_NAME_MAX_LENGTH];
+    smstring m_ShaderName;
 	smuint32 m_ID = SM_INVALID_ID;
 	smuint32 m_Generation = SM_INVALID_ID;
 	smuint32 m_InternalID = SM_INVALID_ID;

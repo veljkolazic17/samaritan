@@ -2,5 +2,6 @@
     "version": 1.0,
     "name": "rock",
     "diffusecolor": "1.0 1.0 1.0 1.0",
-    "diffusemapname": "rock"
+    "diffusemapname": "rock",
+    "shader": "ObjectShader"
 }

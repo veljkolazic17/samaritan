@@ -20,7 +20,6 @@ void ShaderSystem::Shutdown()
 smbool ShaderSystem::Create(const std::string& shaderName)
 {
     ResourceHandle<Shader> shader = smResourceSystem().Load<Shader>(shaderName);
-    m_ShaderLookup[shaderName] = std::move(shader);
 
     Shader* shaderPtr = shader.GetResource();
    // shaderPtr->m_State = ShaderState::NOT_CREATED;
@@ -55,6 +54,11 @@ smbool ShaderSystem::Create(const std::string& shaderName)
             InitUniform(*shaderPtr, const_cast<ShaderUniform&>(uniform));
         }
     }
+
+    HACK(smRenderer().GetRendererBackend()->InitObjectShader(shaderPtr);)
+
+    m_ShaderLookup[shaderPtr->m_ShaderName] = std::move(shader);
+
     return true;
     //shaderPtr->m_State = ShaderState::INITIALIZED;
 }

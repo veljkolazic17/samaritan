@@ -27,12 +27,9 @@ namespace Graphics
         virtual void Resize(smuint32 width, smuint32 heigth) = 0;
         virtual smbool BeginFrame(Time time) = 0;
         virtual smbool EndFrame(Time time) = 0;
-        virtual void UpdateGlobalState(smMat4 projection, smMat4 view, smVec3 viewPosition, smVec4 ambientColor, smint32 mode) = 0;
         virtual void DrawGeometry(const GeometryData& data) = 0;
         virtual smbool CreateTexture(const smuint8* pixels, Texture* texture) = 0;
         virtual void DestroyTexture(Texture* texture) = 0;
-        virtual smbool CreateMaterial(Material* material) = 0;
-        virtual void DestroyMaterial(Material* material) = 0;
         virtual smbool CreateGeometry(Geometry* geometry, smuint32 vertexCount, const smVert3D* vertices, smuint32 indexCount, const smuint32* indices) = 0;
         virtual void DestroyGeometry(Geometry* geometry) = 0;
 

@@ -22,10 +22,6 @@
         }
     ],
 
-    //Scopes global, instance, local
-    //Global = used for all shaders
-    //Instance = used for each this type of shader
-    //Local = used for each object
     "uniforms": [
         {
             "name": "projection",
@@ -53,5 +49,4 @@
             "scope": "local"
         }
     ]
-
 }

@@ -37,9 +37,6 @@ namespace Graphics
         smbool CreateTexture(const smuint8* pixels, Texture* texture);
         void DestroyTexture(Texture* texture);
 
-        smbool CreateMaterial(Material* material);
-        void DestroyMaterial(Material* material);
-
         smbool CreateGeometry(Geometry* geometry, smuint32 vertexCount, const smVert3D* vertices, smuint32 indexCount, const smuint32* indices);
         void DestroyGeometry(Geometry* geometry);
 

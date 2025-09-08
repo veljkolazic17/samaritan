@@ -1,5 +1,7 @@
 #include <engine/graphics/renderer/frontend/rendererfrontend.hpp>
 #include <engine/graphics/renderer/backend/vulkan/vulkanbackend.hpp>
+#include <engine/graphics/systems/shadersystem.hpp>
+#include <engine/graphics/systems/materialsystem.hpp>
 
 #include <engine/memory/memory.hpp>
 #include <engine/events/eventmanager.hpp>
@@ -28,6 +30,8 @@ namespace Graphics
             //m_View.InverseFastSelf();
 
             m_RendererBackend->Init();
+
+            smShaderSystem().Create(SM_DEFAULT_SHADER_RESOURCE);
         }
         else
         {
@@ -77,7 +81,9 @@ namespace Graphics
             if (m_RendererBackend->BeginFrame(renderData.m_Time))
             {
 #ifdef TEST_CODE_ENABLED
-                m_RendererBackend->UpdateGlobalState(m_Projection, m_View, smVec3_zero, smVec4_one, 0);
+                smShaderSystem().Use(SM_DEFAULT_SHADER_NAME);
+                smMaterialSystem().ApplyGlobal(SM_DEFAULT_SHADER_NAME, m_Projection, m_View);
+
 
                 smMat4	 model = smMat4Translation(smVec3{ 0, 0, 0 });
                 GeometryData data = {};
@@ -87,6 +93,9 @@ namespace Graphics
                     m_Geometry = const_cast<Geometry*>(smGeometrySystem().GetDefaultGeometry());
                 }
                 data.m_Geometry = m_Geometry;
+                smMaterialSystem().ApplyInstance(m_Geometry->m_Material);
+                smMaterialSystem().ApplyLocal(m_Geometry->m_Material, model);
+
                 m_RendererBackend->DrawGeometry(data);
 #endif
 
@@ -127,23 +136,6 @@ namespace Graphics
         if (m_RendererBackend != nullptr)
         {
             m_RendererBackend->DestroyTexture(texture);
-        }
-    }
-
-    smbool Renderer::CreateMaterial(Material* material)
-    {
-        if (m_RendererBackend != nullptr)
-        {
-            return m_RendererBackend->CreateMaterial(material);
-        }
-        return false;
-    }
-
-    void Renderer::DestroyMaterial(Material* material)
-    {
-        if (m_RendererBackend != nullptr)
-        {
-            m_RendererBackend->DestroyMaterial(material);
         }
     }
 
