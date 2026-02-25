@@ -4,6 +4,8 @@
 #include <engine/graphics/renderer/backend/vulkan/vulkantypes.hpp>
 #include <engine/graphics/renderer/backend/vulkan/vulkanbuffer.hpp>
 #include <engine/graphics/renderer/backend/vulkan/vulkanpipeline.hpp>
+#include <engine/resources/graphics/texture.hpp>
+#include <engine/resources/resource.hpp>
 
 #define SM_VULKAN_MAX_SHADER_STAGES_COUNT               8
 #define SM_VULKAN_MAX_BINDINGS_COUNT                    32
@@ -29,7 +31,7 @@ class VulkanRenderpass;
 struct VulkanDescriptorSetData
 {
     smuint32 m_Bindings = 0;
-    VkDescriptorSetLayoutBinding m_BindingLayouts[SM_VULKAN_MAX_BINDINGS_COUNT];
+    VkDescriptorSetLayoutBinding m_BindingLayouts[SM_VULKAN_MAX_BINDINGS_COUNT] = {};
 };
 
 struct VulkanDescriptorState
@@ -65,6 +67,8 @@ struct VulkanShaderStage
 
 struct VulkanShader
 {
+    VulkanShader() : m_MaxDescriptorSetCount(1024) {}
+
     Shader* m_Shader = nullptr;
     void* m_UniformBufferData = nullptr;
     smuint32 m_Id = SM_INVALID_ID;
@@ -82,7 +86,8 @@ struct VulkanShader
     //TODO : [GRAPHICS][SHADER] Make this dynamic
     VkDescriptorPoolSize m_PoolSizes[2];
 
-    const smuint32 m_MaxDescriptorSetCount HACK(= 1024);
+    const smuint32 m_MaxDescriptorSetCount;
+
     smuint8 m_DescriptorSetCount = 0;
 
     smuint8 m_StageCount = 0;

@@ -140,7 +140,7 @@ void MaterialSystem::Release(const smstring& name)
 
 smbool MaterialSystem::LoadConfigurationFile(smcstring name, MaterialConfig& config)
 {
-    constexpr smcstring pathFormat = "../../../assets/materials/{}.json";
+    constexpr smcstring pathFormat = "assets/materials/{}.json";
     std::string path = std::format(pathFormat, name);
 
     std::ifstream f(path);
@@ -152,7 +152,7 @@ smbool MaterialSystem::LoadConfigurationFile(smcstring name, MaterialConfig& con
 
     nlohmann::json data = nlohmann::json::parse(f);
 
-    if (data.size() != 4)
+    if (data.size() != 5)
     {
         LogError(LogChannel::Graphics, "Material file has wrong format!");
         return false;
@@ -249,7 +249,7 @@ smbool MaterialSystem::ApplyInstance(Material* material)
 {
     ShaderSystem& shaderSystem = smShaderSystem();
     shaderSystem.BindInstanceByIndex(material->m_InternalID);
-    shaderSystem.SetUniformByName("diffuse_colour", &material->m_DiffuseColor);
+    shaderSystem.SetUniformByName("diffuse_color", &material->m_DiffuseColor);
     shaderSystem.SetSamplerByName("diffuse_texture", material->m_DiffuseMap.m_Texture);
     return shaderSystem.ApplyInstanceUniforms();
 }

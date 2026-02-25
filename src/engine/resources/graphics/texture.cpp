@@ -15,7 +15,7 @@ void Texture::OnLoad()
 #if SM_USE_MUSEUM_STB
 
     //TODO : [SYSTEM][TEXTURE] Support dynamic file paths
-    constexpr smcstring pathFormat = "../../../assets/textures/{}.{}";
+    constexpr smcstring pathFormat = "assets/textures/{}.{}";
     constexpr smint32 channelCount = 4;
 
     stbi_set_flip_vertically_on_load(true);

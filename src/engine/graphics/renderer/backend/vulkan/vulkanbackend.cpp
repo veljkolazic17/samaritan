@@ -552,15 +552,15 @@ namespace Graphics
         LogInfo(LogChannel::Graphics, "Destroying command pools.");
     }
 
-	void VulkanRenderer::Resize(smuint32 width, smuint32 height)
-	{
+    void VulkanRenderer::Resize(smuint32 width, smuint32 height)
+    {
         m_VulkanDevice.m_FrameBufferWidth = width;
         m_VulkanDevice.m_FrameBufferHeight = height;
         ++m_FrameBuffferGeneration;
-	}
+    }
 
-	smbool VulkanRenderer::BeginFrame(Time time)
-	{
+    smbool VulkanRenderer::BeginFrame(Time time)
+    {
         constexpr smbool isSingleUse = false;
         constexpr smbool isRenderpassContinue = false;
         constexpr smbool isSimultaneousUse = false;
@@ -642,7 +642,7 @@ namespace Graphics
         worldRenderPass.Begin(renderArea, commandBuffer, m_SwapChain.GetFrameBuffers()[m_ImageIndex].GetHandle());
 
         return true;
-	}
+    }
 
     smbool VulkanRenderer::EndFrame(Time time)
     {
@@ -872,8 +872,8 @@ namespace Graphics
 
         VulkanImage::CreateImage
         (
-			g_VulkanRenderer->GetVulkanDevice().m_PhysicalDevice,
-			g_VulkanRenderer->GetVulkanDevice().m_LogicalDevice,
+            g_VulkanRenderer->GetVulkanDevice().m_PhysicalDevice,
+            g_VulkanRenderer->GetVulkanDevice().m_LogicalDevice,
             g_VulkanRenderer->GetAllocator(),
             //TODO : [GRAPHICS][TEXTURES] make this configurable so we can use 3D textures
             VK_IMAGE_TYPE_2D,
@@ -1061,7 +1061,7 @@ namespace Graphics
 #pragma region ObjectShader
     smbool VulkanRenderer::CreateObjectShader(Shader* shader)
     {
-        shader->m_InternalData = gpAllocRenderer(sizeof(VulkanShader));
+        shader->m_InternalData = mnew<VulkanShader>(Memory::MemoryTag::MEM_RENDERER);
         VulkanShader* vkShader = static_cast<VulkanShader*>(shader->m_InternalData);
         const VulkanRenderpass& renderpass = m_RenderPasses[shader->m_RenderpassName];
 
@@ -1110,10 +1110,10 @@ namespace Graphics
         globalBindingLayout.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
         globalBindingLayout.pImmutableSamplers = nullptr;
 
-        ++globalDescriptorSet.m_Bindings;
+        globalDescriptorSet.m_Bindings = 1;
         globalDescriptorSet.m_BindingLayouts[SM_VULKAN_BINDING_UBO] = globalBindingLayout;
         vkShader->m_DescriptorSetData[SM_VULKAN_DESCRIPTOR_SET_GLOBAL] = globalDescriptorSet;
-        ++vkShader->m_DescriptorSetCount;
+        vkShader->m_DescriptorSetCount = 1;
 
         //Instance Descritpror Set
         if (shader->m_IsUsingInsance)
@@ -1155,7 +1155,7 @@ namespace Graphics
 
             VulkanShaderStage& stage = vkShader->m_Stages[stageIndex];
 
-            stage.m_CrateInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
+            stage.m_CrateInfo = { VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO };
             stage.m_CrateInfo.codeSize = fileLength;
             stage.m_CrateInfo.pCode = static_cast<smuint32*>(buffer);
 
@@ -1228,7 +1228,7 @@ namespace Graphics
             {
                 const smuint32 setIndex = uniform.m_ScopeType == ShaderScopeType::GLOBAL ? SM_VULKAN_DESCRIPTOR_SET_GLOBAL : SM_VULKAN_DESCRIPTOR_SET_INSTANCE;
                 VulkanDescriptorSetData& setData = vkShader->m_DescriptorSetData[setIndex];
-                VkDescriptorSetLayoutBinding& setBinding = setData.m_BindingLayouts[SM_VULKAN_BINDING_SAMPLER];
+                VkDescriptorSetLayoutBinding& setBinding = setData.m_BindingLayouts[setData.m_Bindings];
                 if (setData.m_Bindings < 2) //Note: This means that we have not added a sampler binding yet
                 {
                     setBinding.binding = SM_VULKAN_BINDING_SAMPLER;
@@ -1237,7 +1237,7 @@ namespace Graphics
                     setBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
                     ++setData.m_Bindings;
                 }
-                else 
+                else    
                 {
                     ++setBinding.descriptorCount;
                 }
@@ -1249,16 +1249,23 @@ namespace Graphics
     {
         VulkanShader* vkShader = static_cast<VulkanShader*>(shader->m_InternalData);
 
-        VkDescriptorPoolCreateInfo poolInfo = { VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO };
+        VkDescriptorPoolCreateInfo poolInfo = {};
+        poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+        poolInfo.pNext = nullptr;
+        poolInfo.flags = VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT;
         poolInfo.poolSizeCount = 2;
         poolInfo.pPoolSizes = vkShader->m_PoolSizes;
         poolInfo.maxSets = vkShader->m_MaxDescriptorSetCount;
-        poolInfo.flags = VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT;
 
-        // Create descriptor pool.
-        const VkResult result = vkCreateDescriptorPool(m_VulkanDevice.m_LogicalDevice, &poolInfo, m_Allocator, &vkShader->m_DescriptorPool);
+        VkResult result = vkCreateDescriptorPool(
+            m_VulkanDevice.m_LogicalDevice,
+            &poolInfo,
+            m_Allocator,
+            &vkShader->m_DescriptorPool);
 
-        softAssert(Vulkan::Utils::IsResultSuccess(result), "Could not create descriptor pool! Error : %s", Vulkan::Utils::ResultToString(result));
+        softAssert(Vulkan::Utils::IsResultSuccess(result),
+            "Could not create descriptor pool! Error : %s",
+            Vulkan::Utils::ResultToString(result));
     }
 
     void VulkanRenderer::InitDescriptorSetLayout(Shader* shader)
@@ -1335,21 +1342,18 @@ namespace Graphics
         shader->m_GlobalUBOStride = TypeUtils::GetAlignedValue(shader->m_GlobalUBOSize, shader->m_UBOAlignment);
         shader->m_UBOStride = TypeUtils::GetAlignedValue(shader->m_UBOSize, shader->m_UBOAlignment);
 
-        //TODO : [GRAPHICS][SHADER] Make this configurable
-        const smuint32 deviceLocalBits = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT;
-
         //Note : not using size for calculating buffer size because we have to allign everything!
         smuint64 bufferSize = shader->m_GlobalUBOStride + (shader->m_UBOStride * SM_VULKAN_SHADER_MAX_INSTANCE_COUNT);
 
         constexpr smbool bindOnCreate = true;
 
         vkShader->m_VulkanUniformBuffer.Create(
-        bufferSize, 
+        bufferSize,
         static_cast<VkBufferUsageFlagBits>(VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT),
-        VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT | deviceLocalBits, 
+        VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
             bindOnCreate);
 
-        vkShader->m_UniformBufferData = vkShader->m_VulkanUniformBuffer.LockMemory(0, VK_WHOLE_SIZE, 0);
+        vkShader->m_UniformBufferData = vkShader->m_VulkanUniformBuffer.LockMemory(0, bufferSize, 0);
     }
 
     void VulkanRenderer::AllocateDescriptorSetLayouts(Shader* shader)
@@ -1406,19 +1410,20 @@ namespace Graphics
     {
         VulkanShader* vkShader = static_cast<VulkanShader*>(shader->m_InternalData);
 
-        if (uniform.m_DataType == ShaderDataType::SAMPLER) 
+        if (uniform.m_DataType == ShaderDataType::SAMPLER)
         {
-            Texture* textureValue = reinterpret_cast<Texture*>(const_cast<void*>(value));
-            ResourceHandle<Texture> textureHandle(textureValue);
+            // value is a pointer to a ResourceHandle<Texture> (not a raw Texture*).
+            // ResourceHandle(T* resource) constructor has its body commented out so we must avoid it.
+            const ResourceHandle<Texture>* textureHandle = reinterpret_cast<const ResourceHandle<Texture>*>(value);
 
             //Should there be check for index in array?
-            if (uniform.m_ScopeType == ShaderScopeType::GLOBAL) 
+            if (uniform.m_ScopeType == ShaderScopeType::GLOBAL)
             {
-                shader->m_GlobalTextures[uniform.m_Location] = textureHandle;
+                shader->m_GlobalTextures[uniform.m_Location] = *textureHandle;
             }
-            else 
+            else
             {
-                vkShader->m_InstanceStates[shader->m_BoundInstancId].m_Textures[uniform.m_Location] = textureHandle;
+                vkShader->m_InstanceStates[shader->m_BoundInstancId].m_Textures[uniform.m_Location] = *textureHandle;
             }
         }
         else 
@@ -1437,12 +1442,16 @@ namespace Graphics
                     value
                 );
             }
-            else 
+            else
             {
                 // Map the appropriate memory location and copy the data over.
+                if (!vkShader->m_UniformBufferData)
+                {
+                    softAssert(false, "m_UniformBufferData is null - InitBuffer may not have been called");
+                    return false;
+                }
                 uint8_t* addr = static_cast<uint8_t*>(vkShader->m_UniformBufferData);
                 addr += shader->m_BoundUBOOffset + uniform.m_Offset;
-                //SUS
                 std::memcpy(addr, value, uniform.m_Size);
             }
         }
@@ -1608,6 +1617,13 @@ namespace Graphics
         }
 
         VulkanShaderInstanceState& instanceState = vkShader->m_InstanceStates[instanceId];
+
+        // Mark the slot as taken so subsequent acquisitions pick a different slot.
+        instanceState.m_Id = instanceId;
+
+        // Each instance occupies m_UBOStride bytes after the global UBO block.
+        instanceState.m_Offset = static_cast<smuint32>(shader->m_GlobalUBOStride) + instanceId * static_cast<smuint32>(shader->m_UBOStride);
+
         smuint32 textureCount = vkShader->m_DescriptorSetData[SM_VULKAN_DESCRIPTOR_SET_INSTANCE].m_BindingLayouts[SM_VULKAN_BINDING_SAMPLER].descriptorCount;
         ResourceHandle<Texture>& defaultTexture = smTextureSystem().GetDefaultTexture();
         for (smuint32 index = 0; index < textureCount; ++index)

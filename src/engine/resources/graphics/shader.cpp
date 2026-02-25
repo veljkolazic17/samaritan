@@ -11,7 +11,7 @@ void Shader::OnUnload()
 
 void Shader::OnLoad()  
 {  
-   constexpr smcstring pathFormat = "../../../assets/shaders/{}.json";  
+   constexpr smcstring pathFormat = "assets/shaders/{}.json";  
    std::string path = std::format(pathFormat, m_Name);  
 
    std::ifstream f(path);  
@@ -41,14 +41,39 @@ void Shader::OnLoad()
    LoadShaderUniforms(&data);  
 }  
 
-void Shader::LoadShaderInfo(void* data)  
-{  
-   const nlohmann::json& dataJson = *reinterpret_cast<nlohmann::json*>(data);  
+void Shader::LoadShaderInfo(void* data)
+{
+   const nlohmann::json& dataJson = *reinterpret_cast<nlohmann::json*>(data);
 
-   m_ShaderName = dataJson["name"].template get<std::string>();  
-   m_RenderpassName = dataJson["renderpass"].template get<std::string>();  
-   m_IsUsingInsance = dataJson["isUsingInstance"].template get<smbool>();  
-   m_IsUsingLocals = dataJson["isUsingLocal"].template get<smbool>();  
+   m_ShaderName = dataJson["name"].template get<std::string>();
+   m_RenderpassName = dataJson["renderpass"].template get<std::string>();
+   m_IsUsingInsance = dataJson["isUsingInstance"].template get<smbool>();
+   m_IsUsingLocals = dataJson["isUsingLocal"].template get<smbool>();
+
+   const std::unordered_map<std::string, ShaderStageType> stageTypeMap =
+   {
+       {"vertex",   ShaderStageType::VERTEX},
+       {"fragment", ShaderStageType::FRAGMENT},
+       {"geometry", ShaderStageType::GEOMETRY},
+       {"compute",  ShaderStageType::COMPUTE}
+   };
+
+   const nlohmann::json& stages = dataJson["stages"];
+   for (const auto& [stageName, stageType] : stageTypeMap)
+   {
+       if (stages.contains(stageName))
+       {
+           ShaderStage stage;
+           stage.m_StageType = stageType;
+           std::string fileName = stages[stageName].template get<std::string>();
+           // Replace source extension with compiled SPIR-V extension
+           const size_t dotPos = fileName.rfind('.');
+           if (dotPos != std::string::npos)
+               fileName = fileName.substr(0, dotPos) + ".spv";
+           stage.m_FilePath = "out/build/bin/assets/shaders/" + fileName;
+           m_Stages.push_back(std::move(stage));
+       }
+   }
 }  
 
 void Shader::LoadShaderAttributes(void* data)  
@@ -89,7 +114,8 @@ void Shader::LoadShaderUniforms(void* data)
            shaderUniform.m_Size = ShaderHelper::ShaderDataTypeSize(shaderUniform.m_DataType);  
            shaderUniform.m_ScopeType = ShaderHelper::ShaderScopeTypeFromString(uniform["scope"].template get<std::string>());  
 
-           m_UniformLookupTable[name] = std::move(shaderUniform);  
+           m_UniformLookupTable[name] = std::move(shaderUniform);
+           m_UniformOrder.push_back(name);
        }  
    }  
    else  

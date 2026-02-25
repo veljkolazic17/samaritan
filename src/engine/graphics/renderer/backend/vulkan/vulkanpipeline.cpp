@@ -177,7 +177,7 @@ namespace Graphics
         pipelineCreateInfo.pViewportState = &viewportState;
         pipelineCreateInfo.pRasterizationState = &rasterizerCreateInfo;
         pipelineCreateInfo.pMultisampleState = &multisamplingCreateInfo;
-        pipelineCreateInfo.pDepthStencilState = depthTestEnabled ? &depthStencil : 0;
+        pipelineCreateInfo.pDepthStencilState = &depthStencil;
         pipelineCreateInfo.pColorBlendState = &colorBlendStateCreateInfo;
         pipelineCreateInfo.pDynamicState = &dynamicStateCreateInfo;
         pipelineCreateInfo.pTessellationState = 0;

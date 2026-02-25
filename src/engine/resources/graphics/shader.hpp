@@ -164,33 +164,33 @@ struct Shader : Resource
 
     //TODO : [SHADER] Make this be ID somehow
     std::string m_RenderpassName;
-    smuint64 m_UBOAlignment;
-    smuint64 m_GlobalUBOSize;
-    smuint64 m_GlobalUBOStride;
-    smuint64 m_GlobalUBOOfset;
-    smuint64 m_UBOSize;
-    smuint64 m_UBOStride;
-    smuint64 m_PushConstantSize;
-    smuint64 m_PushConstantStride;
+    smuint64 m_UBOAlignment = 0;
+    smuint64 m_GlobalUBOSize = 0;
+    smuint64 m_GlobalUBOStride = 0;
+    smuint64 m_GlobalUBOOfset = 0;
+    smuint64 m_UBOSize = 0;
+    smuint64 m_UBOStride = 0;
+    smuint64 m_PushConstantSize = 0;
+    smuint64 m_PushConstantStride = 0;
 
     std::vector<ResourceHandle<Texture>> m_GlobalTextures;
 
     smuint8 m_InstanceTextureCount = 0;
 
-    ShaderScopeType m_ScopeType;
-
-    smuint32 m_BoundInstancId;
-    smuint32 m_BoundUBOOffset;
+    ShaderScopeType m_ScopeType = ShaderScopeType::GLOBAL;
+    smuint32 m_BoundInstancId = 0;
+    smuint32 m_BoundUBOOffset = 0;
 
     std::unordered_map<std::string, ShaderUniform> m_UniformLookupTable;
+    std::vector<std::string> m_UniformOrder; // preserves JSON declaration order for correct UBO layout
 
     std::vector<ShaderAttribute> m_Attributes;
 
     std::vector<ShaderStage> m_Stages;
 
-    smuint8 m_PushConstantRangeCount;
+    smuint8 m_PushConstantRangeCount = 0;
     Range m_PushConstantRanges[32];
-    smuint16 m_AttributeStride;
+    smuint16 m_AttributeStride = 0;
 
     smstring m_ShaderName;
 

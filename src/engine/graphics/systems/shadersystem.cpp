@@ -42,16 +42,16 @@ smbool ShaderSystem::Create(const std::string& shaderName)
         InitAttribute(*shaderPtr, attribute);
     }
 
-    for (const std::pair<smstring, ShaderUniform>& uniformPair : shaderPtr->m_UniformLookupTable)
+    for (const std::string& name : shaderPtr->m_UniformOrder)
     {
-        const ShaderUniform& uniform = uniformPair.second;
+        ShaderUniform& uniform = shaderPtr->m_UniformLookupTable[name];
         if (uniform.m_DataType == ShaderDataType::SAMPLER)
         {
-            InitSampler(*shaderPtr, const_cast<ShaderUniform&>(uniform));
+            InitSampler(*shaderPtr, uniform);
         }
         else
         {
-            InitUniform(*shaderPtr, const_cast<ShaderUniform&>(uniform));
+            InitUniform(*shaderPtr, uniform);
         }
     }
 
@@ -131,10 +131,12 @@ void ShaderSystem::InitSampler(Shader& shader, ShaderUniform& sampler)
 
     if (sampler.m_ScopeType == ShaderScopeType::GLOBAL)
     {
+        sampler.m_Location = static_cast<smuint16>(shader.m_GlobalTextures.size());
         shader.m_GlobalTextures.push_back(smTextureSystem().GetDefaultTexture());
     }
     else // ShaderScopeType::INSTANCE
     {
+        sampler.m_Location = shader.m_InstanceTextureCount;
         ++shader.m_InstanceTextureCount;
     }
 
@@ -143,22 +145,24 @@ void ShaderSystem::InitSampler(Shader& shader, ShaderUniform& sampler)
 
 smbool ShaderSystem::Use(const std::string& shaderName)
 {
-    if (m_CurrentShaderName != shaderName)
+    auto it = m_ShaderLookup.find(shaderName);
+    if (it != m_ShaderLookup.end())
     {
-        auto it = m_ShaderLookup.find(shaderName);
-        if (it != m_ShaderLookup.end())
+        const ResourceHandle<Shader>& shader = it->second;
+        if (shader.IsValid())
         {
-            const ResourceHandle<Shader>& shader = it->second;
-            if (shader.IsValid())
+            Shader* shadrerPtr = shader.GetResource();
+
+            // Always bind the pipeline — vkCmdBindPipeline must be recorded into
+            // every command buffer, not just when the shader name changes.
+            if (!smRenderer().UseObjectShader(shadrerPtr))
             {
-                Shader* shadrerPtr = shader.GetResource();
+                softAssert(false, "Failed to use shader: %s", shaderName);
+                return false;
+            }
 
-                if (!smRenderer().UseObjectShader(shadrerPtr))
-                {
-                    softAssert(false, "Failed to use shader: %s", shaderName);
-                    return false;
-                }
-
+            if (m_CurrentShaderName != shaderName)
+            {
                 HACK(if (!smRenderer().GetRendererBackend()->ObjectShaderBindGlobals(shadrerPtr)))
                 {
                     softAssert(false, "Failed to bind global uniforms for shader: %s", shaderName);
@@ -167,10 +171,10 @@ smbool ShaderSystem::Use(const std::string& shaderName)
 
                 m_CurrentShaderName = shaderName;
             }
-            else
-            {
-                return false;
-            }
+        }
+        else
+        {
+            return false;
         }
     }
     return true;
@@ -219,7 +223,7 @@ smbool ShaderSystem::SetUniformByName(const std::string& uniformName, const void
 
 smbool ShaderSystem::SetSamplerByName(const std::string& samplerName, const ResourceHandle<Texture>& texture)
 {
-    SetUniformByName(samplerName, texture.GetResource());
+    SetUniformByName(samplerName, &texture);
     return true;
 }
 

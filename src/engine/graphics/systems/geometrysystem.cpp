@@ -178,6 +178,8 @@ smbool GeometrySystem::CreateGeometry(const GeometryConfig& config, Geometry* ge
         return false;
     }
 
+    std::strncpy(reinterpret_cast<char*>(geometry->m_Name), reinterpret_cast<const char*>(config.m_GeometryName), SM_GEOMETRY_NAME_MAX_LENGTH);
+
     smcstring materialName = reinterpret_cast<smcstring>(config.m_MaterialName);
     if(std::strlen(materialName) > 0)
     {
