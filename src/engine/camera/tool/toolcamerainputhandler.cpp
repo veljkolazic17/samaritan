@@ -35,7 +35,7 @@ void ToolCameraInputHandler::HandleOnKeyboardInputPressedEvent(const Input::Keyb
 #if HACKS_ENABLED
 void ToolCameraInputHandler::UpdateSingleThreaded()
 {
-	constexpr smfloat32 moveSpeed = 40.0f;
+	constexpr smfloat32 moveSpeed = 10.0f;
 	smVec3 moveVec = smVec3_zero;
 	Time deltaTime = smEngine().GetDeltaTime();
 
