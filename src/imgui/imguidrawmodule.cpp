@@ -31,13 +31,7 @@ void ImguiDrawModule::SingletonShutdown()
 
 void ImguiDrawModule::DrawImgui()
 {
-    if (ImGui::BeginMainMenuBar())
-    {
-        smImguiCentral().DrawMenuBar();
-        ImGui::EndMainMenuBar();
-    }
-
-    smImguiCentral().DrawOpenModules();
+    smImguiCentral().DrawImgui();
 }
 
 END_NAMESPACE

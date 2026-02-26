@@ -18,6 +18,7 @@
 
 #if IMGUI_DISPLAY_ENABLED
 #include <imgui/imguidrawmodule.hpp>
+#include <imgui/imguicentral.hpp>
 #endif
 
 #ifdef SM_TOOL
@@ -190,12 +191,14 @@ namespace Engine
 #endif
 #if IMGUI_DISPLAY_ENABLED
         SM_INVOKE_SINGLETON_INIT(ImguiDrawModule);
+        SM_INVOKE_SINGLETON_INIT(ImguiCentral);
 #endif
     }
 
     void Engine::BigShutdown(void)
     {
 #if IMGUI_DISPLAY_ENABLED
+        SM_INVOKE_SINGLETON_SHUTDOWN(ImguiCentral);
         SM_INVOKE_SINGLETON_SHUTDOWN(ImguiDrawModule);
 #endif
         SM_INVOKE_SINGLETON_SHUTDOWN(GeometrySystem);

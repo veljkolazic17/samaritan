@@ -4,6 +4,8 @@
 
 #include "imgui.h"
 
+#include <engine/events/eventhandlerwrapper.hpp>
+#include <engine/input/events/keyboardevents.hpp>
 #include <objecttemplates/singleton.hpp>
 
 #define smImguiCentral() ::samaritan::ImguiCentral::GetInstance()
@@ -33,12 +35,22 @@ public:
 
     void RegisterImguiModule(const smstring& path, IImguiModule* module);
 
+    void DrawImgui();
+    
+    void SingletonInit() override;
+    void SingletonShutdown() override;
+
+private:
     void DrawMenuBar();
     void DrawOpenModules();
 
-private:
     void DrawMenuNode(ImguiMenuNode& node);
     void DrawOpenNodes(std::vector<ImguiMenuNode>& nodes);
+
+    smbool m_IsImguiCentralActive = false;
+
+    void HandleOnKeyboardInputPressedEvent(const Input::KeyboardInputPressedEvent& event);
+	Events::EventHandler<Input::KeyboardInputPressedEvent> m_KeyboardInputPressedEventHandler;
 
     std::vector<ImguiMenuNode> m_RootNodes;
 };

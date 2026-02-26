@@ -2,6 +2,8 @@
 #if IMGUI_DISPLAY_ENABLED
 #include <imgui/imguicentral.hpp>
 
+#include <engine/events/eventmanager.hpp>
+
 #include <sstream>
 
 BEGIN_NAMESPACE
@@ -19,6 +21,25 @@ static std::vector<smstring> SplitPath(const smstring& path)
         }
     }
     return parts;
+}
+
+void ImguiCentral::SingletonInit()
+{
+    m_KeyboardInputPressedEventHandler = [this](const Input::KeyboardInputPressedEvent& event) { HandleOnKeyboardInputPressedEvent(event); };
+	Events::Subscribe<Input::KeyboardInputPressedEvent>(m_KeyboardInputPressedEventHandler);
+}
+
+void ImguiCentral::SingletonShutdown()
+{
+    Events::Unsubscribe<Input::KeyboardInputPressedEvent>(m_KeyboardInputPressedEventHandler);
+}
+
+void ImguiCentral::HandleOnKeyboardInputPressedEvent(const Input::KeyboardInputPressedEvent& event)
+{
+    if(event.m_Key == Input::Key::KEY_F9)
+    {
+        m_IsImguiCentralActive = !m_IsImguiCentralActive;
+    }
 }
 
 void ImguiCentral::RegisterImguiModule(const smstring& path, IImguiModule* module)
@@ -57,6 +78,19 @@ void ImguiCentral::RegisterImguiModule(const smstring& path, IImguiModule* modul
         }
         else
             current = &found->m_Children;
+    }
+}
+
+void ImguiCentral::DrawImgui()
+{
+    if(m_IsImguiCentralActive)
+    {
+        if (ImGui::BeginMainMenuBar())
+        {
+            DrawMenuBar();
+            ImGui::EndMainMenuBar();
+        }
+        DrawOpenModules();
     }
 }
 
