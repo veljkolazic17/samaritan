@@ -9,6 +9,11 @@ void ResourceSystem::Shutdown()
     m_ControlBlocks.clear();
 }
 
+void ResourceSystem::SingletonInit()
+{
+    IMGUI_DISPLAY(smImguiCentral().RegisterImguiModule("Engine/Resource System", this);)
+}
+
 // ! This will be only called once reference count reaches zero for resource handle
 void ResourceSystem::Release(ResourceControlBlock* controlBlock)
 {
@@ -44,6 +49,34 @@ void ResourceSystem::Release(ResourceControlBlock* controlBlock)
         LogError(LogChannel::Resource, "ResourceSystem: Attempted to release control block for '%s' but it was not found or was already replaced in maps.", resourceName.c_str())
     }
 }
+
+#if IMGUI_DISPLAY_ENABLED
+	void ResourceSystem::DrawImgui()
+    {
+        ImGui::Begin("Resource System");
+
+        std::lock_guard<std::mutex> guard(m_Lock);
+
+        ImGui::Text("Loaded Resources:");
+        for (const auto& [name, controlBlock] : m_ControlBlocks)
+        {
+            if (const Resource* resource = controlBlock->m_Resource)
+            {
+                ImGui::BulletText("[%s] -> [Type: %s, State: %s, RefCount: %u]", 
+                    name.c_str(), 
+                    static_cast<const char*>(Resource::ResourceTypeToString(resource->m_Type)), 
+                    static_cast<const char*>(Resource::ResourceStateToString(resource->m_State)), 
+                    controlBlock->m_RefCount.load(std::memory_order_relaxed));
+            }
+            else
+            {
+                ImGui::BulletText("[%s] -> [Resource pointer is null]", name.c_str());
+            }
+        }
+
+        ImGui::End();
+    }
+#endif
 
 
 END_NAMESPACE

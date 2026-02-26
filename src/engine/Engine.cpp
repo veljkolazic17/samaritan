@@ -12,6 +12,7 @@
 #include <engine/graphics/systems/materialsystem.hpp>
 #include <engine/graphics/systems/geometrysystem.hpp>
 #include <engine/graphics/systems/shadersystem.hpp>
+#include <engine/resources/resourcesystem.hpp>
 #if HACKS_ENABLED
 #include <engine/threads/iupdatable.hpp>
 #endif
@@ -175,6 +176,7 @@ namespace Engine
         SM_INVOKE_SINGLETON_INIT(Clock);
         SM_INVOKE_SINGLETON_INIT(Events::EventManager);
         SM_INVOKE_SINGLETON_INIT(Input::InputManager);
+        SM_INVOKE_SINGLETON_INIT(ResourceSystem);
         SM_INVOKE_SINGLETON_INIT(Graphics::Renderer);
         SM_INVOKE_SINGLETON_INIT(TextureSystem);
         SM_INVOKE_SINGLETON_INIT(ShaderSystem);
@@ -206,6 +208,7 @@ namespace Engine
         SM_INVOKE_SINGLETON_SHUTDOWN(ShaderSystem);
         SM_INVOKE_SINGLETON_SHUTDOWN(TextureSystem);
         SM_INVOKE_SINGLETON_SHUTDOWN(Graphics::Renderer);
+        SM_INVOKE_SINGLETON_SHUTDOWN(ResourceSystem);
         SM_INVOKE_SINGLETON_SHUTDOWN(Input::InputManager);
         SM_INVOKE_SINGLETON_SHUTDOWN(Events::EventManager);
     }

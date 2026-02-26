@@ -53,6 +53,38 @@ struct Resource
         resourceId.fetch_add(1, std::memory_order_relaxed);
         return resourceId;
     }
+
+#ifdef DEBUG
+    static const char* ResourceTypeToString(ResourceType type)
+    {
+        switch (type)
+        {
+            case ResourceType::Undefined: return "Undefined";
+            case ResourceType::Texture: return "Texture";
+            case ResourceType::Material: return "Material";
+            case ResourceType::Geometry: return "Geometry";
+            case ResourceType::Animation: return "Animation";
+            case ResourceType::Audio: return "Audio";
+            case ResourceType::Script: return "Script";
+            case ResourceType::Model: return "Model";
+            case ResourceType::Font: return "Font";
+            case ResourceType::Shader: return "Shader";
+            default: return "Unknown";
+        }
+    }
+
+    static const char* ResourceStateToString(ResourceState state)
+    {
+        switch (state)
+        {
+            case ResourceState::Unloaded: return "Unloaded";
+            case ResourceState::Loading: return "Loading";
+            case ResourceState::Loaded: return "Loaded";
+            case ResourceState::Error: return "Error";
+            default: return "Unknown";
+        }
+    }
+#endif
 };
 
 struct ResourceControlBlock 

@@ -8,14 +8,24 @@
 #include <mutex>
 #include <unordered_map>
 
+#if IMGUI_DISPLAY_ENABLED
+#include <imgui/imguicentral.hpp>
+#endif
+
 #define smResourceSystem() ::samaritan::ResourceSystem::GetInstance()
 
 BEGIN_NAMESPACE
 
-class ResourceSystem SINGLETON(ResourceSystem)
+class ResourceSystem SINGLETON(ResourceSystem) IMGUI_DISPLAY(, public IImguiModule)
 {
 public:
     SINGLETON_CONSTRUCTOR(ResourceSystem)
+
+#if IMGUI_DISPLAY_ENABLED
+	void DrawImgui() override;
+#endif
+
+    void SingletonInit() override;
 
     void Shutdown();
 

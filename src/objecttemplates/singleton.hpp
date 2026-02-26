@@ -13,6 +13,9 @@ BEGIN_NAMESPACE
 			static T instance;
 			return instance;
 		}
+
+		virtual void SingletonInit() {}
+		virtual void SingletonShutdown() {}
 	protected:
 		Singleton() = default;
 		Singleton(const Singleton&) = delete;
@@ -20,9 +23,6 @@ BEGIN_NAMESPACE
 		Singleton& operator = (const Singleton&) = delete;
 		Singleton& operator = (Singleton&&) = delete;
 		~Singleton() = default;
-		//WTF is this shit, I was drunk
-		virtual void SingletonInit() {}
-		virtual void SingletonShutdown() {}
 	};
 
 END_NAMESPACE
