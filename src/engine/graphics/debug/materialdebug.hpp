@@ -14,7 +14,7 @@ BEGIN_NAMESPACE
 class MaterialSystemDebug SINGLETON(MaterialSystemDebug)
 {
 public:
-	SINGLETON_CONSTRUCTOR_INIT(MaterialSystemDebug)
+	SINGLETON_CONSTRUCTOR(MaterialSystemDebug)
 	void SingletonInit() override;
 
     const Material* GetMaterial() const { return m_Material; }

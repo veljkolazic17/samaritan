@@ -15,6 +15,16 @@ namespace Events
         m_Subscribers.clear();
     }
 
+    void EventManager::SingletonInit()
+    {
+        Init();
+    }
+
+    void EventManager::SingletonShutdown()
+    {
+        Shutdown();
+    }
+
     void EventManager::Subscribe(const std::string& eventId, std::unique_ptr<EventHandlerWrapperInterface>&& handler)
     {
         auto subscribers = m_Subscribers.find(eventId);

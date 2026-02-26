@@ -16,8 +16,10 @@ public:
     void Init();
     void NewFrame();
     void Render();
-    void Shutdown();
     void DrawImgui();
+    
+    void SingletonInit() override;
+    void SingletonShutdown();
 
 private:
     void InitRenderer_PlatformSpecific();

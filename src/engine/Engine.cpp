@@ -21,6 +21,7 @@
 #endif
 
 #ifdef SM_TOOL
+#include <engine/camera/camera.hpp>
 #include <engine/camera/tool/toolcamerainputhandler.hpp>
 #endif
 
@@ -30,7 +31,7 @@
 #endif
 
 BEGIN_NAMESPACE
-    namespace Engine
+namespace Engine
 {
     void Engine::SetEngineState(EngineState engineState)
     {
@@ -81,47 +82,19 @@ BEGIN_NAMESPACE
         m_WindowResizedEventHandler = [this](const Graphics::WindowResizedEvent& event) { HandleOnWindowResizedEvent(event); };
         Events::Subscribe<Graphics::WindowResizedEvent>(m_WindowResizedEventHandler);
 
-        Clock::GetInstance().Init();
         m_Window = Memory::mnew<Graphics::Window>(Memory::MemoryTag::MEM_RENDERER, 1280, 720, 100, 100, "My first win window :)");
         m_Window->Init();
-
-        Events::EventManager::GetInstance().Init();
-        Input::InputManager::GetInstance().Init();
-
-        //This should be configurable
-        Graphics::Renderer::GetInstance().Init(m_DeafualtRenderer);
-
-        TextureSystem::GetInstance().Init();
-
-        MaterialSystemConfig materialSystemConfig = { 4096 };
-        MaterialSystem::GetInstance().Init(materialSystemConfig);
-
-        GeometrySystemConfig geometryConfig = { 4096 };
-        GeometrySystem::GetInstance().Init(geometryConfig);
-
-        ShaderSystem::GetInstance().Init();
     }
 
     void Engine::Run(void)
     {
+        BigInit();
         Memory::SingleFrameAllocator& singleFrameAllocator = Memory::SingleFrameAllocator::GetInstance();
         Events::EventManager& eventManager = Events::EventManager::GetInstance();
         Input::InputManager& inputManager = Input::InputManager::GetInstance();
         Graphics::Renderer& renderer = Graphics::Renderer::GetInstance();
         Clock& clock = Clock::GetInstance();
-#if HACKS_ENABLED
-#ifdef SM_TOOL
-        SM_INVOKE_SINGLETON_INIT(ToolCameraInputHandler)
-#endif
-#ifdef DEBUG
-        SM_INVOKE_SINGLETON_INIT(MaterialSystemDebug);
-        SM_INVOKE_SINGLETON_INIT(GeometrySystemDebug);
-#endif
-#endif
 
-#if IMGUI_DISPLAY_ENABLED
-        smImguiDrawModule().Init();
-#endif
         clock.Start();
         ENGINE_RUN();
         // TODO : THIS CODE NEEDS TO BE REFACTORED WTF IS THIS
@@ -163,18 +136,10 @@ BEGIN_NAMESPACE
     {
         ENGINE_SHUTDOWN();
 
-#if IMGUI_DISPLAY_ENABLED
-        smImguiDrawModule().Shutdown();
-#endif
-
         m_Window->Shutdown();
         Memory::mdelete<Graphics::Window>(m_Window);
 
-        ShaderSystem::GetInstance().Shutdown();
-        Input::InputManager::GetInstance().Shutdown();
-        Events::EventManager::GetInstance().Shutdown();
-
-        Graphics::Renderer::GetInstance().Shutdown();
+        BigShutdown();
     }
 
     void Engine::LoopPreProcess(void)
@@ -203,6 +168,44 @@ BEGIN_NAMESPACE
         }
     }
 #endif
+
+    void Engine::BigInit(void)
+    {
+        SM_INVOKE_SINGLETON_INIT(Clock);
+        SM_INVOKE_SINGLETON_INIT(Events::EventManager);
+        SM_INVOKE_SINGLETON_INIT(Input::InputManager);
+        SM_INVOKE_SINGLETON_INIT(Graphics::Renderer);
+        SM_INVOKE_SINGLETON_INIT(TextureSystem);
+        SM_INVOKE_SINGLETON_INIT(ShaderSystem);
+        SM_INVOKE_SINGLETON_INIT(MaterialSystem);
+        SM_INVOKE_SINGLETON_INIT(GeometrySystem);
+
+#ifdef SM_TOOL
+        SM_INVOKE_SINGLETON_INIT(Camera);
+        SM_INVOKE_SINGLETON_INIT(ToolCameraInputHandler);
+#endif
+#ifdef DEBUG
+        SM_INVOKE_SINGLETON_INIT(MaterialSystemDebug);
+        SM_INVOKE_SINGLETON_INIT(GeometrySystemDebug);
+#endif
+#if IMGUI_DISPLAY_ENABLED
+        SM_INVOKE_SINGLETON_INIT(ImguiDrawModule);
+#endif
+    }
+
+    void Engine::BigShutdown(void)
+    {
+#if IMGUI_DISPLAY_ENABLED
+        SM_INVOKE_SINGLETON_SHUTDOWN(ImguiDrawModule);
+#endif
+        SM_INVOKE_SINGLETON_SHUTDOWN(GeometrySystem);
+        SM_INVOKE_SINGLETON_SHUTDOWN(MaterialSystem);
+        SM_INVOKE_SINGLETON_SHUTDOWN(ShaderSystem);
+        SM_INVOKE_SINGLETON_SHUTDOWN(TextureSystem);
+        SM_INVOKE_SINGLETON_SHUTDOWN(Graphics::Renderer);
+        SM_INVOKE_SINGLETON_SHUTDOWN(Input::InputManager);
+        SM_INVOKE_SINGLETON_SHUTDOWN(Events::EventManager);
+    }
 }
 
 END_NAMESPACE

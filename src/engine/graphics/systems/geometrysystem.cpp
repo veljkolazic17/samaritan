@@ -35,6 +35,16 @@ void GeometrySystem::Shutdown()
 {
 }
 
+void GeometrySystem::SingletonInit()
+{
+    Init({ 4096 });
+}
+
+void GeometrySystem::SingletonShutdown()
+{
+    Shutdown();
+}
+
 Geometry* GeometrySystem::AcquireById(smuint32 id)
 {
     if (id != SM_INVALID_ID)

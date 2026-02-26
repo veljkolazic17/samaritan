@@ -42,6 +42,8 @@ public:
 
     smbool Init(const GeometrySystemConfig & config);
     void Shutdown();
+    void SingletonInit() override;
+    void SingletonShutdown() override;
 
     Geometry* AcquireById(smuint32 id);
     void Release(Geometry* geometry);

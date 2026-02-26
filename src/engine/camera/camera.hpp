@@ -11,7 +11,7 @@ BEGIN_NAMESPACE
 class Camera SINGLETON(Camera)
 {
 public:
-	SINGLETON_CONSTRUCTOR_INIT(Camera);
+	SINGLETON_CONSTRUCTOR(Camera);
     
     void ChangePitch(smfloat32 ammount);
     void ChangeYaw(smfloat32 ammount);

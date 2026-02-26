@@ -43,6 +43,16 @@ namespace Graphics
         }
     }
 
+    void Renderer::SingletonInit()
+    {
+        Init(RendererType::Vulkan);
+    }
+
+    void Renderer::SingletonShutdown()
+    {
+        Shutdown();
+    }
+
     void Renderer::Init(RendererType rendererType)
     {
         if (rendererType != RendererType::Vulkan && rendererType != RendererType::DirectX12)

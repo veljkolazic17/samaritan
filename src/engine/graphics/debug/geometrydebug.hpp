@@ -16,7 +16,7 @@ BEGIN_NAMESPACE
 class GeometrySystemDebug SINGLETON(GeometrySystemDebug)
 {
 public:
-    SINGLETON_CONSTRUCTOR_INIT(GeometrySystemDebug)
+    SINGLETON_CONSTRUCTOR(GeometrySystemDebug)
     void SingletonInit() override;
 
     ~GeometrySystemDebug();

@@ -1,12 +1,13 @@
 #include <defines.hpp>
 #if IMGUI_DISPLAY_ENABLED
 #include <imgui/imguidrawmodule.hpp>
+#include <imgui/imguicentral.hpp>
 
 #include "imgui.h"
 
 BEGIN_NAMESPACE
 
-void ImguiDrawModule::Init()
+void ImguiDrawModule::SingletonInit()
 {
     InitWindow_PlatformSpecific();
     InitRenderer_PlatformSpecific();
@@ -23,20 +24,20 @@ void ImguiDrawModule::Render()
     Render_PlatformSpecific();
 }
 
-void ImguiDrawModule::Shutdown()
+void ImguiDrawModule::SingletonShutdown()
 {
     Shutdown_PlatformSpecific();
 }
 
 void ImguiDrawModule::DrawImgui()
 {
-    ImGui::BeginMainMenuBar();
-    if (ImGui::BeginMenu("test")) {
-        if (ImGui::MenuItem("one", "Ctrl+O")) {}
-        if (ImGui::MenuItem("two", "Ctrl+S")) {}
-        ImGui::EndMenu();
+    if (ImGui::BeginMainMenuBar())
+    {
+        smImguiCentral().DrawMenuBar();
+        ImGui::EndMainMenuBar();
     }
-    ImGui::EndMainMenuBar();
+
+    smImguiCentral().DrawOpenModules();
 }
 
 END_NAMESPACE

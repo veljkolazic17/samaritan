@@ -17,6 +17,16 @@ void ShaderSystem::Shutdown()
 
 }
 
+void ShaderSystem::SingletonInit()
+{
+    Init();
+}
+
+void ShaderSystem::SingletonShutdown()
+{
+    Shutdown();
+}
+
 smbool ShaderSystem::Create(const std::string& shaderName)
 {
     ResourceHandle<Shader> shader = smResourceSystem().Load<Shader>(shaderName);

@@ -42,6 +42,8 @@ public:
 
     smbool Init(const MaterialSystemConfig & config);
     void Shutdown();
+    void SingletonInit() override;
+    void SingletonShutdown() override;
 
     Material* Acquire(const smstring& name);
     void Release(const smstring& name);

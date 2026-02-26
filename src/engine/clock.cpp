@@ -4,6 +4,11 @@ BEGIN_NAMESPACE
 
 namespace Engine
 {
+	void Clock::SingletonInit()
+	{
+		Init();
+	}
+
 	void Clock::Update()
 	{
 		if (m_StartTime != 0)

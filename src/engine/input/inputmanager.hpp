@@ -16,6 +16,8 @@ namespace Input
 	public:
 		void Init() override;
 		void Shutdown() override;
+		void SingletonInit() override;
+		void SingletonShutdown() override;
 
 		void Update(smfloat64 deltaTime);
 

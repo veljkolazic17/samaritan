@@ -52,6 +52,16 @@ void MaterialSystem::Shutdown()
     }
 }
 
+void MaterialSystem::SingletonInit()
+{
+    Init({ 4096 });
+}
+
+void MaterialSystem::SingletonShutdown()
+{
+    Shutdown();
+}
+
 Material* MaterialSystem::Acquire(const smstring& name)
 {
     MaterialConfig materialConfig;

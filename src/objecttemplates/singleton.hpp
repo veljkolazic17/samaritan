@@ -22,13 +22,13 @@ BEGIN_NAMESPACE
 		~Singleton() = default;
 		//WTF is this shit, I was drunk
 		virtual void SingletonInit() {}
+		virtual void SingletonShutdown() {}
 	};
 
 END_NAMESPACE
 
-#if HACKS_ENABLED
-#define SM_INVOKE_SINGLETON_INIT(T) T::GetInstance();
-#endif
+#define SM_INVOKE_SINGLETON_INIT(T) T::GetInstance().SingletonInit();
+#define SM_INVOKE_SINGLETON_SHUTDOWN(T) T::GetInstance().SingletonShutdown();
 
 #define SINGLETON(T) final : public Singleton<T>
 #define SINGLETON_CLASS(C) class C SINGLETON(C)
@@ -37,4 +37,3 @@ END_NAMESPACE
 
 // Must exists in private section of singleton class
 #define SINGLETON_CONSTRUCTOR(T) SINGLETON_FRIEND(T); T(){}
-#define SINGLETON_CONSTRUCTOR_INIT(T) SINGLETON_FRIEND(T); T(){SingletonInit();}

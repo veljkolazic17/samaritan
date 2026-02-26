@@ -18,6 +18,8 @@ public:
 
     smbool Init();
     void Shutdown();
+    void SingletonInit() override;
+    void SingletonShutdown() override;
 
     const ResourceHandle<Texture>& Acquire(const smstring& name, smbool shouldAutoRelease);
     void Release(const smstring & name);

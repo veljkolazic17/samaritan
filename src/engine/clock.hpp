@@ -12,6 +12,7 @@ namespace Engine
 		SINGLETON_CONSTRUCTOR(Clock);
 	public:
 		void Init(void);
+		void SingletonInit() override;
 		SM_INLINE Time GetStartTime() { return m_StartTime; }
 		SM_INLINE Time GetElapsed() { return m_Elapsed; }
 

@@ -40,6 +40,8 @@ namespace Engine
 		SINGLETON_CONSTRUCTOR(Engine);
 	public:
 		void Init(void) override;
+		void BigInit(void);
+		void BigShutdown(void);
 		void Shutdown(void) override;
 		void Run(void);
 

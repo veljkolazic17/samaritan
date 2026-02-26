@@ -20,6 +20,7 @@ void ToolCameraInputHandler::SingletonInit()
 	Events::Subscribe<Input::KeyboardInputReleasedEvent>(m_KeyboardInputReleasedEventHandler);
 
 	HACK(smEngine().RegisterForSingleThreadedUpdate(this);)
+	IMGUI_DISPLAY(smImguiCentral().RegisterImguiModule("Camera/Camera Settings", this);)
 }
 
 void ToolCameraInputHandler::HandleOnKeyboardInputReleasedEvent(const Input::KeyboardInputReleasedEvent& event)
@@ -35,7 +36,6 @@ void ToolCameraInputHandler::HandleOnKeyboardInputPressedEvent(const Input::Keyb
 #if HACKS_ENABLED
 void ToolCameraInputHandler::UpdateSingleThreaded()
 {
-	constexpr smfloat32 moveSpeed = 10.0f;
 	smVec3 moveVec = smVec3_zero;
 	Time deltaTime = smEngine().GetDeltaTime();
 
@@ -101,7 +101,7 @@ void ToolCameraInputHandler::UpdateSingleThreaded()
     {
 		moveVec.Normalize();
 		smVec3& cameraPosition = camera.GetCameraPosition();
-		smfloat32 move = deltaTime * moveSpeed;
+		smfloat32 move = deltaTime * m_CameraSpeed;
 		cameraPosition.m_X += moveVec.m_X * move;
 		cameraPosition.m_Y += moveVec.m_Y * move;
 		cameraPosition.m_Z += moveVec.m_Z * move;
@@ -111,6 +111,13 @@ void ToolCameraInputHandler::UpdateSingleThreaded()
 		renderer.SetView(camera.GetCameraView());
     }
 }
+#endif
+
+#if IMGUI_DISPLAY_ENABLED
+	void ToolCameraInputHandler::DrawImgui()
+	{
+		ImGui::SliderFloat("Camera Speed", &m_CameraSpeed, 0.0f, 100.0f, "Value = %.2f");
+	}
 #endif
 
 END_NAMESPACE

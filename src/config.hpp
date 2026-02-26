@@ -9,6 +9,13 @@
 #define IMGUI_DISPLAY_ENABLED true
 #endif
 
+#if IMGUI_DISPLAY_ENABLED
+#define IMGUI_DISPLAY(...) __VA_ARGS__
+#else
+#define IMGUI(...)
+#endif
+
+
 #if HACKS_ENABLED
 #define HACK(...) __VA_ARGS__
 #else

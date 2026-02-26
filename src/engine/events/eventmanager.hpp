@@ -20,6 +20,8 @@ namespace Events
     public:
         void Init() override;
         void Shutdown() override;
+        void SingletonInit() override;
+        void SingletonShutdown() override;
         void Subscribe(const std::string& eventId, std::unique_ptr<EventHandlerWrapperInterface>&& handler);
         void Unsubscribe(const std::string& eventId, const std::string handlerName);
         void TriggerEvent(const Event& event);

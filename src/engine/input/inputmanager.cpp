@@ -26,6 +26,16 @@ namespace Input
         m_IsInitialized = false;
     }
 
+    void InputManager::SingletonInit()
+    {
+        Init();
+    }
+
+    void InputManager::SingletonShutdown()
+    {
+        Shutdown();
+    }
+
     void InputManager::Update(smfloat64 deltaTime)
     {
         if(!m_IsInitialized)

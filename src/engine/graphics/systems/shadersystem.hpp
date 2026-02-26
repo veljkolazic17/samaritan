@@ -18,6 +18,8 @@ public:
 
     smbool Init();
     void Shutdown();
+    void SingletonInit() override;
+    void SingletonShutdown() override;
     
     
     smbool Use(const std::string& shaderName);

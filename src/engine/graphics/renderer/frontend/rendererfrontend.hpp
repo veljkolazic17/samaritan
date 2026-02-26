@@ -22,6 +22,8 @@ namespace Graphics
 
         void Init() override;
         void Shutdown() override;
+        void SingletonInit() override;
+        void SingletonShutdown() override;
 
         void Init(RendererType rendererType);
 

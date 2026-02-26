@@ -57,6 +57,16 @@ void TextureSystem::Shutdown()
     m_TextureLookup.clear();
 }
 
+void TextureSystem::SingletonInit()
+{
+    Init();
+}
+
+void TextureSystem::SingletonShutdown()
+{
+    Shutdown();
+}
+
 const ResourceHandle<Texture>& TextureSystem::Acquire(const smstring& name, smbool shouldAutoRelease)
 {
     if (!std::strcmp(name.data(), SM_DEFAULT_TEXTURE_NAME))
