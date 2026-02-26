@@ -11,6 +11,11 @@
 
 #include <utils/logger/log.hpp>
 
+#if IMGUI_DISPLAY_ENABLED
+#include "imgui_impl_win32.h"
+extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
+#endif
+
 BEGIN_NAMESPACE
 
 namespace Graphics
@@ -36,7 +41,11 @@ namespace Graphics
 
     LRESULT CALLBACK messageCallback(HWND hwnd, smuint32 msg, WPARAM w_param, LPARAM l_param)
     {
-        switch (msg) 
+#if IMGUI_DISPLAY_ENABLED
+        if (ImGui_ImplWin32_WndProcHandler(hwnd, msg, w_param, l_param))
+            return true;
+#endif
+        switch (msg)
         {
             case WM_ERASEBKGND:
                 // Notify the OS that erasing will be handled by the application to prevent flicker.

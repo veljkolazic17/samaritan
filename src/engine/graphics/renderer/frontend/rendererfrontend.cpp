@@ -6,6 +6,10 @@
 #include <engine/memory/memory.hpp>
 #include <engine/events/eventmanager.hpp>
 
+#if IMGUI_DISPLAY_ENABLED
+#include <imgui/imguidrawmodule.hpp>
+#endif
+
 
 #ifdef TEST_CODE_ENABLED
 #include <math/matrix.hpp>
@@ -80,6 +84,9 @@ namespace Graphics
         {
             if (m_RendererBackend->BeginFrame(renderData.m_Time))
             {
+#if IMGUI_DISPLAY_ENABLED
+                smImguiDrawModule().NewFrame();
+#endif
 #ifdef TEST_CODE_ENABLED
                 smShaderSystem().Use(SM_DEFAULT_SHADER_NAME);
                 smMaterialSystem().ApplyGlobal(SM_DEFAULT_SHADER_NAME, m_Projection, m_View);
@@ -97,6 +104,10 @@ namespace Graphics
                 smMaterialSystem().ApplyLocal(m_Geometry->m_Material, model);
 
                 m_RendererBackend->DrawGeometry(data);
+#endif
+
+#if IMGUI_DISPLAY_ENABLED
+                smImguiDrawModule().Render();
 #endif
 
                 if (!m_RendererBackend->EndFrame(renderData.m_Time))

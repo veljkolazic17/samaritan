@@ -80,6 +80,10 @@ macro(SETUP_APP projname graphics_api target_platform user_remote_logging window
   find_package(glm CONFIG REQUIRED)
   target_link_libraries(${PROJ_NAME} PRIVATE glm::glm)
 
+  # Add ImGui
+  find_package(imgui CONFIG REQUIRED)
+  target_link_libraries(${PROJ_NAME} PRIVATE imgui::imgui)
+
   set_target_properties(${PROJ_NAME} PROPERTIES OUTPUT_NAME_DEBUG ${PROJ_NAME}_Debug COMPILE_OPTIONS -DDEBUG)
   set_target_properties(${PROJ_NAME} PROPERTIES OUTPUT_NAME_RELEASE ${PROJ_NAME}_Release)
   set_target_properties(${PROJ_NAME} PROPERTIES OUTPUT_NAME_RELWITHDEBINFO ${PROJ_NAME}_ReleaseDebInfo)

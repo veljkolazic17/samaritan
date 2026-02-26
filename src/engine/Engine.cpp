@@ -162,6 +162,11 @@ BEGIN_NAMESPACE
     void Engine::Shutdown(void)
     {
         ENGINE_SHUTDOWN();
+
+#if IMGUI_DISPLAY_ENABLED
+        smImguiDrawModule().Shutdown();
+#endif
+
         m_Window->Shutdown();
         Memory::mdelete<Graphics::Window>(m_Window);
 
