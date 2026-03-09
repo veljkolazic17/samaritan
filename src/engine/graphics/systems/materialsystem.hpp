@@ -33,6 +33,8 @@ struct MaterialConfig
     smbool m_ShouldAutoRelease = false;
     smVec4 m_DiffuseColor;
     smuint8 m_DiffuseMapName[SM_TEXTURE_NAME_MAX_LENGTH];
+    smuint8 m_SpecularMapName[SM_TEXTURE_NAME_MAX_LENGTH];
+    smfloat32 m_Shininess = 32.0f;
 };
 
 class MaterialSystem SINGLETON(MaterialSystem)

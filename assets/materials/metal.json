@@ -1,0 +1,9 @@
+{
+    "version": 1.0,
+    "name": "metal",
+    "diffusecolor": "1.0 1.0 1.0 1.0",
+    "diffusemapname": "metal",
+    "specularmapname": "metal_spec",
+    "shininess": 32.0,
+    "shader": "ObjectShader"
+}

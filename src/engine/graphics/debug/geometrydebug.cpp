@@ -12,7 +12,7 @@ void GeometrySystemDebug::SingletonInit()
 {
     GeometryConfig planeConfig1 = smGeometrySystem().GenerateGeometryConfig(
         10.0f, 10.0f, 10, 10, 1.0f, 1.0f,
-        "PlaneDebug1", "rock");
+        "PlaneDebug1", "metal");
 
     GeometryConfig planeConfig2 = smGeometrySystem().GenerateGeometryConfig(
         10.0f, 5.0f, 10, 10, 1.0f, 1.0f,
@@ -23,7 +23,7 @@ void GeometrySystemDebug::SingletonInit()
         "PlaneDebug", "cliff");
 
     GeometryConfig cubeConfig = smGeometrySystem().GenerateCubeGeometryConfig(
-        5.0f, "CubeDebug", "rock");
+        5.0f, "CubeDebug", "metal");
 
     ::samaritan::GeometrySystem& geometrySystem = smGeometrySystem();
 

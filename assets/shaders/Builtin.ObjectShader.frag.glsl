@@ -14,25 +14,38 @@ layout(set = 0, binding = 0) uniform global_uniform_object {
 
 layout(set = 1, binding = 0) uniform local_uniform_object {
     vec4 diffuse_colour;
+    float shininess;
 } object_ubo;
 
-// Samplers
-layout(set = 1, binding = 1) uniform sampler2D diffuse_sampler;
+// Samplers — packed into a single binding as an array to match Vulkan descriptor layout
+// [0] = diffuse, [1] = specular
+layout(set = 1, binding = 1) uniform sampler2D material_samplers[2];
 
 // Data Transfer Object
 layout(location = 1) in struct dto {
     vec2 tex_coord;
     vec3 normal;
+    vec3 frag_pos;
 } in_dto;
 
 void main() {
-    float diffuse_intensity = max(dot(in_dto.normal, -global_ubo.dir_light_direction.xyz), 0.0);
-    vec4 texColor = texture(diffuse_sampler, in_dto.tex_coord);
-    vec4 ambient = vec4(vec3(global_ubo.ambient_color * object_ubo.diffuse_colour), texColor.a);
-    vec4 diffuse = vec4(vec3(global_ubo.dir_light_color * diffuse_intensity), texColor.a);
+    vec3 lightDir = normalize(-global_ubo.dir_light_direction.xyz);
 
-    diffuse *= texColor;
-    ambient *= texColor;
+    // Diffuse
+    float diffuse_intensity = max(dot(in_dto.normal, lightDir), 0.0);
 
-    out_colour = ambient + diffuse;
+    // Specular Blinn-Phong
+    vec3 camPos = -(transpose(mat3(global_ubo.view)) * global_ubo.view[3].xyz);
+    vec3 viewDir = normalize(camPos - in_dto.frag_pos);
+    vec3 halfDir = normalize(lightDir + viewDir);
+    float spec = pow(max(dot(in_dto.normal, halfDir), 0.0), object_ubo.shininess);
+
+    vec4 texColor    = texture(material_samplers[0], in_dto.tex_coord);
+    vec4 texSpecular = texture(material_samplers[1], in_dto.tex_coord);
+
+    vec4 ambient  = vec4(vec3(global_ubo.ambient_color * object_ubo.diffuse_colour), texColor.a) * texColor;
+    vec4 diffuse  = vec4(vec3(global_ubo.dir_light_color * diffuse_intensity), texColor.a) * texColor;
+    vec4 specular = vec4(vec3(global_ubo.dir_light_color * spec), texColor.a) * texSpecular;
+
+    out_colour = ambient + diffuse + specular;
 }

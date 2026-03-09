@@ -48,6 +48,16 @@
             "scope": "instance"
         },
         {
+            "name": "specular_texture",
+            "type": "sampler",
+            "scope": "instance"
+        },
+        {
+            "name": "shininess",
+            "type": "float",
+            "scope": "instance"
+        },
+        {
             "name": "ambient_color",
             "type": "vec4",
             "scope": "global"

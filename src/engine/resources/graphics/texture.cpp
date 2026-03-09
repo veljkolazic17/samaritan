@@ -58,11 +58,18 @@ void Texture::OnLoad()
 
         stbi_image_free(data);
     }
-    if (const char* reason = stbi_failure_reason())
+    if (data == nullptr)
     {
-        //TODO [TEXTURE] Add support for asserts messages {} or %s
-        softAssert(false, "Failed to load texture", path.data(), reason);
-        stbi__err(0, 0);
+        m_State = ResourceState::Error;
+        if (const char* reason = stbi_failure_reason())
+        {
+            softAssert(false, "Failed to load texture", path.data(), reason);
+            stbi__err(0, 0);
+        }
+    }
+    else
+    {
+        m_State = ResourceState::Loaded;
     }
 #endif
 }

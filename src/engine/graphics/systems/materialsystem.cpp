@@ -34,6 +34,9 @@ smbool MaterialSystem::Init(const MaterialSystemConfig& config)
     m_DefaultMaterial.m_DiffuseColor = smVec4_one;
     m_DefaultMaterial.m_DiffuseMap.m_Type = TextureUsageType::TEXTURE_USAGE_MAP_DIFFUSE;
     m_DefaultMaterial.m_DiffuseMap.m_Texture = smTextureSystem().GetDefaultTexture();
+    m_DefaultMaterial.m_SpecularMap.m_Type = TextureUsageType::TEXTURE_USAGE_MAP_SPECULAR;
+    m_DefaultMaterial.m_SpecularMap.m_Texture = smTextureSystem().GetDefaultTexture();
+    m_DefaultMaterial.m_Shininess = 32.0f;
     HACK(m_DefaultMaterial.m_ShaderName = SM_DEFAULT_SHADER_NAME;)
     
     const ResourceHandle<Shader>& shader = smShaderSystem().GetShader(m_DefaultMaterial.m_ShaderName);
@@ -68,7 +71,7 @@ void MaterialSystem::SingletonShutdown()
 
 Material* MaterialSystem::Acquire(const smstring& name)
 {
-    MaterialConfig materialConfig;
+    MaterialConfig materialConfig = {};
     if (LoadConfigurationFile(name.data(), materialConfig))
     {
         return AcquireFromConfig(materialConfig);
@@ -166,7 +169,7 @@ smbool MaterialSystem::LoadConfigurationFile(smcstring name, MaterialConfig& con
 
     nlohmann::json data = nlohmann::json::parse(f);
 
-    if (data.size() != 5)
+    if (data.size() < 5)
     {
         LogError(LogChannel::Graphics, "Material file has wrong format!");
         return false;
@@ -181,6 +184,16 @@ smbool MaterialSystem::LoadConfigurationFile(smcstring name, MaterialConfig& con
     config.m_ShaderName = shaderName;
     config.m_DiffuseColor = smVec4::StringToVec4(data["diffusecolor"]);
 
+    if (data.contains("specularmapname"))
+    {
+        const std::string& jspecularMapName = data["specularmapname"].template get<std::string>();
+        std::strncpy(reinterpret_cast<char*>(config.m_SpecularMapName), jspecularMapName.data(), SM_TEXTURE_NAME_MAX_LENGTH);
+    }
+    if (data.contains("shininess"))
+    {
+        config.m_Shininess = data["shininess"].template get<smfloat32>();
+    }
+
     return true;
 }
 
@@ -193,6 +206,10 @@ void MaterialSystem::DestroyMaterial(Material* material)
     }
 
     if (Texture* texture = material->m_DiffuseMap.m_Texture.GetResource())
+    {
+        smTextureSystem().Release(texture->m_Name);
+    }
+    if (Texture* texture = material->m_SpecularMap.m_Texture.GetResource())
     {
         smTextureSystem().Release(texture->m_Name);
     }
@@ -213,6 +230,8 @@ smbool MaterialSystem::LoadMaterial(const MaterialConfig& config, Material* mate
     material->m_ShaderName = config.m_ShaderName;
 
     material->m_DiffuseColor = config.m_DiffuseColor;
+    material->m_Shininess = config.m_Shininess;
+
     if (std::strlen(reinterpret_cast<const char*>(config.m_DiffuseMapName)) > 0)
     {
         material->m_DiffuseMap.m_Type = TextureUsageType::TEXTURE_USAGE_MAP_DIFFUSE;
@@ -228,6 +247,23 @@ smbool MaterialSystem::LoadMaterial(const MaterialConfig& config, Material* mate
     {
         material->m_DiffuseMap.m_Type = TextureUsageType::TEXTURE_USAGE_UNKNOWN;
         material->m_DiffuseMap.m_Texture = ResourceHandle<Texture>::InvalidReference();
+    }
+
+    if (std::strlen(reinterpret_cast<const char*>(config.m_SpecularMapName)) > 0)
+    {
+        material->m_SpecularMap.m_Type = TextureUsageType::TEXTURE_USAGE_MAP_SPECULAR;
+        constexpr smbool shouldAutoRelease = true;
+        material->m_SpecularMap.m_Texture = smTextureSystem().Acquire(reinterpret_cast<smcstring>(config.m_SpecularMapName), shouldAutoRelease);
+        if (!material->m_SpecularMap.m_Texture.IsValid())
+        {
+            LogError(LogChannel::Graphics, "Failed to acquire specular texture");
+            material->m_SpecularMap.m_Texture = smTextureSystem().GetDefaultTexture();
+        }
+    }
+    else
+    {
+        material->m_SpecularMap.m_Type = TextureUsageType::TEXTURE_USAGE_MAP_SPECULAR;
+        material->m_SpecularMap.m_Texture = smTextureSystem().GetDefaultTexture();
     }
 
     const ResourceHandle<Shader>& shader = smShaderSystem().GetShader(config.m_ShaderName);
@@ -276,10 +312,9 @@ smbool MaterialSystem::ApplyInstance(Material* material)
     ShaderSystem& shaderSystem = smShaderSystem();
     shaderSystem.BindInstanceByIndex(material->m_InternalID);
     shaderSystem.SetUniformByName("diffuse_color", &material->m_DiffuseColor);
-
-
-    
+    shaderSystem.SetUniformByName("shininess", &material->m_Shininess);
     shaderSystem.SetSamplerByName("diffuse_texture", material->m_DiffuseMap.m_Texture);
+    shaderSystem.SetSamplerByName("specular_texture", material->m_SpecularMap.m_Texture);
     return shaderSystem.ApplyInstanceUniforms();
 }
 

@@ -19,6 +19,9 @@ struct Material
 	smVec4 m_DiffuseColor;
 	//Expect usage for texture to be TEXTURE_USAGE_MAP_DIFFUSE
 	TextureMap m_DiffuseMap;
+	//Expect usage for texture to be TEXTURE_USAGE_MAP_SPECULAR
+	TextureMap m_SpecularMap;
+	smfloat32 m_Shininess = 32.0f;
 };
 
 END_NAMESPACE

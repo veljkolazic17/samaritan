@@ -1228,18 +1228,19 @@ namespace Graphics
             {
                 const smuint32 setIndex = uniform.m_ScopeType == ShaderScopeType::GLOBAL ? SM_VULKAN_DESCRIPTOR_SET_GLOBAL : SM_VULKAN_DESCRIPTOR_SET_INSTANCE;
                 VulkanDescriptorSetData& setData = vkShader->m_DescriptorSetData[setIndex];
-                VkDescriptorSetLayoutBinding& setBinding = setData.m_BindingLayouts[setData.m_Bindings];
-                if (setData.m_Bindings < 2) //Note: This means that we have not added a sampler binding yet
+                if (setData.m_Bindings < 2) // Sampler binding not yet added
                 {
+                    VkDescriptorSetLayoutBinding& setBinding = setData.m_BindingLayouts[setData.m_Bindings];
                     setBinding.binding = SM_VULKAN_BINDING_SAMPLER;
                     setBinding.descriptorCount = 1;
                     setBinding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
                     setBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
                     ++setData.m_Bindings;
                 }
-                else    
+                else
                 {
-                    ++setBinding.descriptorCount;
+                    // Additional samplers are packed into the same binding as an array
+                    ++setData.m_BindingLayouts[SM_VULKAN_BINDING_SAMPLER].descriptorCount;
                 }
             }
         }

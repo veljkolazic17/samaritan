@@ -25,10 +25,13 @@ layout(location = 0) out int out_mode;
 layout(location = 1) out struct dto {
 	vec2 tex_coord;
 	vec3 normal;
+	vec3 frag_pos;
 } out_dto;
 
 void main() {
+	vec4 worldPos = u_push_constants.model * vec4(in_position, 1.0);
 	out_dto.tex_coord = in_texcoord;
 	out_dto.normal = normalize(mat3(u_push_constants.model) * in_normal);
-	gl_Position = global_ubo.projection * global_ubo.view * u_push_constants.model * vec4(in_position, 1.0);
+	out_dto.frag_pos = worldPos.xyz;
+	gl_Position = global_ubo.projection * global_ubo.view * worldPos;
 }

@@ -31,7 +31,7 @@ private:
 	{
 		"terrain",
 		"cliff",
-		"rock"
+		"metal"
 	};
 
 	smcstring m_LoadedImage = nullptr;

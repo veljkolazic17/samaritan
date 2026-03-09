@@ -48,6 +48,11 @@ public:
         rawResourcePtr->OnLoad();
         rawResourcePtr->m_Name = std::move(name);
 
+        if (rawResourcePtr->m_State == ResourceState::Error)
+        {
+            return ResourceHandle<T>::InvalidReference();
+        }
+
         m_Resources[name] = std::move(newResource);
         std::unique_ptr<ResourceControlBlock> newControlBlock = std::make_unique<ResourceControlBlock>(rawResourcePtr);
         m_ControlBlocks[name] = std::move(newControlBlock);
