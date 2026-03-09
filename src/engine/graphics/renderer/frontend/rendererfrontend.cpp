@@ -137,7 +137,7 @@ namespace Graphics
     {
         if (m_RendererBackend != nullptr and heigth != 0 and width != 0)
         {
-            m_Projection = smMat4::Perspective(Math::Deg2Rad(45.0f), width / heigth, m_NearClip, m_FarClip);
+            m_Projection = smMat4::Perspective(Math::Deg2Rad(45.0f), static_cast<smfloat32>(width) / static_cast<smfloat32>(heigth), m_NearClip, m_FarClip);
 
             m_RendererBackend->Resize(width, heigth);
         }

@@ -22,15 +22,20 @@ void GeometrySystemDebug::SingletonInit()
         5.0, 10.0f, 10, 10, 1.0f, 1.0f,
         "PlaneDebug", "cliff");
 
+    GeometryConfig cubeConfig = smGeometrySystem().GenerateCubeGeometryConfig(
+        5.0f, "CubeDebug", "rock");
+
     ::samaritan::GeometrySystem& geometrySystem = smGeometrySystem();
 
     m_GeometryConfigs[0] = planeConfig1;
     m_GeometryConfigs[1] = planeConfig2;
     m_GeometryConfigs[2] = planeConfig3;
+    m_GeometryConfigs[3] = cubeConfig;
 
     m_Geometries[0] = geometrySystem.AcquireFromConfig(planeConfig1);
     m_Geometries[1] = geometrySystem.AcquireFromConfig(planeConfig2);
     m_Geometries[2] = geometrySystem.AcquireFromConfig(planeConfig3);
+    m_Geometries[3] = geometrySystem.AcquireFromConfig(cubeConfig);
 
     m_DebugGeometry = const_cast<Geometry*>(smGeometrySystem().GetDefaultGeometry());
 
@@ -72,6 +77,12 @@ void GeometrySystemDebug::HandleOnKeyboardInputPressedEvent(const Input::Keyboar
         extraPressed = true;
         break;
     }
+    case Input::Key::KEY_F4:
+    {
+        m_DebugGeometry = m_Geometries[3];
+        extraPressed = true;
+        break;
+    }
     default:
     {
         break;
@@ -81,7 +92,10 @@ void GeometrySystemDebug::HandleOnKeyboardInputPressedEvent(const Input::Keyboar
     if (m_IsDebugKeyPressed && extraPressed)
     {
         smRenderer().SetGeometry(m_DebugGeometry);
-        m_DebugGeometry->m_Material = smMaterialDebugSystem().GetMaterial();
+        if (Material* debugMaterial = smMaterialDebugSystem().GetMaterial())
+        {
+            m_DebugGeometry->m_Material = debugMaterial;
+        }
     }
 }
 
@@ -98,8 +112,9 @@ GeometrySystemDebug::~GeometrySystemDebug()
     smGeometrySystem().Release(m_Geometries[0]);
     smGeometrySystem().Release(m_Geometries[1]);
     smGeometrySystem().Release(m_Geometries[2]);
+    smGeometrySystem().Release(m_Geometries[3]);
 
-    for (smuint8 i = 0; i < 3; ++i)
+    for (smuint8 i = 0; i < 4; ++i)
     {
         if (m_Geometries[i] != nullptr)
         {

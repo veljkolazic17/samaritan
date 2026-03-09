@@ -252,6 +252,14 @@ smbool MaterialSystem::ApplyGlobal(const smstring& shaderName, const smMat4& pro
     ShaderSystem& shaderSystem = smShaderSystem();
     shaderSystem.SetUniformByName("projection", &projection);
     shaderSystem.SetUniformByName("view", &view);
+    //TODO : [MATERIAL] This is temp solution we should have global scene data that will be applied to all shaders, and this data should contain ambient color
+    smVec4 ambientColor = smVec4{ 0.1f, 0.1f, 0.1f, 1.0f };
+    shaderSystem.SetUniformByName("ambient_color", &ambientColor);
+    //TODO : [MATERIAL] Directional light should come from scene/world data, not be hardcoded here
+    smVec4 dirLightDirection = smVec4{ -0.577f, -0.577f, -0.577f, 0.0f };
+    smVec4 dirLightColor = smVec4{ 1.0f, 1.0f, 1.0f, 1.0f };
+    shaderSystem.SetUniformByName("dir_light_direction", &dirLightDirection);
+    shaderSystem.SetUniformByName("dir_light_color", &dirLightColor);
     return shaderSystem.ApplyGlobalUniforms();
 }
 
@@ -260,6 +268,9 @@ smbool MaterialSystem::ApplyInstance(Material* material)
     ShaderSystem& shaderSystem = smShaderSystem();
     shaderSystem.BindInstanceByIndex(material->m_InternalID);
     shaderSystem.SetUniformByName("diffuse_color", &material->m_DiffuseColor);
+
+
+    
     shaderSystem.SetSamplerByName("diffuse_texture", material->m_DiffuseMap.m_Texture);
     return shaderSystem.ApplyInstanceUniforms();
 }

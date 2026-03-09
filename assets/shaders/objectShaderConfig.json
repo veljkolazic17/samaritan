@@ -17,6 +17,10 @@
             "type": "vec3"
         },
         {
+            "name": "in_normal",
+            "type": "vec3"
+        },
+        {
             "name": "in_texcoord",
             "type": "vec2"
         }
@@ -42,6 +46,21 @@
             "name": "diffuse_texture",
             "type": "sampler",
             "scope": "instance"
+        },
+        {
+            "name": "ambient_color",
+            "type": "vec4",
+            "scope": "global"
+        },
+        {
+            "name": "dir_light_direction",
+            "type": "vec4",
+            "scope": "global"
+        },
+        {
+            "name": "dir_light_color",
+            "type": "vec4",
+            "scope": "global"
         },
         {
             "name": "model",

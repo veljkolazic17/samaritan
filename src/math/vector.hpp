@@ -576,6 +576,7 @@ SM_INLINE smfloat32 smVec2::Normalize()
 struct smVert3D
 {
 	smVec3 m_Position = smVec3_zero;
+	smVec3 m_Normal = smVec3_zero;
 	smVec2 m_TextureCoordinates = smVec2_zero;
 };
 //END Definition smVert3D

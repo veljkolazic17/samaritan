@@ -53,6 +53,7 @@ public:
     void DestroyGeometry(Geometry* geometry);
     Geometry* AcquireFromConfig(const GeometryConfig& geometryConfig);
     GeometryConfig GenerateGeometryConfig(smfloat32 width, smfloat32 height, smuint32 xSegments, smuint32 ySegments, smfloat32 xTile, smfloat32 yTile, smcstring name, smcstring materialName);
+    GeometryConfig GenerateCubeGeometryConfig(smfloat32 size, smcstring name, smcstring materialName);
 
 private:
 

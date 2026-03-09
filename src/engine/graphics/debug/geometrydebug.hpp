@@ -33,14 +33,15 @@ private:
 
     smbool m_IsDebugKeyPressed = false;
 
-    Geometry* m_Geometries[3] =
+    Geometry* m_Geometries[4] =
     {
+        nullptr,
         nullptr,
         nullptr,
         nullptr
     };
 
-    GeometryConfig m_GeometryConfigs[3];
+    GeometryConfig m_GeometryConfigs[4];
 };
 
 END_NAMESPACE

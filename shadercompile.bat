@@ -1,6 +1,6 @@
 @echo off
 
-set srcpath=%1
+if "%~1"=="" (set srcpath=%~dp0) else (set srcpath=%1)
 
 if not exist "%srcpath%\out\build\bin\assets\shaders\" mkdir "%srcpath%\out\build\bin\assets\shaders"
 
@@ -15,7 +15,7 @@ echo "assets/shaders/Builtin.ObjectShader.frag.glsl -> out/build/bin/assets/shad
 IF %ERRORLEVEL% NEQ 0 (echo Error: %ERRORLEVEL% && exit)
 
 echo "Copying assets"
-echo xcopy "assets" "bin\assets" /h /i /c /k /e /r /y
-xcopy "assets" "bin\assets" /h /i /c /k /e /r /y
+echo xcopy "%srcpath%\assets" "%srcpath%\out\build\bin\assets" /h /i /c /k /e /r /y
+xcopy "%srcpath%\assets" "%srcpath%\out\build\bin\assets" /h /i /c /k /e /r /y
 
 echo "Done"

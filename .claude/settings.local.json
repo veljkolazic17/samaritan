@@ -1,7 +1,8 @@
 {
   "permissions": {
     "allow": [
-      "Bash(xargs grep -l \"int main\")"
+      "Bash(xargs grep -l \"int main\")",
+      "Bash(cmd.exe /c \"c:\\\\Users\\\\veljk\\\\source\\\\repos\\\\DoomerBoomer\\\\DoomerBoomer\\\\MeowEngine\\\\shadercompile.bat c:\\\\Users\\\\veljk\\\\source\\\\repos\\\\DoomerBoomer\\\\DoomerBoomer\\\\MeowEngine\")"
     ]
   }
 }

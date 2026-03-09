@@ -323,4 +323,88 @@ GeometryConfig GeometrySystem::GenerateGeometryConfig(smfloat32 width, smfloat32
     return config;
 }
 
+GeometryConfig GeometrySystem::GenerateCubeGeometryConfig(smfloat32 size, smcstring name, smcstring materialName)
+{
+    size = (size != 0.0f) ? size : 1.0f;
+    const smfloat32 s = size * 0.5f;
+
+    GeometryConfig config;
+    config.m_VertexCount = 24; // 6 faces * 4 verts
+    config.m_IndexCount  = 36; // 6 faces * 6 indices
+    config.m_Vertices = static_cast<smVert3D*>(Memory::GPAllocate(sizeof(smVert3D) * config.m_VertexCount, Memory::MemoryTag::MEM_ARRAY));
+    smZero(config.m_Vertices, config.m_VertexCount * sizeof(smVert3D));
+    config.m_Indices = static_cast<smuint32*>(Memory::GPAllocate(sizeof(smuint32) * config.m_IndexCount, Memory::MemoryTag::MEM_ARRAY));
+    smZero(config.m_Indices, config.m_IndexCount * sizeof(smuint32));
+
+    // Each face: v0=(uMin,vMin), v1=(uMax,vMax), v2=(uMin,vMax), v3=(uMax,vMin)
+    // Local axes chosen so (v1-v0)×(v2-v0) == outward face normal
+    smVec3 positions[24] = {
+        // Front (+Z): u=X, v=Y
+        smVec3(-s,-s,+s), smVec3(+s,+s,+s), smVec3(-s,+s,+s), smVec3(+s,-s,+s),
+        // Back (-Z):  u=-X, v=Y
+        smVec3(+s,-s,-s), smVec3(-s,+s,-s), smVec3(+s,+s,-s), smVec3(-s,-s,-s),
+        // Right (+X): u=-Z, v=Y
+        smVec3(+s,-s,+s), smVec3(+s,+s,-s), smVec3(+s,+s,+s), smVec3(+s,-s,-s),
+        // Left (-X):  u=+Z, v=Y
+        smVec3(-s,-s,-s), smVec3(-s,+s,+s), smVec3(-s,+s,-s), smVec3(-s,-s,+s),
+        // Top (+Y):   u=X, v=-Z
+        smVec3(-s,+s,+s), smVec3(+s,+s,-s), smVec3(-s,+s,-s), smVec3(+s,+s,+s),
+        // Bottom (-Y):u=X, v=+Z
+        smVec3(-s,-s,-s), smVec3(+s,-s,+s), smVec3(-s,-s,+s), smVec3(+s,-s,-s),
+    };
+
+    smVec3 normals[6] = {
+        smVec3( 0.0f,  0.0f,  1.0f),
+        smVec3( 0.0f,  0.0f, -1.0f),
+        smVec3( 1.0f,  0.0f,  0.0f),
+        smVec3(-1.0f,  0.0f,  0.0f),
+        smVec3( 0.0f,  1.0f,  0.0f),
+        smVec3( 0.0f, -1.0f,  0.0f),
+    };
+
+    smVec2 uvs[4] = {
+        smVec2(0.0f, 0.0f), smVec2(1.0f, 1.0f), smVec2(0.0f, 1.0f), smVec2(1.0f, 0.0f),
+    };
+
+    for (smuint32 f = 0; f < 6; ++f)
+    {
+        const smuint32 vBase = f * 4;
+        const smuint32 iBase = f * 6;
+
+        for (smuint32 v = 0; v < 4; ++v)
+        {
+            config.m_Vertices[vBase + v].m_Position           = positions[vBase + v];
+            config.m_Vertices[vBase + v].m_Normal             = normals[f];
+            config.m_Vertices[vBase + v].m_TextureCoordinates = uvs[v];
+        }
+
+        config.m_Indices[iBase + 0] = vBase + 0;
+        config.m_Indices[iBase + 1] = vBase + 1;
+        config.m_Indices[iBase + 2] = vBase + 2;
+        config.m_Indices[iBase + 3] = vBase + 0;
+        config.m_Indices[iBase + 4] = vBase + 3;
+        config.m_Indices[iBase + 5] = vBase + 1;
+    }
+
+    if (name != nullptr && std::strlen(name) > 0)
+    {
+        std::strncpy(reinterpret_cast<char*>(config.m_GeometryName), name, SM_GEOMETRY_NAME_MAX_LENGTH);
+    }
+    else
+    {
+        std::strncpy(reinterpret_cast<char*>(config.m_GeometryName), SM_DEFAULT_GEOMETRY_NAME, SM_GEOMETRY_NAME_MAX_LENGTH);
+    }
+
+    if (materialName != nullptr && std::strlen(materialName) > 0)
+    {
+        std::strncpy(reinterpret_cast<char*>(config.m_MaterialName), materialName, SM_MATERIAL_NAME_MAX_LENGTH);
+    }
+    else
+    {
+        std::strncpy(reinterpret_cast<char*>(config.m_MaterialName), SM_DEFAULT_MATERIAL_NAME, SM_MATERIAL_NAME_MAX_LENGTH);
+    }
+
+    return config;
+}
+
 END_NAMESPACE

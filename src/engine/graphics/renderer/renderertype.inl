@@ -29,10 +29,13 @@ struct RenderData
 
 struct GlobalUniformObject
 {
-    smMat4 m_Projection;
-    smMat4 m_View;
+    smMat4 m_Projection;      // 64 bytes
+    smMat4 m_View;            // 64 bytes
+    smVec4 m_AmbientColor;    // 16 bytes
+    smVec4 m_DirLightDirection; // 16 bytes
+    smVec4 m_DirLightColor;   // 16 bytes
 private:
-    smuint8 m_Reserved[NVIDIA_GBO_PADDING];
+    smuint8 m_Reserved[NVIDIA_GBO_PADDING - 48];
 };
 
 struct ObjectUniformObject
