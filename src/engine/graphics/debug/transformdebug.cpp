@@ -18,6 +18,12 @@ void TransformDebug::DrawImgui()
     ImGui::SliderFloat("Rotation X", &m_Rotation[0], -180.0f, 180.0f, "%.1f deg");
     ImGui::SliderFloat("Rotation Y", &m_Rotation[1], -180.0f, 180.0f, "%.1f deg");
     ImGui::SliderFloat("Rotation Z", &m_Rotation[2], -180.0f, 180.0f, "%.1f deg");
+    if (ImGui::Button("Reset"))
+    {
+        m_Rotation[0] = 0.0f;
+        m_Rotation[1] = 0.0f;
+        m_Rotation[2] = 0.0f;
+    }
 }
 #endif
 
