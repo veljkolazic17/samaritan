@@ -16,6 +16,9 @@
 #include <math/math.hpp>
 #include <math/vector.hpp>
 #include <engine/graphics/systems/geometrysystem.hpp>
+#ifdef SM_TOOL
+#include <engine/graphics/debug/transformdebug.hpp>
+#endif
 #endif
 
 BEGIN_NAMESPACE
@@ -102,7 +105,11 @@ namespace Graphics
                 smMaterialSystem().ApplyGlobal(SM_DEFAULT_SHADER_NAME, m_Projection, m_View);
 
 
-                smMat4	 model = smMat4Translation(smVec3{ 0, 0, 0 });
+#ifdef SM_TOOL
+                smMat4 model = smTransformDebug().GetModelMatrix();
+#else
+                smMat4 model = smMat4Translation(smVec3{ 0, 0, 0 });
+#endif
                 GeometryData data = {};
                 data.m_Model = model;
                 if (m_Geometry == nullptr)

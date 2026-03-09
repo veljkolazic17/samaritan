@@ -25,6 +25,7 @@
 #ifdef SM_TOOL
 #include <engine/camera/camera.hpp>
 #include <engine/camera/tool/toolcamerainputhandler.hpp>
+#include <engine/graphics/debug/transformdebug.hpp>
 #endif
 
 #ifdef DEBUG
@@ -186,6 +187,7 @@ namespace Engine
 #ifdef SM_TOOL
         SM_INVOKE_SINGLETON_INIT(Camera);
         SM_INVOKE_SINGLETON_INIT(ToolCameraInputHandler);
+        SM_INVOKE_SINGLETON_INIT(TransformDebug);
 #endif
 #ifdef DEBUG
         SM_INVOKE_SINGLETON_INIT(MaterialSystemDebug);
