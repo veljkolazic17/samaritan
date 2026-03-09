@@ -4,6 +4,10 @@
 #include <engine/graphics/systems/shadersystem.hpp>
 #include <engine/graphics/systems/texturesystem.hpp>
 
+#ifdef SM_TOOL
+#include <engine/graphics/debug/lightingdebug.hpp>
+#endif
+
 #include <fstream>
 #include <nlohmann/json.hpp>
 #include <utils/logger/log.hpp>
@@ -253,7 +257,11 @@ smbool MaterialSystem::ApplyGlobal(const smstring& shaderName, const smMat4& pro
     shaderSystem.SetUniformByName("projection", &projection);
     shaderSystem.SetUniformByName("view", &view);
     //TODO : [MATERIAL] This is temp solution we should have global scene data that will be applied to all shaders, and this data should contain ambient color
+#ifdef SM_TOOL
+    smVec4 ambientColor = smLightingDebug().GetAmbientColor();
+#else
     smVec4 ambientColor = smVec4{ 0.1f, 0.1f, 0.1f, 1.0f };
+#endif
     shaderSystem.SetUniformByName("ambient_color", &ambientColor);
     //TODO : [MATERIAL] Directional light should come from scene/world data, not be hardcoded here
     smVec4 dirLightDirection = smVec4{ -0.577f, -0.577f, -0.577f, 0.0f };
