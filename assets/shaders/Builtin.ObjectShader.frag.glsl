@@ -18,32 +18,37 @@ layout(set = 1, binding = 0) uniform local_uniform_object {
 } object_ubo;
 
 // Samplers — packed into a single binding as an array to match Vulkan descriptor layout
-// [0] = diffuse, [1] = specular
-layout(set = 1, binding = 1) uniform sampler2D material_samplers[2];
+// [0] = diffuse, [1] = specular, [2] = normal
+layout(set = 1, binding = 1) uniform sampler2D material_samplers[3];
 
 // Data Transfer Object
 layout(location = 1) in struct dto {
     vec2 tex_coord;
     vec3 normal;
     vec3 frag_pos;
+    mat3 TBN;
 } in_dto;
 
 void main() {
+    //optimizations can be implemented
+    //Source: https://learnopengl.com/Advanced-Lighting/Normal-Mapping
+    vec3 normalMap = texture(material_samplers[2], in_dto.tex_coord).rgb;
+    normalMap = normalMap * 2.0 - 1.0;
+    vec3 normal = normalize(in_dto.TBN * normalMap);
+
     vec3 lightDir = normalize(-global_ubo.dir_light_direction.xyz);
 
-    // Diffuse
-    float diffuse_intensity = max(dot(in_dto.normal, lightDir), 0.0);
+    float diffuse_intensity = max(dot(normal, lightDir), 0.0);
 
-    // Specular Blinn-Phong
     vec3 camPos = -(transpose(mat3(global_ubo.view)) * global_ubo.view[3].xyz);
     vec3 viewDir = normalize(camPos - in_dto.frag_pos);
     vec3 halfDir = normalize(lightDir + viewDir);
-    float spec = pow(max(dot(in_dto.normal, halfDir), 0.0), object_ubo.shininess);
+    float spec = pow(max(dot(normal, halfDir), 0.0), object_ubo.shininess);
 
     vec4 texColor    = texture(material_samplers[0], in_dto.tex_coord);
     vec4 texSpecular = texture(material_samplers[1], in_dto.tex_coord);
 
-    vec4 ambient  = vec4(vec3(global_ubo.ambient_color * object_ubo.diffuse_colour), texColor.a) * texColor;
+    vec4 ambient  = vec4(vec3(global_ubo.ambient_color   * object_ubo.diffuse_colour), texColor.a) * texColor;
     vec4 diffuse  = vec4(vec3(global_ubo.dir_light_color * diffuse_intensity), texColor.a) * texColor;
     vec4 specular = vec4(vec3(global_ubo.dir_light_color * spec), texColor.a) * texSpecular;
 

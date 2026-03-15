@@ -21,6 +21,8 @@ struct Material
 	TextureMap m_DiffuseMap;
 	//Expect usage for texture to be TEXTURE_USAGE_MAP_SPECULAR
 	TextureMap m_SpecularMap;
+	//Expect usage for texture to be TEXTURE_USAGE_MAP_NORMAL
+	TextureMap m_NormalMap;
 	smfloat32 m_Shininess = 32.0f;
 };
 

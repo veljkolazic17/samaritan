@@ -23,6 +23,14 @@
         {
             "name": "in_texcoord",
             "type": "vec2"
+        },
+        {
+            "name": "in_tangent",
+            "type": "vec3"
+        },
+        {
+            "name": "in_bitangent",
+            "type": "vec3"
         }
     ],
 
@@ -49,6 +57,11 @@
         },
         {
             "name": "specular_texture",
+            "type": "sampler",
+            "scope": "instance"
+        },
+        {
+            "name": "normal_texture",
             "type": "sampler",
             "scope": "instance"
         },

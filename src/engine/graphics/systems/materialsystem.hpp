@@ -34,6 +34,7 @@ struct MaterialConfig
     smVec4 m_DiffuseColor;
     smuint8 m_DiffuseMapName[SM_TEXTURE_NAME_MAX_LENGTH];
     smuint8 m_SpecularMapName[SM_TEXTURE_NAME_MAX_LENGTH];
+    smuint8 m_NormalMapName[SM_TEXTURE_NAME_MAX_LENGTH];
     smfloat32 m_Shininess = 32.0f;
 };
 
@@ -52,6 +53,11 @@ public:
 
     const Material& GetDefaultMaterial() const { return m_DefaultMaterial; }
     Material& GetDefaultMaterial() { return m_DefaultMaterial; }
+
+#ifdef SM_TOOL
+    const std::unordered_map<smstring, MaterialReference>& GetMaterialLookup() const { return m_MaterialLookup; }
+    Material& GetMaterialByHandle(smuint32 handle) { return m_Materials[handle]; }
+#endif
 
     smbool ApplyGlobal(const smstring& shaderName, const smMat4& projection, const smMat4& view);
     smbool ApplyInstance(Material* material);

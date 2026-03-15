@@ -36,6 +36,8 @@ smbool MaterialSystem::Init(const MaterialSystemConfig& config)
     m_DefaultMaterial.m_DiffuseMap.m_Texture = smTextureSystem().GetDefaultTexture();
     m_DefaultMaterial.m_SpecularMap.m_Type = TextureUsageType::TEXTURE_USAGE_MAP_SPECULAR;
     m_DefaultMaterial.m_SpecularMap.m_Texture = smTextureSystem().GetDefaultTexture();
+    m_DefaultMaterial.m_NormalMap.m_Type = TextureUsageType::TEXTURE_USAGE_MAP_NORMAL;
+    m_DefaultMaterial.m_NormalMap.m_Texture = smTextureSystem().GetDefaultTexture();
     m_DefaultMaterial.m_Shininess = 32.0f;
     HACK(m_DefaultMaterial.m_ShaderName = SM_DEFAULT_SHADER_NAME;)
     
@@ -189,6 +191,11 @@ smbool MaterialSystem::LoadConfigurationFile(smcstring name, MaterialConfig& con
         const std::string& jspecularMapName = data["specularmapname"].template get<std::string>();
         std::strncpy(reinterpret_cast<char*>(config.m_SpecularMapName), jspecularMapName.data(), SM_TEXTURE_NAME_MAX_LENGTH);
     }
+    if (data.contains("normalmapname"))
+    {
+        const std::string& jnormalMapName = data["normalmapname"].template get<std::string>();
+        std::strncpy(reinterpret_cast<char*>(config.m_NormalMapName), jnormalMapName.data(), SM_TEXTURE_NAME_MAX_LENGTH);
+    }
     if (data.contains("shininess"))
     {
         config.m_Shininess = data["shininess"].template get<smfloat32>();
@@ -210,6 +217,10 @@ void MaterialSystem::DestroyMaterial(Material* material)
         smTextureSystem().Release(texture->m_Name);
     }
     if (Texture* texture = material->m_SpecularMap.m_Texture.GetResource())
+    {
+        smTextureSystem().Release(texture->m_Name);
+    }
+    if (Texture* texture = material->m_NormalMap.m_Texture.GetResource())
     {
         smTextureSystem().Release(texture->m_Name);
     }
@@ -266,6 +277,23 @@ smbool MaterialSystem::LoadMaterial(const MaterialConfig& config, Material* mate
         material->m_SpecularMap.m_Texture = smTextureSystem().GetDefaultTexture();
     }
 
+    if (std::strlen(reinterpret_cast<const char*>(config.m_NormalMapName)) > 0)
+    {
+        material->m_NormalMap.m_Type = TextureUsageType::TEXTURE_USAGE_MAP_NORMAL;
+        constexpr smbool shouldAutoRelease = true;
+        material->m_NormalMap.m_Texture = smTextureSystem().Acquire(reinterpret_cast<smcstring>(config.m_NormalMapName), shouldAutoRelease);
+        if (!material->m_NormalMap.m_Texture.IsValid())
+        {
+            LogError(LogChannel::Graphics, "Failed to acquire normal texture");
+            material->m_NormalMap.m_Texture = smTextureSystem().GetDefaultTexture();
+        }
+    }
+    else
+    {
+        material->m_NormalMap.m_Type = TextureUsageType::TEXTURE_USAGE_MAP_NORMAL;
+        material->m_NormalMap.m_Texture = smTextureSystem().GetDefaultTexture();
+    }
+
     const ResourceHandle<Shader>& shader = smShaderSystem().GetShader(config.m_ShaderName);
     if (!shader.IsValid())
     {
@@ -315,6 +343,7 @@ smbool MaterialSystem::ApplyInstance(Material* material)
     shaderSystem.SetUniformByName("shininess", &material->m_Shininess);
     shaderSystem.SetSamplerByName("diffuse_texture", material->m_DiffuseMap.m_Texture);
     shaderSystem.SetSamplerByName("specular_texture", material->m_SpecularMap.m_Texture);
+    shaderSystem.SetSamplerByName("normal_texture", material->m_NormalMap.m_Texture);
     return shaderSystem.ApplyInstanceUniforms();
 }
 

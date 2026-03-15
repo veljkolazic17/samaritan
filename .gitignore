@@ -3,3 +3,5 @@ vcpkg_installed
 .vs
 bin
 /src/museum/*/
+assets/textures/
+imgui.ini
