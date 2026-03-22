@@ -141,7 +141,7 @@ namespace Graphics
         worldRenderPass.Create
         (
             smVec4(0.0f, 0.0f, static_cast<smfloat32>(m_VulkanDevice.m_FrameBufferWidth), static_cast<smfloat32>(m_VulkanDevice.m_FrameBufferHeight)),
-            smVec4(0.5f, 0.5f, 0.5f, 1.0f),
+            smVec4(1.0f, 1.0f, 1.0f, 1.0f),
             1.f,
             0.f,
             VulkanRenderpassClearFlag::CLEAR_COLOR_BUFFER | VulkanRenderpassClearFlag::CLEAR_DEPTH_BUFFER | VulkanRenderpassClearFlag::CLEAR_STENCIL_BUFFER,
@@ -841,6 +841,12 @@ namespace Graphics
         }
     }
 
+    void VulkanRenderer::DrawProcedural(smuint32 vertexCount)
+    {
+        VulkanCommandBuffer& commandBuffer = m_GraphicsCommandBuffers[m_ImageIndex];
+        vkCmdDraw(commandBuffer.GetHandle(), vertexCount, 1, 0, 0);
+    }
+
 #pragma region Texture
     smbool VulkanRenderer::CreateTexture(const smuint8* pixels, Texture* texture)
     {
@@ -1059,7 +1065,7 @@ namespace Graphics
 #pragma endregion
 
 #pragma region ObjectShader
-    smbool VulkanRenderer::CreateObjectShader(Shader* shader)
+    smbool VulkanRenderer::CreateShader(Shader* shader)
     {
         shader->m_InternalData = mnew<VulkanShader>(Memory::MemoryTag::MEM_RENDERER);
         VulkanShader* vkShader = static_cast<VulkanShader*>(shader->m_InternalData);
@@ -1376,7 +1382,7 @@ namespace Graphics
         VulkanCheckResult(vkAllocateDescriptorSets(m_VulkanDevice.m_LogicalDevice, &descriptorSetAllocateInfo, vkShader->m_GlobalDescriptorSets), "Could not allocate global descriptor sets!");
     }
 
-    smbool VulkanRenderer::InitObjectShader(Shader* shader)
+    smbool VulkanRenderer::InitShader(Shader* shader)
     {
         InitVulkanModules(shader);
         InitAttributes(shader);
@@ -1389,25 +1395,25 @@ namespace Graphics
         return true;
     }
 
-    void VulkanRenderer::DestroyObjectShader(Shader* shader)
+    void VulkanRenderer::DestroyShader(Shader* shader)
     {
         softAssert(false, "Not implemented!");
     }
 
-    smbool VulkanRenderer::UseObjectShader(Shader* shader)
+    smbool VulkanRenderer::UseShader(Shader* shader)
     {
         VulkanShader* vkShader = static_cast<VulkanShader*>(shader->m_InternalData);
         vkShader->m_VulkanPipeline.Bind(&m_GraphicsCommandBuffers[m_ImageIndex], VK_PIPELINE_BIND_POINT_GRAPHICS);
         return true;
     }
 
-    smbool VulkanRenderer::ObjectShaderBindGlobals(Shader* shader)
+    smbool VulkanRenderer::ShaderBindGlobals(Shader* shader)
     {
         shader->m_BoundUBOOffset = shader->m_GlobalUBOOfset;
         return true;
     }
 
-    smbool VulkanRenderer::ObjectShaderSetUniform(Shader* shader, const ShaderUniform& uniform, const void* value)
+    smbool VulkanRenderer::ShaderSetUniform(Shader* shader, const ShaderUniform& uniform, const void* value)
     {
         VulkanShader* vkShader = static_cast<VulkanShader*>(shader->m_InternalData);
 
@@ -1459,7 +1465,7 @@ namespace Graphics
         return true;
     }
 
-    smbool VulkanRenderer::ObjectShaderApplyGlobals(Shader* shader)
+    smbool VulkanRenderer::ShaderApplyGlobals(Shader* shader)
     {
         VulkanShader* vkShader = static_cast<VulkanShader*>(shader->m_InternalData);
         VkCommandBuffer commandBuffer = m_GraphicsCommandBuffers[m_ImageIndex].GetHandle();
@@ -1495,7 +1501,7 @@ namespace Graphics
         return true;
     }
 
-    smbool VulkanRenderer::ObjectShaderApplyInstances(Shader* shader)
+    smbool VulkanRenderer::ShaderApplyInstances(Shader* shader)
     {
         if (!shader->m_IsUsingInsance) 
         {
@@ -1596,7 +1602,7 @@ namespace Graphics
         return true;
     }
 
-    smbool VulkanRenderer::ObjectShaderBindInstance(Shader* shader, smuint32 instanceId)
+    smbool VulkanRenderer::ShaderBindInstance(Shader* shader, smuint32 instanceId)
     {
         const VulkanShader* vkShader = static_cast<const VulkanShader*>(shader->m_InternalData);
         shader->m_BoundInstancId = instanceId;
@@ -1605,7 +1611,7 @@ namespace Graphics
         return true;
     }
 
-    smbool VulkanRenderer::ObjectShaderAcquireInstanceResources(Shader* shader, smuint32& instanceId)
+    smbool VulkanRenderer::ShaderAcquireInstanceResources(Shader* shader, smuint32& instanceId)
     {
         VulkanShader* vkShader = static_cast<VulkanShader*>(shader->m_InternalData);
         instanceId = SM_INVALID_ID;
@@ -1680,7 +1686,7 @@ namespace Graphics
         return true;
     }
 
-    smbool VulkanRenderer::ObjectShaderReleaseInstanceResources(Shader* shader, smuint32 instanceId)
+    smbool VulkanRenderer::ShaderReleaseInstanceResources(Shader* shader, smuint32 instanceId)
     {
         VulkanShader* vkShader = static_cast<VulkanShader*>(shader->m_InternalData);
         VulkanShaderInstanceState& instanceState = vkShader->m_InstanceStates[instanceId];

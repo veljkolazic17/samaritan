@@ -31,6 +31,7 @@ namespace Graphics
         smbool BeginFrame(Time time) override;
         smbool EndFrame(Time time) override;
         void DrawGeometry(const GeometryData& data) override;
+        void DrawProcedural(smuint32 vertexCount) override;
 
         SM_INLINE VkAllocationCallbacks* GetAllocator() { return m_Allocator; }
         SM_INLINE VkInstance GetInstance() { return m_Instance; }
@@ -52,18 +53,17 @@ namespace Graphics
         smbool CreateGeometry(Geometry* geometry, smuint32 vertexCount, const smVert3D* vertices, smuint32 indexCount, const smuint32* indices) override;
         void DestroyGeometry(Geometry* geometry) override;
         
-        //ObjectShader
-        smbool CreateObjectShader(Shader* shader) override;
-        void DestroyObjectShader(Shader* shader) override;
-        smbool UseObjectShader(Shader* shader) override;
-        smbool ObjectShaderBindGlobals(Shader* shader) override;
-        smbool ObjectShaderSetUniform(Shader* shader, const ShaderUniform& uniform, const void* value) override;
-        smbool ObjectShaderApplyGlobals(Shader* shader) override;
-        smbool ObjectShaderApplyInstances(Shader* shader) override;
-        smbool ObjectShaderBindInstance(Shader* shader, smuint32 instanceId) override;
-        smbool InitObjectShader(Shader* shader) override;
-        smbool ObjectShaderAcquireInstanceResources(Shader* shader, smuint32& instanceId) override;
-        smbool ObjectShaderReleaseInstanceResources(Shader* shader, smuint32 instanceId) override;
+        smbool CreateShader(Shader* shader) override;
+        void DestroyShader(Shader* shader) override;
+        smbool UseShader(Shader* shader) override;
+        smbool ShaderBindGlobals(Shader* shader) override;
+        smbool ShaderSetUniform(Shader* shader, const ShaderUniform& uniform, const void* value) override;
+        smbool ShaderApplyGlobals(Shader* shader) override;
+        smbool ShaderApplyInstances(Shader* shader) override;
+        smbool ShaderBindInstance(Shader* shader, smuint32 instanceId) override;
+        smbool InitShader(Shader* shader) override;
+        smbool ShaderAcquireInstanceResources(Shader* shader, smuint32& instanceId) override;
+        smbool ShaderReleaseInstanceResources(Shader* shader, smuint32 instanceId) override;
 
     private:
         void GetPlatformExtensions(std::vector<const char*>& platfromExtensions);

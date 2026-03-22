@@ -11,6 +11,10 @@
 #endif
 
 
+#ifdef SM_TOOL
+#include <engine/graphics/debug/lightingdebug.hpp>
+#endif
+
 #ifdef TEST_CODE_ENABLED
 #include <math/matrix.hpp>
 #include <math/math.hpp>
@@ -39,6 +43,7 @@ namespace Graphics
             m_RendererBackend->Init();
 
             smShaderSystem().Create(SM_DEFAULT_SHADER_RESOURCE);
+            smShaderSystem().Create("infiniteGridShaderConfig");
         }
         else
         {
@@ -102,10 +107,23 @@ namespace Graphics
 #endif
 #ifdef TEST_CODE_ENABLED
                 smShaderSystem().Use(SM_DEFAULT_SHADER_NAME);
-                smMaterialSystem().ApplyGlobal(SM_DEFAULT_SHADER_NAME, m_Projection, m_View);
+
+                smShaderSystem().SetUniformByName("projection", &m_Projection);
+                smShaderSystem().SetUniformByName("view", &m_View);
+#ifdef SM_TOOL
+                smVec4 ambientColor = smLightingDebug().GetAmbientColor();
+#else
+                smVec4 ambientColor = smVec4{ 0.1f, 0.1f, 0.1f, 1.0f };
+#endif
+                smShaderSystem().SetUniformByName("ambient_color", &ambientColor);
+                smVec4 dirLightDirection = smVec4{ -0.577f, -0.577f, -0.577f, 0.0f };
+                smVec4 dirLightColor    = smVec4{ 1.0f, 1.0f, 1.0f, 1.0f };
+                smShaderSystem().SetUniformByName("dir_light_direction", &dirLightDirection);
+                smShaderSystem().SetUniformByName("dir_light_color", &dirLightColor);
+                smShaderSystem().ApplyGlobalUniforms();
 
 
-                constexpr smfloat32 meshScale = 20.0f;
+                constexpr smfloat32 meshScale = 1.0f;
 #ifdef SM_TOOL
                 smMat4 model = smTransformDebug().GetModelMatrix();
 #else
@@ -121,8 +139,8 @@ namespace Graphics
                         GeometryData data = {};
                         data.m_Model = model;
                         data.m_Geometry = geometry;
-                        smMaterialSystem().ApplyInstance(geometry->m_Material);
-                        smMaterialSystem().ApplyLocal(geometry->m_Material, model);
+                        if (geometry->m_Material) geometry->m_Material->Apply();
+                        smShaderSystem().SetUniformByName("model", &model);
                         m_RendererBackend->DrawGeometry(data);
                     }
                 }
@@ -135,11 +153,18 @@ namespace Graphics
                     GeometryData data = {};
                     data.m_Model = model;
                     data.m_Geometry = m_Geometry;
-                    smMaterialSystem().ApplyInstance(m_Geometry->m_Material);
-                    smMaterialSystem().ApplyLocal(m_Geometry->m_Material, model);
+                    if (m_Geometry->m_Material) m_Geometry->m_Material->Apply();
+                    smShaderSystem().SetUniformByName("model", &model);
                     m_RendererBackend->DrawGeometry(data);
                 }
 #endif
+
+                // Grid pass — drawn after objects, no vertex buffer needed
+                smShaderSystem().Use("InfiniteGridShader");
+                smShaderSystem().SetUniformByName("projection", &m_Projection);
+                smShaderSystem().SetUniformByName("view", &m_View);
+                smShaderSystem().ApplyGlobalUniforms();
+                smRenderer().DrawProcedural(6);
 
 #if IMGUI_DISPLAY_ENABLED
                 smImguiDrawModule().Render();
@@ -202,27 +227,35 @@ namespace Graphics
         }
     }
 
-    smbool Renderer::CreateObjectShader(Shader* shader)
+    void Renderer::DrawProcedural(smuint32 vertexCount)
     {
         if (m_RendererBackend != nullptr)
         {
-            return m_RendererBackend->CreateObjectShader(shader);
+            m_RendererBackend->DrawProcedural(vertexCount);
+        }
+    }
+
+    smbool Renderer::CreateShader(Shader* shader)
+    {
+        if (m_RendererBackend != nullptr)
+        {
+            return m_RendererBackend->CreateShader(shader);
         }
         return false;
     }
 
-    void Renderer::DestroyObjectShader(Shader* shader)
+    void Renderer::DestroyShader(Shader* shader)
     {
         if (m_RendererBackend != nullptr)
         {
-            m_RendererBackend->DestroyObjectShader(shader);
+            m_RendererBackend->DestroyShader(shader);
         }
     }
-    smbool Renderer::UseObjectShader(Shader* shader)
+    smbool Renderer::UseShader(Shader* shader)
     {
         if (m_RendererBackend != nullptr)
         {
-            return m_RendererBackend->UseObjectShader(shader);
+            return m_RendererBackend->UseShader(shader);
         }
         return false;
     }

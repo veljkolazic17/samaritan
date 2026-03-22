@@ -2,7 +2,10 @@
   "permissions": {
     "allow": [
       "Bash(xargs grep -l \"int main\")",
-      "Bash(cmd.exe /c \"c:\\\\Users\\\\veljk\\\\source\\\\repos\\\\DoomerBoomer\\\\DoomerBoomer\\\\MeowEngine\\\\shadercompile.bat c:\\\\Users\\\\veljk\\\\source\\\\repos\\\\DoomerBoomer\\\\DoomerBoomer\\\\MeowEngine\")"
+      "Bash(cmd.exe /c \"c:\\\\Users\\\\veljk\\\\source\\\\repos\\\\DoomerBoomer\\\\DoomerBoomer\\\\MeowEngine\\\\shadercompile.bat c:\\\\Users\\\\veljk\\\\source\\\\repos\\\\DoomerBoomer\\\\DoomerBoomer\\\\MeowEngine\")",
+      "Bash(shadercompile.bat)",
+      "Bash(cmd.exe /c \"cd /d c:\\\\Users\\\\veljk\\\\source\\\\repos\\\\DoomerBoomer\\\\DoomerBoomer\\\\MeowEngine && shadercompile.bat\")",
+      "Bash(cmd.exe /c \"cd /d c:\\\\Users\\\\veljk\\\\source\\\\repos\\\\DoomerBoomer\\\\DoomerBoomer\\\\MeowEngine && call shadercompile.bat\")"
     ]
   }
 }

@@ -42,11 +42,12 @@ namespace Graphics
 
         smbool CreateGeometry(Geometry* geometry, smuint32 vertexCount, const smVert3D* vertices, smuint32 indexCount, const smuint32* indices);
         void DestroyGeometry(Geometry* geometry);
+        void DrawProcedural(smuint32 vertexCount);
 
-        smbool CreateObjectShader(Shader* shader);
-        void DestroyObjectShader(Shader* shader);
+        smbool CreateShader(Shader* shader);
+        void DestroyShader(Shader* shader);
 
-        smbool UseObjectShader(Shader* shader);
+        smbool UseShader(Shader* shader);
 
 #ifdef TEST_CODE_ENABLED
         SM_INLINE void SetGeometry(Geometry* geometry) { m_Geometry = geometry; m_Mesh = nullptr; }

@@ -44,7 +44,7 @@ namespace Graphics
         rasterizerCreateInfo.polygonMode = isWireframe ? VK_POLYGON_MODE_LINE : VK_POLYGON_MODE_FILL;
         rasterizerCreateInfo.lineWidth = 1.0f;
         //TODO : [GRAPHICS]
-        rasterizerCreateInfo.cullMode = VK_CULL_MODE_BACK_BIT;
+        rasterizerCreateInfo.cullMode = (stride == 0) ? VK_CULL_MODE_NONE : VK_CULL_MODE_BACK_BIT;
         rasterizerCreateInfo.frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE;
         rasterizerCreateInfo.depthBiasEnable = VK_FALSE;
         rasterizerCreateInfo.depthBiasConstantFactor = 0.0f;
@@ -104,16 +104,17 @@ namespace Graphics
 
         // Vertex input
         VkVertexInputBindingDescription bindingDescription;
-        bindingDescription.binding = 0;  // Binding index
+        bindingDescription.binding = 0;
         bindingDescription.stride = stride;
-        bindingDescription.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;  // Move to next data entry for each vertex.
+        bindingDescription.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
 
-        // Attributes
+        const smbool hasVertexInput = stride > 0 && attributeCount > 0;
+
         VkPipelineVertexInputStateCreateInfo vertexInputInfo = { VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO };
-        vertexInputInfo.vertexBindingDescriptionCount = 1;
-        vertexInputInfo.pVertexBindingDescriptions = &bindingDescription;
-        vertexInputInfo.vertexAttributeDescriptionCount = attributeCount;
-        vertexInputInfo.pVertexAttributeDescriptions = attributes;
+        vertexInputInfo.vertexBindingDescriptionCount   = hasVertexInput ? 1 : 0;
+        vertexInputInfo.pVertexBindingDescriptions      = hasVertexInput ? &bindingDescription : nullptr;
+        vertexInputInfo.vertexAttributeDescriptionCount = hasVertexInput ? attributeCount : 0;
+        vertexInputInfo.pVertexAttributeDescriptions    = hasVertexInput ? attributes : nullptr;
 
         // Input assembly
         VkPipelineInputAssemblyStateCreateInfo inputAssembly = { VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO };

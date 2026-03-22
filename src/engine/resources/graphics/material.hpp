@@ -24,6 +24,9 @@ struct Material : Resource
 
     void OnLoad() override;
     void OnUnload() override;
+
+    // Bind this material's per-instance uniforms to the currently active shader.
+    void Apply();
 };
 
 END_NAMESPACE

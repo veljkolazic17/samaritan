@@ -39,10 +39,6 @@ public:
     const auto& GetMaterials() const { return m_Materials; }
 #endif
 
-    smbool ApplyGlobal(const smstring& shaderName, const smMat4& projection, const smMat4& view);
-    smbool ApplyInstance(Material* material);
-    smbool ApplyLocal(Material* material, const smMat4& model);
-
 private:
     struct Entry
     {

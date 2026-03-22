@@ -1,0 +1,27 @@
+{
+    "version": 1.0,
+    "name": "InfiniteGridShader",
+    "renderpass": "world",
+
+    "stages": {
+        "vertex": "Builtin.InfiniteGridShader.vert.glsl",
+        "fragment": "Builtin.InfiniteGridShader.frag.glsl"
+    },
+
+    "isUsingInstance": false,
+    "isUsingLocal": false,
+
+    "attributes": [],
+    "uniforms": [
+        {
+            "name": "projection",
+            "type": "mat4",
+            "scope": "global"
+        },
+        {
+            "name": "view",
+            "type": "mat4",
+            "scope": "global"
+        }
+    ]
+}

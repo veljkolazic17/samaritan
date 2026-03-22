@@ -41,7 +41,7 @@ smbool ShaderSystem::Create(const std::string& shaderName)
 
     //shaderPtr->m_State = ShaderState::UNINITIALIZED;
 
-    HACK(if (!smRenderer().GetRendererBackend()->CreateObjectShader(shaderPtr)))
+    if (!smRenderer().GetRendererBackend()->CreateShader(shaderPtr))
     {
         softAssert(false, "Failed to create shader: %s", shaderName);
         return false;
@@ -65,7 +65,7 @@ smbool ShaderSystem::Create(const std::string& shaderName)
         }
     }
 
-    HACK(smRenderer().GetRendererBackend()->InitObjectShader(shaderPtr);)
+    smRenderer().GetRendererBackend()->InitShader(shaderPtr);
 
     m_ShaderLookup[shaderPtr->m_ShaderName] = std::move(shader);
 
@@ -165,7 +165,7 @@ smbool ShaderSystem::Use(const std::string& shaderName)
 
             // Always bind the pipeline — vkCmdBindPipeline must be recorded into
             // every command buffer, not just when the shader name changes.
-            if (!smRenderer().UseObjectShader(shadrerPtr))
+            if (!smRenderer().UseShader(shadrerPtr))
             {
                 softAssert(false, "Failed to use shader: %s", shaderName);
                 return false;
@@ -173,7 +173,7 @@ smbool ShaderSystem::Use(const std::string& shaderName)
 
             if (m_CurrentShaderName != shaderName)
             {
-                HACK(if (!smRenderer().GetRendererBackend()->ObjectShaderBindGlobals(shadrerPtr)))
+                if (!smRenderer().GetRendererBackend()->ShaderBindGlobals(shadrerPtr))
                 {
                     softAssert(false, "Failed to bind global uniforms for shader: %s", shaderName);
                     return false;
@@ -216,16 +216,16 @@ smbool ShaderSystem::SetUniformByName(const std::string& uniformName, const void
             {
                 if (shaderUniform.m_ScopeType == ShaderScopeType::GLOBAL)
                 {
-                    HACK(smRenderer().GetRendererBackend()->ObjectShaderBindGlobals(shaderPtr);)
+                    smRenderer().GetRendererBackend()->ShaderBindGlobals(shaderPtr);
                 }
                 else if (shaderUniform.m_ScopeType == ShaderScopeType::INSTANCE)
                 {
-                    HACK(smRenderer().GetRendererBackend()->ObjectShaderBindInstance(shaderPtr, shaderPtr->m_BoundInstancId);)
+                    smRenderer().GetRendererBackend()->ShaderBindInstance(shaderPtr, shaderPtr->m_BoundInstancId);
                 }
                 shaderPtr->m_ScopeType = shaderUniform.m_ScopeType;
             }
 
-            HACK(return smRenderer().GetRendererBackend()->ObjectShaderSetUniform(shaderPtr, shaderUniform, value);)
+            return smRenderer().GetRendererBackend()->ShaderSetUniform(shaderPtr, shaderUniform, value);
         }
     }
     return false;
@@ -251,7 +251,7 @@ smbool ShaderSystem::ApplyGlobalUniforms()
         const ResourceHandle<Shader>& shader = it->second;
         if (shader.IsValid())
         {
-            HACK(return smRenderer().GetRendererBackend()->ObjectShaderApplyGlobals(shader.GetResource());)
+            return smRenderer().GetRendererBackend()->ShaderApplyGlobals(shader.GetResource());
         }
         LogError(LogChannel::Graphics, "Shader %s is not valid!", m_CurrentShaderName);
         return false;
@@ -274,7 +274,7 @@ smbool ShaderSystem::ApplyInstanceUniforms()
         const ResourceHandle<Shader>& shader = it->second;
         if (shader.IsValid())
         {
-            HACK(return smRenderer().GetRendererBackend()->ObjectShaderApplyInstances(shader.GetResource());)
+            return smRenderer().GetRendererBackend()->ShaderApplyInstances(shader.GetResource());
         }
         LogError(LogChannel::Graphics, "Shader %s is not valid!", m_CurrentShaderName);
         return false;
@@ -291,7 +291,7 @@ smbool ShaderSystem::BindInstanceByIndex(smuint32 instanceId)
         const ResourceHandle<Shader>& shader = it->second;
         if (shader.IsValid())
         {
-            HACK(return smRenderer().GetRendererBackend()->ObjectShaderBindInstance(shader.GetResource(), instanceId);)
+            return smRenderer().GetRendererBackend()->ShaderBindInstance(shader.GetResource(), instanceId);
         }
         LogError(LogChannel::Graphics, "Shader %s is not valid!", m_CurrentShaderName);
         return false;

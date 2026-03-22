@@ -4,7 +4,7 @@
 
 #include <math/vector.hpp>
 
-#define DEFAULT_CLEAR_COLOR	{0.2f, 0.2f, 0.2f, 1.0f}
+#define DEFAULT_CLEAR_COLOR	{1.0f, 1.0f, 1.0f, 1.0f}
 
 BEGIN_NAMESPACE
 

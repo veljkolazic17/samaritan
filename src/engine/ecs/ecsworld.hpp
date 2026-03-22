@@ -254,7 +254,7 @@ private:
 
     smstring& GetComponentDebugLabel(smsize component) const
     {
-        reutnr ms_ComponentDebugLabels[component];
+        return ms_ComponentDebugLabels[component];
     }
 #endif
 

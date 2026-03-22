@@ -79,10 +79,22 @@ void Material::OnLoad()
         m_State = ResourceState::Error;
         return;
     }
-    HACK(smRenderer().GetRendererBackend()->ObjectShaderAcquireInstanceResources(shader.GetResource(), m_InternalID);)
+    smRenderer().GetRendererBackend()->ShaderAcquireInstanceResources(shader.GetResource(), m_InternalID);
 
     m_Type  = ResourceType::Material;
     m_State = ResourceState::Loaded;
+}
+
+void Material::Apply()
+{
+    ShaderSystem& shaderSystem = smShaderSystem();
+    shaderSystem.BindInstanceByIndex(m_InternalID);
+    shaderSystem.SetUniformByName("diffuse_color", &m_DiffuseColor);
+    shaderSystem.SetUniformByName("shininess", &m_Shininess);
+    shaderSystem.SetSamplerByName("diffuse_texture", m_DiffuseMap.m_Texture);
+    shaderSystem.SetSamplerByName("specular_texture", m_SpecularMap.m_Texture);
+    shaderSystem.SetSamplerByName("normal_texture", m_NormalMap.m_Texture);
+    shaderSystem.ApplyInstanceUniforms();
 }
 
 void Material::OnUnload()
@@ -97,7 +109,7 @@ void Material::OnUnload()
         smTextureSystem().Release(texture->m_Name);
 
     const ResourceHandle<Shader>& shader = smShaderSystem().GetShader(m_ShaderName);
-    HACK(smRenderer().GetRendererBackend()->ObjectShaderReleaseInstanceResources(shader.GetResource(), m_InternalID);)
+    smRenderer().GetRendererBackend()->ShaderReleaseInstanceResources(shader.GetResource(), m_InternalID);
 
     m_InternalID = SM_INVALID_ID;
 }
