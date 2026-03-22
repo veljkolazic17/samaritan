@@ -105,22 +105,40 @@ namespace Graphics
                 smMaterialSystem().ApplyGlobal(SM_DEFAULT_SHADER_NAME, m_Projection, m_View);
 
 
+                constexpr smfloat32 meshScale = 20.0f;
 #ifdef SM_TOOL
                 smMat4 model = smTransformDebug().GetModelMatrix();
 #else
-                smMat4 model = smMat4Translation(smVec3{ 0, 0, 0 });
+                smMat4 model = smMat4_identity;
 #endif
-                GeometryData data = {};
-                data.m_Model = model;
-                if (m_Geometry == nullptr)
+                model[0] = model[0] * meshScale;
+                model[1] = model[1] * meshScale;
+                model[2] = model[2] * meshScale;
+                if (m_Mesh != nullptr)
                 {
-                    m_Geometry = const_cast<Geometry*>(smGeometrySystem().GetDefaultGeometry());
+                    for (Geometry* geometry : m_Mesh->m_Geometries)
+                    {
+                        GeometryData data = {};
+                        data.m_Model = model;
+                        data.m_Geometry = geometry;
+                        smMaterialSystem().ApplyInstance(geometry->m_Material);
+                        smMaterialSystem().ApplyLocal(geometry->m_Material, model);
+                        m_RendererBackend->DrawGeometry(data);
+                    }
                 }
-                data.m_Geometry = m_Geometry;
-                smMaterialSystem().ApplyInstance(m_Geometry->m_Material);
-                smMaterialSystem().ApplyLocal(m_Geometry->m_Material, model);
-
-                m_RendererBackend->DrawGeometry(data);
+                else
+                {
+                    if (m_Geometry == nullptr)
+                    {
+                        m_Geometry = const_cast<Geometry*>(smGeometrySystem().GetDefaultGeometry());
+                    }
+                    GeometryData data = {};
+                    data.m_Model = model;
+                    data.m_Geometry = m_Geometry;
+                    smMaterialSystem().ApplyInstance(m_Geometry->m_Material);
+                    smMaterialSystem().ApplyLocal(m_Geometry->m_Material, model);
+                    m_RendererBackend->DrawGeometry(data);
+                }
 #endif
 
 #if IMGUI_DISPLAY_ENABLED

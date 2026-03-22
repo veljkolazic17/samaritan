@@ -49,11 +49,28 @@ smbool TextureSystem::Init()
     constexpr smbool shouldAutoRelease = false;
 
     m_DefaultTexture = smResourceSystem().Load<Texture>(&m_DefaultTextureData, shouldAutoRelease);
+
+    // 1x1 solid white texture — used for solid-colour materials that have no diffuse map
+    smuint8 white[4] = { 255, 255, 255, 255 };
+    m_WhiteTextureData.m_Name         = "WHITE_TEXTURE";
+    m_WhiteTextureData.m_HasTransparency = false;
+    m_WhiteTextureData.m_Width        = 1;
+    m_WhiteTextureData.m_Height       = 1;
+    m_WhiteTextureData.m_ChannelCount = 4;
+
+    if (!smRenderer().CreateTexture(white, &m_WhiteTextureData))
+    {
+        softAssert(false, "Cannot create white texture!");
+        return false;
+    }
+
+    m_WhiteTexture = smResourceSystem().Load<Texture>(&m_WhiteTextureData, shouldAutoRelease);
 }
 
 void TextureSystem::Shutdown()
 {
     smRenderer().DestroyTexture(&m_DefaultTextureData);
+    smRenderer().DestroyTexture(&m_WhiteTextureData);
     m_TextureLookup.clear();
 }
 

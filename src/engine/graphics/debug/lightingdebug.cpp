@@ -27,16 +27,13 @@ void LightingDebug::DrawImgui()
     ImGui::SliderFloat(SM_DEFAULT_MATERIAL_NAME, &matSys.GetDefaultMaterial().m_Shininess, 1.0f, 256.0f);
     ImGui::PopID();
 
-    for (const auto& [name, ref] : matSys.GetMaterialLookup())
+    for (const auto& [name, ref] : matSys.GetMaterials())
     {
-        if (ref.m_Handle == SM_INVALID_ID)
-        {
+        if (!ref.m_Material)
             continue;
-        }
 
-        Material& material = matSys.GetMaterialByHandle(ref.m_Handle);
         ImGui::PushID(name.c_str());
-        ImGui::SliderFloat(name.c_str(), &material.m_Shininess, 1.0f, 256.0f);
+        ImGui::SliderFloat(name.c_str(), &ref.m_Material->m_Shininess, 1.0f, 256.0f);
         ImGui::PopID();
     }
 }

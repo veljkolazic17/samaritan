@@ -12,6 +12,7 @@
 #include <engine/graphics/systems/materialsystem.hpp>
 #include <engine/graphics/systems/geometrysystem.hpp>
 #include <engine/graphics/systems/shadersystem.hpp>
+#include <engine/graphics/systems/meshsystem.hpp>
 #include <engine/resources/resourcesystem.hpp>
 #if HACKS_ENABLED
 #include <engine/threads/iupdatable.hpp>
@@ -32,6 +33,7 @@
 #ifdef DEBUG
 #include <engine/graphics/debug/materialdebug.hpp>
 #include <engine/graphics/debug/geometrydebug.hpp>
+#include <engine/graphics/debug/meshdebug.hpp>
 #endif
 
 BEGIN_NAMESPACE
@@ -184,6 +186,7 @@ namespace Engine
         SM_INVOKE_SINGLETON_INIT(ShaderSystem);
         SM_INVOKE_SINGLETON_INIT(MaterialSystem);
         SM_INVOKE_SINGLETON_INIT(GeometrySystem);
+        SM_INVOKE_SINGLETON_INIT(MeshSystem);
 
 #ifdef SM_TOOL
         SM_INVOKE_SINGLETON_INIT(Camera);
@@ -194,6 +197,7 @@ namespace Engine
 #ifdef DEBUG
         SM_INVOKE_SINGLETON_INIT(MaterialSystemDebug);
         SM_INVOKE_SINGLETON_INIT(GeometrySystemDebug);
+        SM_INVOKE_SINGLETON_INIT(MeshSystemDebug);
 #endif
 #if IMGUI_DISPLAY_ENABLED
         SM_INVOKE_SINGLETON_INIT(ImguiDrawModule);
@@ -207,6 +211,7 @@ namespace Engine
         SM_INVOKE_SINGLETON_SHUTDOWN(ImguiCentral);
         SM_INVOKE_SINGLETON_SHUTDOWN(ImguiDrawModule);
 #endif
+        SM_INVOKE_SINGLETON_SHUTDOWN(MeshSystem);
         SM_INVOKE_SINGLETON_SHUTDOWN(GeometrySystem);
         SM_INVOKE_SINGLETON_SHUTDOWN(MaterialSystem);
         SM_INVOKE_SINGLETON_SHUTDOWN(ShaderSystem);

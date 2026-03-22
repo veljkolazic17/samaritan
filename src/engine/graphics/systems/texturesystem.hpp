@@ -25,10 +25,14 @@ public:
     void Release(const smstring & name);
 
     SM_INLINE ResourceHandle<Texture>& GetDefaultTexture() { return m_DefaultTexture; }
+    SM_INLINE ResourceHandle<Texture>& GetWhiteTexture()   { return m_WhiteTexture; }
 
 private:
     ResourceHandle<Texture> m_DefaultTexture;
     Texture m_DefaultTextureData;
+
+    ResourceHandle<Texture> m_WhiteTexture;
+    Texture m_WhiteTextureData;
 
     std::unordered_map<smstring, ResourceHandle<Texture>> m_TextureLookup;
 };

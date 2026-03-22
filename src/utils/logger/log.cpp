@@ -42,7 +42,7 @@ void LogOutput(LogType logType, const char* message, ...)
 
     variable_arguments_list arguments;
     va_start(arguments, message);
-    vsnprintf(outputMessage, 32000, message, arguments);
+    vsnprintf(outputMessage, sizeof(outputMessage), message, arguments);
     va_end(arguments);
 
     std::string ttyMessage = std::format("{}{}\n", logMessageHeader, outputMessage);
@@ -85,7 +85,7 @@ void LogOutput(LogType logType, LogChannel channel, const char* message, ...)
 
     variable_arguments_list arguments;
     va_start(arguments, message);
-    vsnprintf(outputMessage, 32000, message, arguments);
+    vsnprintf(outputMessage, sizeof(outputMessage), message, arguments);
     va_end(arguments);
 
     std::string ttyMessage = std::format("{}{}\n", logMessageHeader, outputMessage);

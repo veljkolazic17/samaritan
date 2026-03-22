@@ -245,6 +245,8 @@ struct smVec3
 
 	void Lerp(const smVec3& v1, const smVec3& v2, const smfloat32 l);
 
+	static smVec3 Cross(const smVec3& a, const smVec3& b);
+
 	smfloat32 m_X;
 	smfloat32 m_Y;
 	smfloat32 m_Z;
@@ -375,6 +377,16 @@ SM_INLINE smbool smVec3::operator!=(const smVec3& a) const
 SM_INLINE smuint8 smVec3::GetDimension(void) const
 {
 	return 3;
+}
+
+SM_INLINE smVec3 smVec3::Cross(const smVec3& a, const smVec3& b)
+{
+    return smVec3
+    (
+        a.m_Y * b.m_Z - a.m_Z * b.m_Y,
+        a.m_Z * b.m_X - a.m_X * b.m_Z,
+        a.m_X * b.m_Y - a.m_Y * b.m_X
+    );
 }
 
 SM_INLINE smfloat32 smVec3::Normalize()

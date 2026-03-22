@@ -5,6 +5,7 @@
 #include <engine/graphics/renderer/renderertype.inl>
 
 #include <engine/resources/graphics/shader.hpp>
+#include <engine/resources/graphics/mesh.hpp>
 #include <math/matrix.hpp>
 #include <objecttemplates/shutdownable.hpp>
 #include <objecttemplates/singleton.hpp>
@@ -48,8 +49,10 @@ namespace Graphics
         smbool UseObjectShader(Shader* shader);
 
 #ifdef TEST_CODE_ENABLED
-        SM_INLINE void SetGeometry(Geometry* geometry) { m_Geometry = geometry; }
+        SM_INLINE void SetGeometry(Geometry* geometry) { m_Geometry = geometry; m_Mesh = nullptr; }
         SM_INLINE Geometry* GetGeometry() { return m_Geometry; }
+        SM_INLINE void SetMesh(const Mesh* mesh) { m_Mesh = mesh; m_Geometry = nullptr; }
+        SM_INLINE const Mesh* GetMesh() { return m_Mesh; }
 #endif
         HACK(SM_INLINE RendererBackend* GetRendererBackend() { return m_RendererBackend; })
     private:
@@ -60,6 +63,7 @@ namespace Graphics
         smfloat32 m_FarClip;
 #ifdef TEST_CODE_ENABLED
         Geometry* m_Geometry = nullptr;
+        const Mesh* m_Mesh = nullptr;
 #endif
     };
 }

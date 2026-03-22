@@ -4,6 +4,7 @@
         "hiredis",
         "glm",
         "nlohmann-json",
+        "tinygltf",
         {
             "name": "imgui",
             "default-features": false,

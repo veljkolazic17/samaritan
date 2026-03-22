@@ -14,24 +14,45 @@ void Texture::OnLoad()
 {
 #if SM_USE_MUSEUM_STB
 
-    //TODO : [SYSTEM][TEXTURE] Support dynamic file paths
-    constexpr smcstring pathFormat = "assets/textures/{}.{}";
     constexpr smint32 channelCount = 4;
 
     stbi_set_flip_vertically_on_load(true);
-    char full_file_path[512];
 
-    //TODO : [SYSTEM][TEXUTRE] Support multiple formats
-    std::string path = std::format(pathFormat, m_Name.data(), "png");
+    // If the name already looks like a file path (contains a slash), use it directly.
+    // Otherwise search assets/textures/ and try common image extensions.
+    std::string path;
+    const bool isFullPath = m_Name.find('/') != std::string::npos
+                         || m_Name.find('\\') != std::string::npos;
 
-    smuint8* data = stbi_load
-    (
-        path.data(),
-        reinterpret_cast<int*>(&m_Width),
-        reinterpret_cast<int*>(&m_Height),
-        reinterpret_cast<int*>(&m_ChannelCount),
-        channelCount
-    );
+    smuint8* data = nullptr;
+    if (isFullPath)
+    {
+        path = m_Name;
+        LogDebug(LogChannel::Resource, "Texture: loading '%s'", path.c_str());
+        data = stbi_load(path.data(),
+            reinterpret_cast<int*>(&m_Width),
+            reinterpret_cast<int*>(&m_Height),
+            reinterpret_cast<int*>(&m_ChannelCount),
+            channelCount);
+        if (!data)
+            LogError(LogChannel::Resource, "Texture: stbi failed '%s': %s", path.c_str(), stbi_failure_reason());
+    }
+    else
+    {
+        constexpr smcstring extensions[] = { "png", "jpg", "jpeg" };
+        for (smcstring ext : extensions)
+        {
+            path = std::format("assets/textures/{}.{}", m_Name.data(), ext);
+            data = stbi_load(path.data(),
+                reinterpret_cast<int*>(&m_Width),
+                reinterpret_cast<int*>(&m_Height),
+                reinterpret_cast<int*>(&m_ChannelCount),
+                channelCount);
+            if (data) break;
+        }
+        if (!data)
+            LogError(LogChannel::Resource, "Texture: stbi failed for '%s' (tried png/jpg/jpeg)", m_Name.c_str());
+    }
 
     //Generation of default texture
     m_ChannelCount = channelCount;
@@ -61,14 +82,10 @@ void Texture::OnLoad()
     if (data == nullptr)
     {
         m_State = ResourceState::Error;
-        if (const char* reason = stbi_failure_reason())
-        {
-            softAssert(false, "Failed to load texture", path.data(), reason);
-            stbi__err(0, 0);
-        }
     }
     else
     {
+        LogDebug(LogChannel::Resource, "Texture: loaded '%s' (%ux%u)", path.c_str(), m_Width, m_Height);
         m_State = ResourceState::Loaded;
     }
 #endif

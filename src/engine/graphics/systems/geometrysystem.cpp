@@ -11,26 +11,6 @@
 
 BEGIN_NAMESPACE
 
-//This will give tangent and bitangetnt for every triangle
-static void ComputeTangentBitangent
-(
-    const smVec3& p0, const smVec3& p1, const smVec3& p2,
-    const smVec2& uv0, const smVec2& uv1, const smVec2& uv2,
-    smVec3& outTangent, smVec3& outBitangent
-)
-{
-    const smfloat32 e1x = p1.m_X - p0.m_X, e1y = p1.m_Y - p0.m_Y, e1z = p1.m_Z - p0.m_Z;
-    const smfloat32 e2x = p2.m_X - p0.m_X, e2y = p2.m_Y - p0.m_Y, e2z = p2.m_Z - p0.m_Z;
-    const smfloat32 du1 = uv1.m_X - uv0.m_X, dv1 = uv1.m_Y - uv0.m_Y;
-    const smfloat32 du2 = uv2.m_X - uv0.m_X, dv2 = uv2.m_Y - uv0.m_Y;
-
-    const smfloat32 det = du1 * dv2 - du2 * dv1;
-    const smfloat32 f = (det != 0.0f) ? 1.0f / det : 0.0f;
-
-    outTangent   = smVec3(f * (dv2 * e1x - dv1 * e2x), f * (dv2 * e1y - dv1 * e2y), f * (dv2 * e1z - dv1 * e2z));
-    outBitangent = smVec3(f * (-du2 * e1x + du1 * e2x), f * (-du2 * e1y + du1 * e2y), f * (-du2 * e1z + du1 * e2z));
-}
-
 smbool GeometrySystem::Init(const GeometrySystemConfig& config)
 {
     if (config.m_MaxGeometryCount == 0)
@@ -130,7 +110,7 @@ smbool GeometrySystem::CreateDefaultGeometry()
     vertices[3].m_TextureCoordinates.m_Y = 0.0f;
 
     smVec3 tangent, bitangent;
-    ComputeTangentBitangent
+    Math::ComputeTangentBitangent
     (
         vertices[0].m_Position, vertices[1].m_Position, vertices[2].m_Position,
         vertices[0].m_TextureCoordinates, vertices[1].m_TextureCoordinates, vertices[2].m_TextureCoordinates,
@@ -247,9 +227,9 @@ void GeometrySystem::DestroyGeometry(Geometry* geometry)
     
     if (Material* material = geometry->m_Material)
     {
-        if (std::strlen(reinterpret_cast<smcstring>(material->m_Name)) > 0)
+        if (!material->m_Name.empty())
         {
-            smMaterialSystem().Release(reinterpret_cast<smcstring>(material->m_Name));
+            smMaterialSystem().Release(material->m_Name);
         }
         geometry->m_Material = nullptr;
     }
@@ -327,7 +307,7 @@ GeometryConfig GeometrySystem::GenerateGeometryConfig(smfloat32 width, smfloat32
             vec3.m_TextureCoordinates.m_Y = uvyMin;
 
             smVec3 tangent, bitangent;
-            ComputeTangentBitangent
+            Math::ComputeTangentBitangent
             (
                 vec0.m_Position, vec1.m_Position, vec2.m_Position,
                 vec0.m_TextureCoordinates, vec1.m_TextureCoordinates, vec2.m_TextureCoordinates,
@@ -424,7 +404,7 @@ GeometryConfig GeometrySystem::GenerateCubeGeometryConfig(smfloat32 size, smcstr
         }
 
         smVec3 tangent, bitangent;
-        ComputeTangentBitangent
+        Math::ComputeTangentBitangent
         (
             positions[vBase + 0], positions[vBase + 1], positions[vBase + 2],
             uvs[0], uvs[1], uvs[2],

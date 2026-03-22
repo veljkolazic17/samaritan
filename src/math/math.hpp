@@ -6,6 +6,8 @@
 
 BEGIN_NAMESPACE
 
+struct smVec3;
+struct smVec2;
 namespace Math
 {
 	constexpr smfloat32			PI = 3.14159265358979323846f;
@@ -118,6 +120,13 @@ namespace Math
 
 		return y;
 	}
+
+	void ComputeTangentBitangent
+	(
+		const smVec3& p0, const smVec3& p1, const smVec3& p2,
+		const smVec2& uv0, const smVec2& uv1, const smVec2& uv2,
+		smVec3& outTangent, smVec3& outBitangent
+	);
 }
 
 END_NAMESPACE

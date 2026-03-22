@@ -6,57 +6,37 @@
 
 #include <math/matrix.hpp>
 #include <objecttemplates/singleton.hpp>
+#include <memory>
 #include <unordered_map>
-#include <vector>
 
 BEGIN_NAMESPACE
 
 #define smMaterialSystem()			::samaritan::MaterialSystem::GetInstance()
-
-//TODO : [GRAPHICS] Make reference system for whole engine
-struct MaterialReference
-{
-    smuint64 m_RefCount = 0;
-    smuint32 m_Handle = SM_INVALID_ID;
-    smbool m_ShouldAutoRelease = false;
-};
-
-struct MaterialSystemConfig
-{
-    smuint32 m_MaxMaterialCount;
-};
-
-struct MaterialConfig
-{
-    smuint8 m_Name[SM_MATERIAL_NAME_MAX_LENGTH];
-    smstring m_ShaderName;
-    smbool m_ShouldAutoRelease = false;
-    smVec4 m_DiffuseColor;
-    smuint8 m_DiffuseMapName[SM_TEXTURE_NAME_MAX_LENGTH];
-    smuint8 m_SpecularMapName[SM_TEXTURE_NAME_MAX_LENGTH];
-    smuint8 m_NormalMapName[SM_TEXTURE_NAME_MAX_LENGTH];
-    smfloat32 m_Shininess = 32.0f;
-};
 
 class MaterialSystem SINGLETON(MaterialSystem)
 {
 public:
     SINGLETON_CONSTRUCTOR(MaterialSystem)
 
-    smbool Init(const MaterialSystemConfig & config);
+    smbool Init();
     void Shutdown();
     void SingletonInit() override;
     void SingletonShutdown() override;
 
+    // Load material from JSON file in assets/materials/
     Material* Acquire(const smstring& name);
+
+    // Register a fully constructed material (textures already loaded by caller).
+    // MaterialSystem acquires the Vulkan descriptor set and owns cleanup.
+    Material* Register(Material material, smbool autoRelease = false);
+
     void Release(const smstring& name);
 
     const Material& GetDefaultMaterial() const { return m_DefaultMaterial; }
     Material& GetDefaultMaterial() { return m_DefaultMaterial; }
 
 #ifdef SM_TOOL
-    const std::unordered_map<smstring, MaterialReference>& GetMaterialLookup() const { return m_MaterialLookup; }
-    Material& GetMaterialByHandle(smuint32 handle) { return m_Materials[handle]; }
+    const auto& GetMaterials() const { return m_Materials; }
 #endif
 
     smbool ApplyGlobal(const smstring& shaderName, const smMat4& projection, const smMat4& view);
@@ -64,22 +44,17 @@ public:
     smbool ApplyLocal(Material* material, const smMat4& model);
 
 private:
-    void DestroyMaterial(Material * material);
-    smbool LoadMaterial(const MaterialConfig & config, Material * material);
+    struct Entry
+    {
+        std::unique_ptr<Material> m_Material;
+        smuint32 m_RefCount = 0;
+        smbool m_ShouldAutoRelease = false;
+    };
 
-    Material* AcquireFromConfig(const MaterialConfig & materialConfig);
-    smbool LoadConfigurationFile(smcstring name, MaterialConfig & config);
+    void DestroyMaterial(Material* material);
 
     Material m_DefaultMaterial;
-
-    MaterialSystemConfig m_Config;
-#if HACKS_ENABLED
-    ResourceHandle<Shader> m_DebugShader;
-    ResourceHandle<Shader> m_WorldShader;
-    ResourceHandle<Shader> m_UIShader;
-#endif
-    std::vector<Material> m_Materials;
-    std::unordered_map<smstring, MaterialReference> m_MaterialLookup;
+    std::unordered_map<smstring, Entry> m_Materials;
 };
 
 END_NAMESPACE

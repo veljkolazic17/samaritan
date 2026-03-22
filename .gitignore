@@ -4,4 +4,5 @@ vcpkg_installed
 bin
 /src/museum/*/
 assets/textures/
+assets/meshes/
 imgui.ini

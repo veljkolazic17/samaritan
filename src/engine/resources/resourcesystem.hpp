@@ -34,7 +34,7 @@ public:
     {
 
         static_assert(std::is_base_of<Resource, T>::value, "T must derive from Resource");
-        std::lock_guard<std::mutex> guard(m_Lock);
+        std::lock_guard<std::recursive_mutex> guard(m_Lock);
 
         auto controlIt = m_ControlBlocks.find(name);
         if (controlIt != m_ControlBlocks.end())
@@ -67,7 +67,7 @@ public:
     {
 
         static_assert(std::is_base_of<Resource, T>::value, "T must derive from Resource");
-        std::lock_guard<std::mutex> guard(m_Lock);
+        std::lock_guard<std::recursive_mutex> guard(m_Lock);
 
         auto controlIt = m_ControlBlocks.find(resource->m_Name);
         if (controlIt != m_ControlBlocks.end())
@@ -92,7 +92,7 @@ public:
     {
         LogWarning(LogChannel::Resource, "Using ForceUnload! Are you sure that you should do this?");
 
-        std::lock_guard<std::mutex> guard(m_Lock);
+        std::lock_guard<std::recursive_mutex> guard(m_Lock);
 
         auto controlIt = m_ControlBlocks.find(name);
         if (controlIt == m_ControlBlocks.end())
@@ -117,8 +117,7 @@ public:
     void Release(ResourceControlBlock* controlBlock);
 
 private:
-    //Not sure if there should be one
-    std::mutex m_Lock;
+    std::recursive_mutex m_Lock;
 
     //TODO : [RESOURCE] Check if I should store resources like this
     std::unordered_map<std::string, std::unique_ptr<Resource>> m_Resources;

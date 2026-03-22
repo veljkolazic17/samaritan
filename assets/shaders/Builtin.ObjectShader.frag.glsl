@@ -48,9 +48,11 @@ void main() {
     vec4 texColor    = texture(material_samplers[0], in_dto.tex_coord);
     vec4 texSpecular = texture(material_samplers[1], in_dto.tex_coord);
 
-    vec4 ambient  = vec4(vec3(global_ubo.ambient_color   * object_ubo.diffuse_colour), texColor.a) * texColor;
-    vec4 diffuse  = vec4(vec3(global_ubo.dir_light_color * diffuse_intensity), texColor.a) * texColor;
-    vec4 specular = vec4(vec3(global_ubo.dir_light_color * spec), texColor.a) * texSpecular;
+    vec4 baseColor = texColor * object_ubo.diffuse_colour;
+
+    vec4 ambient  = vec4(vec3(global_ubo.ambient_color),                baseColor.a) * baseColor;
+    vec4 diffuse  = vec4(vec3(global_ubo.dir_light_color * diffuse_intensity), baseColor.a) * baseColor;
+    vec4 specular = vec4(vec3(global_ubo.dir_light_color * spec),       baseColor.a) * texSpecular;
 
     out_colour = ambient + diffuse + specular;
 }

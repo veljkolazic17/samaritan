@@ -8,39 +8,24 @@
 #include <engine/graphics/debug/lightingdebug.hpp>
 #endif
 
-#include <fstream>
-#include <nlohmann/json.hpp>
 #include <utils/logger/log.hpp>
 
 BEGIN_NAMESPACE
 
-smbool MaterialSystem::Init(const MaterialSystemConfig& config)
+smbool MaterialSystem::Init()
 {
-    if (config.m_MaxMaterialCount == 0)
-    {
-        softAssert(false, "Material System Config has max material count 0!");
-        return false;
-    }
-
-    m_Config = config;
-
-    Material temp;
-    std::fill_n(std::back_inserter(m_Materials), config.m_MaxMaterialCount, temp);
-
-    //Create default material
-    std::strncpy(reinterpret_cast<char*>(m_DefaultMaterial.m_Name), SM_DEFAULT_MATERIAL_NAME, SM_MATERIAL_NAME_MAX_LENGTH);
-    m_DefaultMaterial.m_ID = SM_INVALID_ID;
-    m_DefaultMaterial.m_Generation = SM_INVALID_ID;
+    m_DefaultMaterial.m_Name = SM_DEFAULT_MATERIAL_NAME;
+    m_DefaultMaterial.m_InternalID = SM_INVALID_ID;
     m_DefaultMaterial.m_DiffuseColor = smVec4_one;
     m_DefaultMaterial.m_DiffuseMap.m_Type = TextureUsageType::TEXTURE_USAGE_MAP_DIFFUSE;
     m_DefaultMaterial.m_DiffuseMap.m_Texture = smTextureSystem().GetDefaultTexture();
     m_DefaultMaterial.m_SpecularMap.m_Type = TextureUsageType::TEXTURE_USAGE_MAP_SPECULAR;
-    m_DefaultMaterial.m_SpecularMap.m_Texture = smTextureSystem().GetDefaultTexture();
+    m_DefaultMaterial.m_SpecularMap.m_Texture = smTextureSystem().GetWhiteTexture();
     m_DefaultMaterial.m_NormalMap.m_Type = TextureUsageType::TEXTURE_USAGE_MAP_NORMAL;
-    m_DefaultMaterial.m_NormalMap.m_Texture = smTextureSystem().GetDefaultTexture();
+    m_DefaultMaterial.m_NormalMap.m_Texture = smTextureSystem().GetWhiteTexture();
     m_DefaultMaterial.m_Shininess = 32.0f;
     HACK(m_DefaultMaterial.m_ShaderName = SM_DEFAULT_SHADER_NAME;)
-    
+
     const ResourceHandle<Shader>& shader = smShaderSystem().GetShader(m_DefaultMaterial.m_ShaderName);
     if (!shader.IsValid())
     {
@@ -55,15 +40,14 @@ smbool MaterialSystem::Init(const MaterialSystemConfig& config)
 
 void MaterialSystem::Shutdown()
 {
-    for (Material& material : m_Materials)
-    {
-        DestroyMaterial(&material);
-    }
+    for (auto& [name, entry] : m_Materials)
+        DestroyMaterial(entry.m_Material.get());
+    m_Materials.clear();
 }
 
 void MaterialSystem::SingletonInit()
 {
-    Init({ 4096 });
+    Init();
 }
 
 void MaterialSystem::SingletonShutdown()
@@ -73,135 +57,89 @@ void MaterialSystem::SingletonShutdown()
 
 Material* MaterialSystem::Acquire(const smstring& name)
 {
-    MaterialConfig materialConfig = {};
-    if (LoadConfigurationFile(name.data(), materialConfig))
+    if (name == SM_DEFAULT_MATERIAL_NAME)
+        return &m_DefaultMaterial;
+
+    // Return existing
+    auto it = m_Materials.find(name);
+    if (it != m_Materials.end())
     {
-        return AcquireFromConfig(materialConfig);
+        ++it->second.m_RefCount;
+        return it->second.m_Material.get();
     }
-    return nullptr;
+
+    auto mat = std::make_unique<Material>(name);
+    mat->OnLoad();
+    if (mat->m_State == ResourceState::Error)
+    {
+        LogError(LogChannel::Graphics, "Failed to load material '%s'!", name.c_str());
+        return nullptr;
+    }
+
+    const smstring matName = mat->m_Name;
+    Entry& entry = m_Materials[matName];
+    entry.m_Material = std::move(mat);
+    entry.m_RefCount = 1;
+    entry.m_ShouldAutoRelease = false;
+
+    return entry.m_Material.get();
 }
 
-Material* MaterialSystem::AcquireFromConfig(const MaterialConfig& materialConfig)
+Material* MaterialSystem::Register(Material material, smbool autoRelease)
 {
-    if (!std::strcmp(reinterpret_cast<const char*>(materialConfig.m_Name), SM_DEFAULT_MATERIAL_NAME))
+    const smstring& name = material.m_Name;
+
+    if (name == SM_DEFAULT_MATERIAL_NAME)
+        return &m_DefaultMaterial;
+
+    // If already registered, just bump refcount
+    auto it = m_Materials.find(name);
+    if (it != m_Materials.end())
     {
+        ++it->second.m_RefCount;
+        return it->second.m_Material.get();
+    }
+
+    // Acquire Vulkan descriptor set
+    const ResourceHandle<Shader>& shader = smShaderSystem().GetShader(material.m_ShaderName);
+    if (!shader.IsValid())
+    {
+        softAssert(false, "Shader %s not found!", material.m_ShaderName.c_str());
         return &m_DefaultMaterial;
     }
+    HACK(smRenderer().GetRendererBackend()->ObjectShaderAcquireInstanceResources(shader.GetResource(), material.m_InternalID);)
 
-    MaterialReference& reference = m_MaterialLookup[std::string(reinterpret_cast<smcstring>(materialConfig.m_Name))];
+    Entry& entry = m_Materials[name];
+    entry.m_Material = std::make_unique<Material>(std::move(material));
+    entry.m_RefCount = 1;
+    entry.m_ShouldAutoRelease = autoRelease;
 
-    if (reference.m_RefCount == 0)
-    {
-        reference.m_ShouldAutoRelease = materialConfig.m_ShouldAutoRelease;
-    }
-
-    ++reference.m_RefCount;
-    if (reference.m_Handle == SM_INVALID_ID)
-    {
-        //Find free space in array
-        //TODO : [TEXTURE] change this not to be vector
-        Material* newMaterial = nullptr;
-        for (smuint64 counter = 0; counter < m_Materials.size(); ++counter)
-        {
-            Material& material = m_Materials[counter];
-            if (material.m_ID == SM_INVALID_ID)
-            {
-                newMaterial = &material;
-                reference.m_Handle = counter;
-                break;
-            }
-        }
-
-        if (newMaterial == nullptr)
-        {
-            softAssert(false, "Can't load more textures!");
-            return &m_DefaultMaterial;
-        }
-
-        if (!LoadMaterial(materialConfig, newMaterial))
-        {
-            softAssert(false, "Failed to load texture %s", name);
-            return &m_DefaultMaterial;
-        }
-
-        newMaterial->m_ID = reference.m_Handle;
-        return newMaterial;
-    }
-    return &m_Materials[reference.m_Handle];
+    return entry.m_Material.get();
 }
 
 void MaterialSystem::Release(const smstring& name)
 {
-    if (!std::strcmp(name.data(), SM_DEFAULT_MATERIAL_NAME))
+    if (name == SM_DEFAULT_MATERIAL_NAME)
     {
         softAssert(false, "Trying to release default material!");
+        return;
     }
 
-    if (m_MaterialLookup.contains(name))
-    {
-        MaterialReference& reference = m_MaterialLookup[name];
-        --reference.m_RefCount;
-
-        if (reference.m_RefCount == 0 && reference.m_ShouldAutoRelease)
-        {
-            Material* material = &m_Materials[reference.m_Handle];
-            DestroyMaterial(material);
-            reference.m_Handle = SM_INVALID_ID;
-            reference.m_ShouldAutoRelease = false;
-        }
-        //TODO : [MATERIAL] Check when reference should be removed from entries
-    }
-    else
+    auto it = m_Materials.find(name);
+    if (it == m_Materials.end())
     {
         softAssert(false, "Material not loaded!");
+        return;
     }
-}
 
-smbool MaterialSystem::LoadConfigurationFile(smcstring name, MaterialConfig& config)
-{
-    constexpr smcstring pathFormat = "assets/materials/{}.json";
-    std::string path = std::format(pathFormat, name);
+    Entry& entry = it->second;
+    --entry.m_RefCount;
 
-    std::ifstream f(path);
-    if (f.fail())
+    if (entry.m_RefCount == 0 && entry.m_ShouldAutoRelease)
     {
-        LogError(LogChannel::Graphics, "Cannot opet material file!");
-        return false;
+        DestroyMaterial(entry.m_Material.get());
+        m_Materials.erase(it);
     }
-
-    nlohmann::json data = nlohmann::json::parse(f);
-
-    if (data.size() < 5)
-    {
-        LogError(LogChannel::Graphics, "Material file has wrong format!");
-        return false;
-    }
-
-    const std::string& jname = data["name"].template get<std::string>();
-    const std::string& jdiffuseMapName = data["diffusemapname"].template get<std::string>();
-    const std::string& shaderName = data["shader"].template get<std::string>();
-
-    std::strncpy(reinterpret_cast<char*>(config.m_Name), jname.data(), SM_MATERIAL_NAME_MAX_LENGTH);
-    std::strncpy(reinterpret_cast<char*>(config.m_DiffuseMapName), jdiffuseMapName.data(), SM_TEXTURE_NAME_MAX_LENGTH);
-    config.m_ShaderName = shaderName;
-    config.m_DiffuseColor = smVec4::StringToVec4(data["diffusecolor"]);
-
-    if (data.contains("specularmapname"))
-    {
-        const std::string& jspecularMapName = data["specularmapname"].template get<std::string>();
-        std::strncpy(reinterpret_cast<char*>(config.m_SpecularMapName), jspecularMapName.data(), SM_TEXTURE_NAME_MAX_LENGTH);
-    }
-    if (data.contains("normalmapname"))
-    {
-        const std::string& jnormalMapName = data["normalmapname"].template get<std::string>();
-        std::strncpy(reinterpret_cast<char*>(config.m_NormalMapName), jnormalMapName.data(), SM_TEXTURE_NAME_MAX_LENGTH);
-    }
-    if (data.contains("shininess"))
-    {
-        config.m_Shininess = data["shininess"].template get<smfloat32>();
-    }
-
-    return true;
 }
 
 void MaterialSystem::DestroyMaterial(Material* material)
@@ -212,107 +150,7 @@ void MaterialSystem::DestroyMaterial(Material* material)
         return;
     }
 
-    if (Texture* texture = material->m_DiffuseMap.m_Texture.GetResource())
-    {
-        smTextureSystem().Release(texture->m_Name);
-    }
-    if (Texture* texture = material->m_SpecularMap.m_Texture.GetResource())
-    {
-        smTextureSystem().Release(texture->m_Name);
-    }
-    if (Texture* texture = material->m_NormalMap.m_Texture.GetResource())
-    {
-        smTextureSystem().Release(texture->m_Name);
-    }
-
-    const ResourceHandle<Shader>& shader = smShaderSystem().GetShader(material->m_ShaderName);
-    HACK(smRenderer().GetRendererBackend()->ObjectShaderReleaseInstanceResources(shader.GetResource(), material->m_InternalID);)
-
-    material->m_ID = SM_INVALID_ID;
-    material->m_Generation = SM_INVALID_ID;
-    material->m_InternalID = SM_INVALID_ID;
-}
-
-smbool MaterialSystem::LoadMaterial(const MaterialConfig& config, Material* material)
-{
-    smZero(material, sizeof(Material));
-    std::strncpy(reinterpret_cast<char*>(material->m_Name), reinterpret_cast<const char*>(config.m_Name), SM_MATERIAL_NAME_MAX_LENGTH);
-
-    material->m_ShaderName = config.m_ShaderName;
-
-    material->m_DiffuseColor = config.m_DiffuseColor;
-    material->m_Shininess = config.m_Shininess;
-
-    if (std::strlen(reinterpret_cast<const char*>(config.m_DiffuseMapName)) > 0)
-    {
-        material->m_DiffuseMap.m_Type = TextureUsageType::TEXTURE_USAGE_MAP_DIFFUSE;
-        constexpr smbool shouldAutoRelease = true;
-        material->m_DiffuseMap.m_Texture = smTextureSystem().Acquire(reinterpret_cast<smcstring>(config.m_DiffuseMapName), shouldAutoRelease);
-        if (!material->m_DiffuseMap.m_Texture.IsValid())
-        {
-            LogError(LogChannel::Graphics, "Failed to acquire texture");
-            material->m_DiffuseMap.m_Texture = smTextureSystem().GetDefaultTexture();
-        }
-    }
-    else
-    {
-        material->m_DiffuseMap.m_Type = TextureUsageType::TEXTURE_USAGE_UNKNOWN;
-        material->m_DiffuseMap.m_Texture = ResourceHandle<Texture>::InvalidReference();
-    }
-
-    if (std::strlen(reinterpret_cast<const char*>(config.m_SpecularMapName)) > 0)
-    {
-        material->m_SpecularMap.m_Type = TextureUsageType::TEXTURE_USAGE_MAP_SPECULAR;
-        constexpr smbool shouldAutoRelease = true;
-        material->m_SpecularMap.m_Texture = smTextureSystem().Acquire(reinterpret_cast<smcstring>(config.m_SpecularMapName), shouldAutoRelease);
-        if (!material->m_SpecularMap.m_Texture.IsValid())
-        {
-            LogError(LogChannel::Graphics, "Failed to acquire specular texture");
-            material->m_SpecularMap.m_Texture = smTextureSystem().GetDefaultTexture();
-        }
-    }
-    else
-    {
-        material->m_SpecularMap.m_Type = TextureUsageType::TEXTURE_USAGE_MAP_SPECULAR;
-        material->m_SpecularMap.m_Texture = smTextureSystem().GetDefaultTexture();
-    }
-
-    if (std::strlen(reinterpret_cast<const char*>(config.m_NormalMapName)) > 0)
-    {
-        material->m_NormalMap.m_Type = TextureUsageType::TEXTURE_USAGE_MAP_NORMAL;
-        constexpr smbool shouldAutoRelease = true;
-        material->m_NormalMap.m_Texture = smTextureSystem().Acquire(reinterpret_cast<smcstring>(config.m_NormalMapName), shouldAutoRelease);
-        if (!material->m_NormalMap.m_Texture.IsValid())
-        {
-            LogError(LogChannel::Graphics, "Failed to acquire normal texture");
-            material->m_NormalMap.m_Texture = smTextureSystem().GetDefaultTexture();
-        }
-    }
-    else
-    {
-        material->m_NormalMap.m_Type = TextureUsageType::TEXTURE_USAGE_MAP_NORMAL;
-        material->m_NormalMap.m_Texture = smTextureSystem().GetDefaultTexture();
-    }
-
-    const ResourceHandle<Shader>& shader = smShaderSystem().GetShader(config.m_ShaderName);
-    if (!shader.IsValid())
-    {
-        softAssert(false, "Shader %s not found!", config.m_ShaderName.c_str());
-        return false;
-    }
-
-    HACK(smRenderer().GetRendererBackend()->ObjectShaderAcquireInstanceResources(shader.GetResource(), material->m_InternalID);)
-
-    if (material->m_ID == SM_INVALID_ID)
-    {
-        material->m_Generation = 0;
-    }
-    else
-    {
-        ++material->m_Generation;
-    }
-
-    return true;
+    material->OnUnload();
 }
 
 smbool MaterialSystem::ApplyGlobal(const smstring& shaderName, const smMat4& projection, const smMat4& view)
@@ -320,14 +158,12 @@ smbool MaterialSystem::ApplyGlobal(const smstring& shaderName, const smMat4& pro
     ShaderSystem& shaderSystem = smShaderSystem();
     shaderSystem.SetUniformByName("projection", &projection);
     shaderSystem.SetUniformByName("view", &view);
-    //TODO : [MATERIAL] This is temp solution we should have global scene data that will be applied to all shaders, and this data should contain ambient color
 #ifdef SM_TOOL
     smVec4 ambientColor = smLightingDebug().GetAmbientColor();
 #else
     smVec4 ambientColor = smVec4{ 0.1f, 0.1f, 0.1f, 1.0f };
 #endif
     shaderSystem.SetUniformByName("ambient_color", &ambientColor);
-    //TODO : [MATERIAL] Directional light should come from scene/world data, not be hardcoded here
     smVec4 dirLightDirection = smVec4{ -0.577f, -0.577f, -0.577f, 0.0f };
     smVec4 dirLightColor = smVec4{ 1.0f, 1.0f, 1.0f, 1.0f };
     shaderSystem.SetUniformByName("dir_light_direction", &dirLightDirection);

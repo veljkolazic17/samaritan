@@ -36,8 +36,7 @@ struct VulkanDescriptorSetData
 
 struct VulkanDescriptorState
 {
-    smuint32 m_Generation[3] = { SM_INVALID_ID, SM_INVALID_ID, SM_INVALID_ID };
-    smuint32 m_Id[3] = { SM_INVALID_ID, SM_INVALID_ID, SM_INVALID_ID };
+    smuint64 m_ResourceId[3] = { SM_INVALID_ID, SM_INVALID_ID, SM_INVALID_ID };
 };
 
 struct VulkanDescriptorSetState

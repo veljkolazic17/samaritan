@@ -55,7 +55,7 @@ void ResourceSystem::Release(ResourceControlBlock* controlBlock)
     {
         ImGui::Begin("Resource System");
 
-        std::lock_guard<std::mutex> guard(m_Lock);
+        std::lock_guard<std::recursive_mutex> guard(m_Lock);
 
         ImGui::Text("Loaded Resources:");
         for (const auto& [name, controlBlock] : m_ControlBlocks)

@@ -27,9 +27,6 @@ struct Texture : Resource
     smbool m_HasTransparency = false;
     void* m_Data = nullptr;
 
-    smuint32 m_Id = SM_INVALID_ID;
-    smuint32 m_Generation = SM_INVALID_ID;
-
     void OnUnload() override;
     void OnLoad() override;
 };

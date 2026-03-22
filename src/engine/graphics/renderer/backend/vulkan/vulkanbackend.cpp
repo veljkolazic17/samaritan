@@ -1310,7 +1310,7 @@ namespace Graphics
 
         VulkanPipeline& pipeline = vkShader->m_VulkanPipeline;
         constexpr smbool isWireframe = false;
-        constexpr smbool depthTestEnabled = false;
+        constexpr smbool depthTestEnabled = true;
 
         smbool result = pipeline.Create
         (
@@ -1515,10 +1515,14 @@ namespace Graphics
         smuint32 descriptorIndex = 0;
 
         // Descriptor 0 - Uniform buffer
-        smuint32& instanceUBOGenereation = instanceState.m_DescriptorSetState.m_DescriptorStates[descriptorIndex].m_Generation[m_ImageIndex];
+        smuint64& instanceUBOGenereation = instanceState.m_DescriptorSetState.m_DescriptorStates[descriptorIndex].m_ResourceId[m_ImageIndex];
+
+        // Track whether this is the first ApplyInstances call for this image index.
+        // When SM_INVALID_ID, this slot has never been written — use it as a "never initialized" signal for samplers too.
+        const smbool isFirstWriteForImageIndex = (instanceUBOGenereation == SM_INVALID_ID);
 
         // TODO: determine if update is required.
-        if (instanceUBOGenereation == SM_INVALID_ID /*|| *global_ubo_generation != material->generation*/) 
+        if (isFirstWriteForImageIndex)
         {
             VkDescriptorBufferInfo bufferInfo;
             bufferInfo.buffer = vkShader->m_VulkanUniformBuffer.GetHandle();
@@ -1543,40 +1547,43 @@ namespace Graphics
         // Samplers will always be in the binding. If the binding count is less than 2, there are no samplers.
         if (vkShader->m_DescriptorSetData[SM_VULKAN_DESCRIPTOR_SET_INSTANCE].m_Bindings > 1)
         {
-            // Iterate samplers.
+            // Iterate samplers — update if first write for this image index, or if any texture changed.
             smuint32 samplerCount = vkShader->m_DescriptorSetData[SM_VULKAN_DESCRIPTOR_SET_INSTANCE].m_BindingLayouts[SM_VULKAN_BINDING_SAMPLER].descriptorCount;
-            smuint32 updateSamplerCount = 0;
             VkDescriptorImageInfo descImageInfos[SM_VULKAN_SHADER_MAX_INSTANCE_TEXTURES_COUNT];
-            for (smuint32 index = 0; index < samplerCount; ++index) 
+            smbool needsSamplerUpdate = false;
+
+            for (smuint32 index = 0; index < samplerCount; ++index)
             {
-                // TODO: only update in the list if actually needing an update.
                 Texture* textureRef = vkShader->m_InstanceStates[shader->m_BoundInstancId].m_Textures[index].GetResource();
                 VulkanTextureData* textureData = static_cast<VulkanTextureData*>(textureRef->m_Data);
-                
+
+                // Use m_DescriptorStates[descriptorIndex + index] for per-texture generation tracking.
+                VulkanDescriptorState& texDescState = instanceState.m_DescriptorSetState.m_DescriptorStates[descriptorIndex + index];
+                smuint64& cachedId = texDescState.m_ResourceId[m_ImageIndex];
+
+                if (isFirstWriteForImageIndex || cachedId != textureRef->m_ResourceId)
+                {
+                    cachedId = textureRef->m_ResourceId;
+                    needsSamplerUpdate = true;
+                }
+
                 descImageInfos[index].imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
                 descImageInfos[index].imageView = textureData->m_Image.GetImageView();
                 descImageInfos[index].sampler = textureData->m_Sampler;
-
-
-                // TODO: change up descriptor state to handle this properly.
-                // Sync frame generation if not using a default texture.
-                // if (t->generation != INVALID_ID) {
-                //     *descriptor_generation = t->generation;
-                //     *descriptor_id = t->id;
-                // }
-
-                ++updateSamplerCount;
             }
 
-            VkWriteDescriptorSet samplerWriteDesc = { VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET };
-            samplerWriteDesc.dstSet = instanceDescriptorSet;
-            samplerWriteDesc.dstBinding = descriptorIndex;
-            samplerWriteDesc.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-            samplerWriteDesc.descriptorCount = updateSamplerCount;
-            samplerWriteDesc.pImageInfo = descImageInfos;
+            if (needsSamplerUpdate)
+            {
+                VkWriteDescriptorSet samplerWriteDesc = { VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET };
+                samplerWriteDesc.dstSet = instanceDescriptorSet;
+                samplerWriteDesc.dstBinding = descriptorIndex;
+                samplerWriteDesc.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+                samplerWriteDesc.descriptorCount = samplerCount;
+                samplerWriteDesc.pImageInfo = descImageInfos;
 
-            descWrites[descriptorCount] = samplerWriteDesc;
-            ++descriptorCount;
+                descWrites[descriptorCount] = samplerWriteDesc;
+                ++descriptorCount;
+            }
         }
 
         if (descriptorCount > 0) 
@@ -1641,8 +1648,7 @@ namespace Graphics
         {
             for (smuint32 j = 0; j < imagesPerFrame; ++j)
             {
-                setState.m_DescriptorStates[i].m_Generation[j] = SM_INVALID_ID;
-                setState.m_DescriptorStates[i].m_Id[j] = SM_INVALID_ID;
+                setState.m_DescriptorStates[i].m_ResourceId[j] = SM_INVALID_ID;
             }
         }
 
