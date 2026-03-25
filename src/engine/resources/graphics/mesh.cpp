@@ -95,7 +95,7 @@ static smVec3 TransformDirection(const float m[16], smVec3 d)
 
 void Mesh::OnLoad()
 {
-    std::string path = std::format("assets/meshes/{}", m_Name);
+    std::string path = std::format("assets/meshes/{}/{}.gltf", m_Name, m_Name);
 
     tinygltf::Model model;
     tinygltf::TinyGLTF loader;
@@ -161,13 +161,7 @@ void Mesh::OnLoad()
         LogWarning(LogChannel::Resource, "glTF '%s': %s", path.c_str(), warn.c_str());
 
     // Directory containing the glTF file — used to resolve relative image URIs
-    std::string meshDir = "assets/meshes/";
-    {
-        size_t lastSlash = m_Name.rfind('/');
-        if (lastSlash == std::string::npos) lastSlash = m_Name.rfind('\\');
-        if (lastSlash != std::string::npos)
-            meshDir += m_Name.substr(0, lastSlash + 1);
-    }
+    const std::string meshDir = std::format("assets/meshes/{}/", m_Name);
 
     // ProcessPrimitive: build geometry from one glTF primitive, baking worldTransform into vertices
     auto ProcessPrimitive = [&](const tinygltf::Primitive& primitive, const float worldTransform[16])

@@ -84,7 +84,11 @@ macro(SETUP_APP projname graphics_api target_platform user_remote_logging window
   find_package(imgui CONFIG REQUIRED)
   target_link_libraries(${PROJ_NAME} PRIVATE imgui::imgui)
 
-  set_target_properties(${PROJ_NAME} PROPERTIES OUTPUT_NAME_DEBUG ${PROJ_NAME}_Debug COMPILE_OPTIONS -DDEBUG)
+  # Add SQLite3
+  find_package(unofficial-sqlite3 CONFIG REQUIRED)
+  target_link_libraries(${PROJ_NAME} PRIVATE unofficial::sqlite3::sqlite3)
+
+set_target_properties(${PROJ_NAME} PROPERTIES OUTPUT_NAME_DEBUG ${PROJ_NAME}_Debug COMPILE_OPTIONS -DDEBUG)
   set_target_properties(${PROJ_NAME} PROPERTIES OUTPUT_NAME_RELEASE ${PROJ_NAME}_Release)
   set_target_properties(${PROJ_NAME} PROPERTIES OUTPUT_NAME_RELWITHDEBINFO ${PROJ_NAME}_ReleaseDebInfo)
 
@@ -97,6 +101,8 @@ macro(SETUP_APP projname graphics_api target_platform user_remote_logging window
   if(MSVC)
 
     add_definitions(-D_CONSOLE)
+
+    target_compile_options(${PROJ_NAME} PRIVATE /Zc:preprocessor)
 
     set_property(TARGET ${PROJ_NAME} PROPERTY VS_DEBUGGER_WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}")
 

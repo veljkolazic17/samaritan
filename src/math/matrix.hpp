@@ -319,7 +319,7 @@ SM_INLINE smbool smMat4::operator!=(const smMat4& a) const
 
 SM_INLINE void smMat4::Zero(void)
 {
-	smZero(mat, 0, sizeof(smMat4));
+	smZero(mat, sizeof(smMat4));
 }
 
 SM_INLINE void smMat4::Identity(void)

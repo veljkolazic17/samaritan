@@ -3,6 +3,7 @@
 #if IMGUI_DISPLAY_ENABLED
 
 #include "imgui.h"
+#include "imgui_stdlib.h" 
 
 #include <engine/events/eventhandlerwrapper.hpp>
 #include <engine/input/events/keyboardevents.hpp>
@@ -18,6 +19,7 @@ class IImguiModule
 public:
     virtual ~IImguiModule() = default;
     virtual void DrawImgui() = 0;
+    virtual smstring GetPath() { return smstring{}; }
 };
 
 struct ImguiMenuNode

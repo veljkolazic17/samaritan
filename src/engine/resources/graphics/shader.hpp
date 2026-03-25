@@ -85,7 +85,7 @@ namespace ShaderHelper
         if (it != typeMap.end())
             return it->second;
 
-        softAssert(false, "Unknown shader data type: %s", type.c_str());
+        softAssert(false, "Unknown shader data type");
         return ShaderDataType::FLOAT32; // Default fallback
     }
 
@@ -123,7 +123,7 @@ namespace ShaderHelper
         if (it != scopeMap.end())
             return it->second;
 
-        softAssert(false, "Unknown shader scope type: %s", scopeType.c_str());
+        softAssert(false, "Unknown shader scope type");
         return ShaderScopeType::GLOBAL; // Default fallback
     }
 }

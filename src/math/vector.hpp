@@ -245,6 +245,8 @@ struct smVec3
 
 	void Lerp(const smVec3& v1, const smVec3& v2, const smfloat32 l);
 
+	SM_INLINE static smVec3 StringToVec3(const std::string& str);
+
 	static smVec3 Cross(const smVec3& a, const smVec3& b);
 
 	smfloat32 m_X;
@@ -399,6 +401,20 @@ SM_INLINE smfloat32 smVec3::Normalize()
 	m_Y *= invLength;
 	m_Z *= invLength;
 	return invLength * sqrLength;
+}
+
+SM_INLINE smVec3 smVec3::StringToVec3(const std::string& str)
+{
+	smfloat32 x, y, z;
+	smint32 numParsed = std::sscanf(str.c_str(), "%f %f %f", &x, &y, &z);
+	if (numParsed == 3) 
+	{
+		return smVec3(x, y, z);
+	}
+	else 
+	{
+		return smVec3(0.0f, 0.0f, 0.0f);
+	}
 }
 
 
@@ -596,3 +612,11 @@ struct smVert3D
 //END Definition smVert3D
 
 END_NAMESPACE
+
+#include <refl.hpp>
+REFL_AUTO(
+    type(samaritan::smVec3),
+    field(m_X),
+    field(m_Y),
+    field(m_Z)
+)

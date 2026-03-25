@@ -27,6 +27,7 @@ enum class ResourceType
     Model,
     Font,
     Shader,
+    World,
     COUNT
 };
 

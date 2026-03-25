@@ -2,9 +2,11 @@
     "dependencies": [
         "glfw3",
         "hiredis",
+        "sqlite3",
         "glm",
         "nlohmann-json",
         "tinygltf",
+        "refl-cpp",
         {
             "name": "imgui",
             "default-features": false,

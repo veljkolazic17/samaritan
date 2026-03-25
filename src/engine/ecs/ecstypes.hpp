@@ -2,7 +2,11 @@
 #pragma once
 #include <defines.hpp>
 
+#include <utils/asserts/assert.hpp>
+
+#include <array>
 #include <bitset>
+#include <memory>
 
 BEGIN_NAMESPACE
 
@@ -80,7 +84,7 @@ struct ISparseSet
     virtual smbool IsEmpty() const = 0;
 
     virtual smsize Size() const = 0;
-    virtual smvector<EntityId>& Entities() const = 0;
+    virtual const smvector<EntityId>& Entities() const = 0;
 
     virtual void Delete(EntityId entity) = 0;
     virtual void DeleteAll() = 0;
@@ -108,7 +112,7 @@ struct SparseSet : public ISparseSet
 private:
     static constexpr const smsize MAX_PAGE_COUNT = 1024;
     static constexpr const smsize TOMBSTONE = (smlimits<smsize>::max)();
-    using PagedSparseArray = smarray<smvector<smsize>, MAX_PAGE_COUNT>;
+    using PagedSparseArray = smarray<smsize, MAX_PAGE_COUNT>;
 
     smvector<PagedSparseArray> m_SparsePages;
     smvector<EntityId> m_Dense;
@@ -190,7 +194,7 @@ public:
     SM_INLINE smbool Contains(EntityId id) const { return GetDenseIndex(id) != TOMBSTONE; }
     SM_INLINE smbool IsEmpty() const { return m_Data.empty(); }
     SM_INLINE smsize Size() const { return m_Data.size(); }
-    SM_INLINE smvector<EntityId>& Entities() const { return m_Dense; }
+    SM_INLINE const smvector<EntityId>& Entities() const { return m_Dense; }
     SM_INLINE smvector<T>& Data() const { return m_Data; }
 
     void Delete(EntityId id)

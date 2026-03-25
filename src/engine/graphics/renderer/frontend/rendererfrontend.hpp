@@ -31,6 +31,8 @@ namespace Graphics
         void Resize(smuint32 width, smuint32 heigth);
         void DrawFrame(RenderData& renderData);
 
+        void SubmitMesh(const Mesh* mesh, const smMat4& model);
+
         SM_INLINE smMat4& GetProjection() { return m_Projection; }
         SM_INLINE smMat4& GetView() { return m_View; }
 
@@ -50,21 +52,21 @@ namespace Graphics
         smbool UseShader(Shader* shader);
 
 #ifdef TEST_CODE_ENABLED
-        SM_INLINE void SetGeometry(Geometry* geometry) { m_Geometry = geometry; m_Mesh = nullptr; }
+        SM_INLINE void SetGeometry(Geometry* geometry) { m_Geometry = geometry; }
         SM_INLINE Geometry* GetGeometry() { return m_Geometry; }
-        SM_INLINE void SetMesh(const Mesh* mesh) { m_Mesh = mesh; m_Geometry = nullptr; }
-        SM_INLINE const Mesh* GetMesh() { return m_Mesh; }
 #endif
         HACK(SM_INLINE RendererBackend* GetRendererBackend() { return m_RendererBackend; })
     private:
+        struct DrawCall { const Mesh* mesh; smMat4 model; };
+
         smMat4 m_Projection;
         smMat4 m_View;
         RendererBackend* m_RendererBackend = nullptr;
         smfloat32 m_NearClip;
         smfloat32 m_FarClip;
+        std::vector<DrawCall> m_DrawList;
 #ifdef TEST_CODE_ENABLED
         Geometry* m_Geometry = nullptr;
-        const Mesh* m_Mesh = nullptr;
 #endif
     };
 }

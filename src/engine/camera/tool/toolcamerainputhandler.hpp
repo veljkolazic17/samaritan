@@ -35,7 +35,6 @@ private:
 	void HandleOnKeyboardInputReleasedEvent(const Input::KeyboardInputReleasedEvent & event);
 	Events::EventHandler<Input::KeyboardInputReleasedEvent> m_KeyboardInputReleasedEventHandler;
 
-
 	smfloat32 m_CameraSpeed = 10.0f;
 	std::map<Input::Key, smbool> m_KeyStates;
 };

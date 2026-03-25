@@ -571,7 +571,7 @@ namespace Graphics
             VkResult result = vkDeviceWaitIdle(m_VulkanDevice.m_LogicalDevice);
             if (!Vulkan::Utils::IsResultSuccess(result))
             {
-                softAssert(false, "VulkanRenderer::BeginFrame vkDeviceWaitIdle failed: '%s'", Vulkan::Utils::ResultToString(result));
+                softAssert(false, "VulkanRenderer::BeginFrame vkDeviceWaitIdle");
                 return false;
             }
             LogInfo(LogChannel::Graphics,"Recreating swapchain!");
@@ -584,7 +584,7 @@ namespace Graphics
             VkResult result = vkDeviceWaitIdle(m_VulkanDevice.m_LogicalDevice);
             if (!Vulkan::Utils::IsResultSuccess(result))
             {
-                softAssert(false, "VulkanRenderer::BeginFrame vkDeviceWaitIdle failed: '%s'", Vulkan::Utils::ResultToString(result));
+                softAssert(false, "VulkanRenderer::BeginFrame vkDeviceWaitIdle");
                 return false;
             }
 
@@ -694,7 +694,7 @@ namespace Graphics
 
         if (result != VK_SUCCESS)
         {
-            softAssert(false, "Could not submit to a queue! %s", Vulkan::Utils::ResultToString(result));
+            softAssert(false, "Could not submit to a queue!");
         }
 
         commandBuffer.Submit();
@@ -936,7 +936,7 @@ namespace Graphics
         VkResult result = vkCreateSampler(g_VulkanRenderer->GetVulkanDevice().m_LogicalDevice, &samplerInfo, g_VulkanRenderer->GetAllocator(), &data->m_Sampler);
         if (!Vulkan::Utils::IsResultSuccess(VK_SUCCESS))
         {
-            softAssert(false, "Error creating texture sampler. Error : %s", Vulkan::Utils::ResultToString(result));
+            softAssert(false, "Error creating texture sampler.");
             return false;
         }
 
@@ -1287,7 +1287,7 @@ namespace Graphics
 
             const VkResult result = vkCreateDescriptorSetLayout(m_VulkanDevice.m_LogicalDevice, &layoutInfo, m_Allocator, &vkShader->m_DescriptorSetLayouts[index]);
 
-            softAssert(Vulkan::Utils::IsResultSuccess(result), "Could not create descriptor set layout! Error : %s", Vulkan::Utils::ResultToString(result));
+            softAssert(Vulkan::Utils::IsResultSuccess(result), "Could not create descriptor set layout!");
         }
     }
 
@@ -1679,7 +1679,7 @@ namespace Graphics
 
         if (result != VK_SUCCESS) 
         {
-            softAssert(false, "Could not allocate instance descriptor sets! Error : %s", Vulkan::Utils::ResultToString(result));
+            softAssert(false, "Could not allocate instance descriptor sets!");
             return false;
         }
 
@@ -1704,7 +1704,7 @@ namespace Graphics
 
         if (result != VK_SUCCESS) 
         {
-            softAssert(false, "Could not free instance descriptor sets! Error : %s", Vulkan::Utils::ResultToString(result));
+            softAssert(false, "Could not free instance descriptor sets!");
             return false;
         }
 

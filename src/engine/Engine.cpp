@@ -1,3 +1,5 @@
+/*I CAN'T WISH THEM THE BEST CUZ THEY WOULD END UP WITH ME*/
+
 #include <engine/Engine.hpp>
 #include <utils/asserts/assert.hpp>
 #include <utils/logger/remotelogger/redislogger.hpp>
@@ -14,6 +16,9 @@
 #include <engine/graphics/systems/shadersystem.hpp>
 #include <engine/graphics/systems/meshsystem.hpp>
 #include <engine/resources/resourcesystem.hpp>
+#include <engine/world/worldmanager.hpp>
+#include <engine/ecs/ecssystemmanager.hpp>
+
 #if HACKS_ENABLED
 #include <engine/threads/iupdatable.hpp>
 #endif
@@ -21,6 +26,9 @@
 #if IMGUI_DISPLAY_ENABLED
 #include <imgui/imguidrawmodule.hpp>
 #include <imgui/imguicentral.hpp>
+#ifdef SM_TOOL
+#include <imguitools/imguimoduleregistry.hpp>
+#endif
 #endif
 
 #ifdef SM_TOOL
@@ -33,7 +41,6 @@
 #ifdef DEBUG
 #include <engine/graphics/debug/materialdebug.hpp>
 #include <engine/graphics/debug/geometrydebug.hpp>
-#include <engine/graphics/debug/meshdebug.hpp>
 #endif
 
 BEGIN_NAMESPACE
@@ -112,6 +119,11 @@ namespace Engine
             LoopPreProcess();
             // Process Loop
             m_FrameTimeStart = clock.GetTime();
+            if (World* world = worldManager().GetWorld())
+            {
+                smECSSystems().UpdateAll(world->GetESCWorld());
+            }
+
             Graphics::RenderData data;
             data.m_Time = m_DeltaTime;
             renderer.DrawFrame(data);
@@ -197,17 +209,26 @@ namespace Engine
 #ifdef DEBUG
         SM_INVOKE_SINGLETON_INIT(MaterialSystemDebug);
         SM_INVOKE_SINGLETON_INIT(GeometrySystemDebug);
-        SM_INVOKE_SINGLETON_INIT(MeshSystemDebug);
 #endif
 #if IMGUI_DISPLAY_ENABLED
         SM_INVOKE_SINGLETON_INIT(ImguiDrawModule);
         SM_INVOKE_SINGLETON_INIT(ImguiCentral);
+#ifdef SM_TOOL
+        SM_INVOKE_SINGLETON_INIT(ImguiModuleRegistry); 
 #endif
+#endif
+
+        SM_INVOKE_SINGLETON_INIT(WorldManager);
+        SM_INVOKE_SINGLETON_INIT(ECS::SystemManager);
     }
 
     void Engine::BigShutdown(void)
     {
+        SM_INVOKE_SINGLETON_SHUTDOWN(WorldManager);
 #if IMGUI_DISPLAY_ENABLED
+#ifdef SM_TOOL
+        SM_INVOKE_SINGLETON_SHUTDOWN(ImguiModuleRegistry); 
+#endif
         SM_INVOKE_SINGLETON_SHUTDOWN(ImguiCentral);
         SM_INVOKE_SINGLETON_SHUTDOWN(ImguiDrawModule);
 #endif

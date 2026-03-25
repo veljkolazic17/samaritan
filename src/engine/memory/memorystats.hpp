@@ -17,6 +17,7 @@ namespace Memory
 		MEM_TASK,
 		MEM_RENDERER,
 		MEM_PAGE,
+		MEM_EDITOR,
 		SIZE
 	};
 

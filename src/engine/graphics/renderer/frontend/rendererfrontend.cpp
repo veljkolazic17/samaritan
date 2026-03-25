@@ -132,24 +132,27 @@ namespace Graphics
                 model[0] = model[0] * meshScale;
                 model[1] = model[1] * meshScale;
                 model[2] = model[2] * meshScale;
-                if (m_Mesh != nullptr)
+                if (!m_DrawList.empty())
                 {
-                    for (Geometry* geometry : m_Mesh->m_Geometries)
+                    for (const DrawCall& call : m_DrawList)
                     {
-                        GeometryData data = {};
-                        data.m_Model = model;
-                        data.m_Geometry = geometry;
-                        if (geometry->m_Material) geometry->m_Material->Apply();
-                        smShaderSystem().SetUniformByName("model", &model);
-                        m_RendererBackend->DrawGeometry(data);
+                        for (Geometry* geometry : call.mesh->m_Geometries)
+                        {
+                            GeometryData data = {};
+                            data.m_Model = call.model;
+                            data.m_Geometry = geometry;
+                            if (geometry->m_Material) geometry->m_Material->Apply();
+                            smShaderSystem().SetUniformByName("model", &data.m_Model);
+                            m_RendererBackend->DrawGeometry(data);
+                        }
                     }
+                    m_DrawList.clear();
                 }
                 else
                 {
                     if (m_Geometry == nullptr)
-                    {
                         m_Geometry = const_cast<Geometry*>(smGeometrySystem().GetDefaultGeometry());
-                    }
+
                     GeometryData data = {};
                     data.m_Model = model;
                     data.m_Geometry = m_Geometry;
@@ -225,6 +228,12 @@ namespace Graphics
         {
             m_RendererBackend->DestroyGeometry(geometry);
         }
+    }
+
+    void Renderer::SubmitMesh(const Mesh* mesh, const smMat4& model)
+    {
+        if (mesh != nullptr)
+            m_DrawList.push_back({ mesh, model });
     }
 
     void Renderer::DrawProcedural(smuint32 vertexCount)

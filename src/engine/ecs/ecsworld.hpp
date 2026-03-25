@@ -50,6 +50,11 @@ public:
         return m_EntityFreelist.size();
     }
 
+    const smvector<EntityId>& GetEntityIds() const
+    {
+        return m_EntityMasks.Entities();
+    }
+
     template<typename T>
     void RegisterComponent()
     {
@@ -168,17 +173,18 @@ public:
         return entity;
     }
 
-private:
     static smsize& GetStaticComponentCounter()
     {
         static smsize s_ComponentCounter{ 0 };
         return s_ComponentCounter;
     }
 
-    static smsize PopNextComponentIndex(smstring& debugName)
+    static smsize PopNextComponentIndex(const char* debugName)
     {
         smsize& s_ComponentCounter = GetStaticComponentCounter();
-        ms_ComponentDebugLabels.push_back(debugName);
+        smstring debugNameString = smstring(debugName);
+
+        ms_ComponentDebugLabels.push_back(std::move(debugNameString));
         return s_ComponentCounter++;
     }
 
