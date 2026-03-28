@@ -18,16 +18,17 @@
 #include <engine/resources/resourcesystem.hpp>
 #include <engine/world/worldmanager.hpp>
 #include <engine/ecs/ecssystemmanager.hpp>
+#include <editor/tools/entitypicker.hpp>
 
 #if HACKS_ENABLED
 #include <engine/threads/iupdatable.hpp>
 #endif
 
 #if IMGUI_DISPLAY_ENABLED
-#include <imgui/imguidrawmodule.hpp>
-#include <imgui/imguicentral.hpp>
+#include <editor/imgui/imguidrawmodule.hpp>
+#include <editor/imgui/imguicentral.hpp>
 #ifdef SM_TOOL
-#include <imguitools/imguimoduleregistry.hpp>
+#include <editor/imguitools/imguimoduleregistry.hpp>
 #endif
 #endif
 
@@ -36,11 +37,6 @@
 #include <engine/camera/tool/toolcamerainputhandler.hpp>
 #include <engine/graphics/debug/transformdebug.hpp>
 #include <engine/graphics/debug/lightingdebug.hpp>
-#endif
-
-#ifdef DEBUG
-#include <engine/graphics/debug/materialdebug.hpp>
-#include <engine/graphics/debug/geometrydebug.hpp>
 #endif
 
 BEGIN_NAMESPACE
@@ -206,10 +202,6 @@ namespace Engine
         SM_INVOKE_SINGLETON_INIT(TransformDebug);
         SM_INVOKE_SINGLETON_INIT(LightingDebug);
 #endif
-#ifdef DEBUG
-        SM_INVOKE_SINGLETON_INIT(MaterialSystemDebug);
-        SM_INVOKE_SINGLETON_INIT(GeometrySystemDebug);
-#endif
 #if IMGUI_DISPLAY_ENABLED
         SM_INVOKE_SINGLETON_INIT(ImguiDrawModule);
         SM_INVOKE_SINGLETON_INIT(ImguiCentral);
@@ -218,12 +210,15 @@ namespace Engine
 #endif
 #endif
 
+        SM_INVOKE_SINGLETON_INIT(EntityPicker);
+
         SM_INVOKE_SINGLETON_INIT(WorldManager);
         SM_INVOKE_SINGLETON_INIT(ECS::SystemManager);
     }
 
     void Engine::BigShutdown(void)
     {
+        SM_INVOKE_SINGLETON_SHUTDOWN(EntityPicker);
         SM_INVOKE_SINGLETON_SHUTDOWN(WorldManager);
 #if IMGUI_DISPLAY_ENABLED
 #ifdef SM_TOOL

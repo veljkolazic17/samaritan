@@ -26,6 +26,7 @@ namespace Graphics
         smuint8 pushConstantsCount,
         Range pushConstantRanges[],
         smbool isWireframe,
+        smbool blendEnabled,
         VkDevice logicalDevice,
         VkAllocationCallbacks* allocator
     )
@@ -73,7 +74,7 @@ namespace Graphics
 
         VkPipelineColorBlendAttachmentState colorBlendAttachmentState;
         smZero(&colorBlendAttachmentState, sizeof(VkPipelineColorBlendAttachmentState));
-        colorBlendAttachmentState.blendEnable = VK_TRUE;
+        colorBlendAttachmentState.blendEnable = blendEnabled ? VK_TRUE : VK_FALSE;
         colorBlendAttachmentState.srcColorBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA;
         colorBlendAttachmentState.dstColorBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
         colorBlendAttachmentState.colorBlendOp = VK_BLEND_OP_ADD;

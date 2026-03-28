@@ -5,8 +5,9 @@
 #include <engine/graphics/renderer/backend/vulkan/vulkantexturedata.hpp>
 #include <engine/graphics/systems/materialsystem.hpp>
 #include <engine/graphics/systems/texturesystem.hpp>
+#include <engine/graphics/systems/shadersystem.hpp>
 #include <engine/memory/memory.hpp>
-#include <engine/resources/graphics/geometry.hpp> 
+#include <engine/resources/graphics/geometry.hpp>
 #include <engine/resources/graphics/material.hpp>
 
 #include <set>
@@ -91,7 +92,7 @@ namespace Graphics
             smbool isLayerPresent = false;
             for (const VkLayerProperties& layerProperties : availableLayers)
             {
-                if (std::strcmp(requiredLayerName, layerProperties.layerName))
+                if (std::strcmp(requiredLayerName, layerProperties.layerName) == 0)
                 {
                     isLayerPresent = true;
                     break;
@@ -137,17 +138,7 @@ namespace Graphics
         m_SwapChain.Create(m_VulkanDevice.m_FrameBufferWidth, m_VulkanDevice.m_FrameBufferHeight);
         LogInfo(LogChannel::Graphics, "Vulkan swap chain created!");
 
-        VulkanRenderpass& worldRenderPass = m_RenderPasses["world"];
-        worldRenderPass.Create
-        (
-            smVec4(0.0f, 0.0f, static_cast<smfloat32>(m_VulkanDevice.m_FrameBufferWidth), static_cast<smfloat32>(m_VulkanDevice.m_FrameBufferHeight)),
-            smVec4(1.0f, 1.0f, 1.0f, 1.0f),
-            1.f,
-            0.f,
-            VulkanRenderpassClearFlag::CLEAR_COLOR_BUFFER | VulkanRenderpassClearFlag::CLEAR_DEPTH_BUFFER | VulkanRenderpassClearFlag::CLEAR_STENCIL_BUFFER,
-            false,
-            false
-        );
+        InitRenderpasses();
 
         // Regenerate framebuffers
         m_SwapChain.RegenerateFramebuffers();
@@ -156,9 +147,6 @@ namespace Graphics
         CreateCommandBuffers();
 
         CreateSyncObjects();
-
-        //TODO : Why is renderpass pointer argument???
-        //m_ObjectShader.Create(&worldRenderPass, m_VulkanDevice.m_LogicalDevice, m_Allocator, m_VulkanDevice.m_FrameBufferWidth, m_VulkanDevice.m_FrameBufferHeight);
 
         CreateBuffers();
 
@@ -172,14 +160,12 @@ namespace Graphics
     {
         DestroyBuffers();
 
-        //m_ObjectShader.Destroy(m_VulkanDevice.m_LogicalDevice, m_Allocator);
-
         DestroySyncObjects();
 
         DestroyCommandBuffers();
 
-        VulkanRenderpass& worldRenderPass = m_RenderPasses["world"];
-        worldRenderPass.Destroy();
+        m_PickingPass.Destroy();
+        m_WorldPass.Destroy();
 
         m_SwapChain.Destroy();
 
@@ -259,7 +245,7 @@ namespace Graphics
 
             ++indexCounter;
         }
-        //TODO : More check here 
+        //TODO : More check here
 
         const VPDRequirements& requirements = m_VulkanDevice.m_VPDRequirments;
         const VPDQueues& vpdQueues = m_VulkanDevice.m_QueuesInfo;
@@ -298,7 +284,7 @@ namespace Graphics
                         smbool isFound = false;;
                         for (const VkExtensionProperties& extensionProperties : extensions)
                         {
-                            if (std::strcmp(extensionName, extensionProperties.extensionName))
+                            if (std::strcmp(extensionName, extensionProperties.extensionName) == 0)
                             {
                                 isFound = true;
                                 break;
@@ -380,9 +366,10 @@ namespace Graphics
         smuint32 transferQueueIndex = m_VulkanDevice.m_QueuesInfo.m_TransferIndex;
 
         std::set<smuint32> queueIndecies = { graphicsQueueIndex, presentQueueIndex, transferQueueIndex };
-        
+
+        smfloat32 queuePriority = 1.0f;
         std::vector<VkDeviceQueueCreateInfo> queueCreateInfos;
-        for (smuint32 queueIndex : queueIndecies) 
+        for (smuint32 queueIndex : queueIndecies)
         {
             VkDeviceQueueCreateInfo queueCreateInfo;
 
@@ -391,15 +378,13 @@ namespace Graphics
             queueCreateInfo.queueCount = 1;
 
             //TODO : Maybe problematic
-           /* if (queueIndex == graphicsQueueIndex) 
+           /* if (queueIndex == graphicsQueueIndex)
             {
                 queueCreateInfo.queueCount = 2;
             }*/
             queueCreateInfo.flags = 0;
             queueCreateInfo.pNext = 0;
 
-            //TODO : This may not work
-            smfloat32 queuePriority = 1.0f;
             queueCreateInfo.pQueuePriorities = &queuePriority;
 
             queueCreateInfos.emplace_back(queueCreateInfo);
@@ -416,7 +401,7 @@ namespace Graphics
         deviceCreateInfo.enabledExtensionCount = 1;
         const char* extensionNames = VK_KHR_SWAPCHAIN_EXTENSION_NAME;
         deviceCreateInfo.ppEnabledExtensionNames = &extensionNames;
-        
+
         VkDevice& logicalDevice = m_VulkanDevice.m_LogicalDevice;
 
         // Create the device.
@@ -566,7 +551,7 @@ namespace Graphics
         constexpr smbool isSimultaneousUse = false;
 
         // Check if recreating swapchain
-        if (m_IsRecreatingSwapchain) 
+        if (m_IsRecreatingSwapchain)
         {
             VkResult result = vkDeviceWaitIdle(m_VulkanDevice.m_LogicalDevice);
             if (!Vulkan::Utils::IsResultSuccess(result))
@@ -600,7 +585,7 @@ namespace Graphics
             return false;
         }
 
-        // Wait for the execution of the current frame to complete. The fence being free will allow this one to move on.   
+        // Wait for the execution of the current frame to complete. The fence being free will allow this one to move on.
         VulkanFence& fence = m_InFlightFences[m_CurrentFrame];
         if (!fence.Wait(m_VulkanDevice.m_LogicalDevice, UINT64_MAX))
         {
@@ -635,12 +620,6 @@ namespace Graphics
         vkCmdSetViewport(commandBuffer.GetHandle(), 0, 1, &viewport);
         vkCmdSetScissor(commandBuffer.GetHandle(), 0, 1, &scissor);
 
-
-        smVec4 renderArea = smVec4{0.0f, 0.0f, static_cast<smfloat32>(m_VulkanDevice.m_FrameBufferWidth), static_cast<smfloat32>(m_VulkanDevice.m_FrameBufferHeight)};
-
-        VulkanRenderpass& worldRenderPass = m_RenderPasses["world"];
-        worldRenderPass.Begin(renderArea, commandBuffer, m_SwapChain.GetFrameBuffers()[m_ImageIndex].GetHandle());
-
         return true;
     }
 
@@ -649,9 +628,6 @@ namespace Graphics
         constexpr smuint32 submitCount = 1;
 
         VulkanCommandBuffer& commandBuffer = m_GraphicsCommandBuffers[m_ImageIndex];
-
-        VulkanRenderpass& worldRenderPass = m_RenderPasses["world"];
-        worldRenderPass.End(commandBuffer);
 
         commandBuffer.EndBuffer();
 
@@ -707,13 +683,13 @@ namespace Graphics
     smbool VulkanRenderer::RecreateSwapchain()
     {
         // If already being recreated, do not try again.
-        if (m_IsRecreatingSwapchain) 
+        if (m_IsRecreatingSwapchain)
         {
             softAssert(false, "Already recreating swapchaing!");
             return false;
         }
         // Detect if the window is too small to be drawn to
-        if (m_VulkanDevice.m_FrameBufferWidth == 0 || m_VulkanDevice.m_FrameBufferHeight == 0) 
+        if (m_VulkanDevice.m_FrameBufferWidth == 0 || m_VulkanDevice.m_FrameBufferHeight == 0)
         {
             //softAssert(false, "Recreating swapchaing with window dimension 0!");
             return false;
@@ -800,7 +776,7 @@ namespace Graphics
 
     void VulkanRenderer::DrawGeometry(const GeometryData& data)
     {
-        if (data.m_Geometry != nullptr && data.m_Geometry->m_Id == SM_INVALID_ID) 
+        if (data.m_Geometry != nullptr && data.m_Geometry->m_Id == SM_INVALID_ID)
         {
             return;
         }
@@ -808,26 +784,12 @@ namespace Graphics
         Vulkan::Types::GeometryData& geometryData = m_GeometryData[data.m_Geometry->m_Handle];
         VulkanCommandBuffer& commandBuffer = m_GraphicsCommandBuffers[m_ImageIndex];
 
-        /*m_ObjectShader.Use(&commandBuffer); 
-        m_ObjectShader.UpdateModel(data.m_Model);*/
-
-        
-        if (const Material* material = data.m_Geometry->m_Material)
-        {
-            //m_ObjectShader.UpdateMaterial(*material);
-        }
-        else
-        {
-            //m_ObjectShader.UpdateMaterial(smMaterialSystem().GetDefaultMaterial());
-        }
-        
-
         // Bind vertex buffer at offset.
         VkDeviceSize offsets[1] = { geometryData.m_VertexBufferOffset };
         vkCmdBindVertexBuffers(commandBuffer.GetHandle(), 0, 1, &m_VertexBuffer.GetHandle(), offsets);
 
         // Draw indexed or non-indexed.
-        if (geometryData.m_IndexCount > 0) 
+        if (geometryData.m_IndexCount > 0)
         {
             // Bind index buffer at offset.
             vkCmdBindIndexBuffer(commandBuffer.GetHandle(), m_IndexBuffer.GetHandle(), geometryData.m_IndexBufferOffset, VK_INDEX_TYPE_UINT32);
@@ -835,10 +797,15 @@ namespace Graphics
             // Issue the draw.
             vkCmdDrawIndexed(commandBuffer.GetHandle(), geometryData.m_IndexCount, 1, 0, 0, 0);
         }
-        else 
+        else
         {
             vkCmdDraw(commandBuffer.GetHandle(), geometryData.m_VertexCount, 1, 0, 0);
         }
+    }
+
+    smuint32 VulkanRenderer::DrawPicking(smuint32 mouseX, smuint32 mouseY, const smMat4& projection, const smMat4& view, const std::vector<GeometryData>& drawCalls)
+    {
+        return m_PickingPass.Execute(mouseX, mouseY, projection, view, drawCalls.data(), static_cast<smuint32>(drawCalls.size()));
     }
 
     void VulkanRenderer::DrawProcedural(smuint32 vertexCount)
@@ -967,7 +934,7 @@ namespace Graphics
 #pragma region Geometry
     smbool VulkanRenderer::CreateGeometry(Geometry* geometry, smuint32 vertexCount, const smVert3D* vertices, smuint32 indexCount, const smuint32* indices)
     {
-        if (vertexCount == 0 || vertices == nullptr || geometry == nullptr) 
+        if (vertexCount == 0 || vertices == nullptr || geometry == nullptr)
         {
             LogError(LogChannel::Graphics, "CreateGeometry called with 0 vertex count or nullptr vertices or geometry nullptr");
             return false;
@@ -977,7 +944,7 @@ namespace Graphics
         Vulkan::Types::GeometryData oldData;
 
         Vulkan::Types::GeometryData* data = nullptr;
-        
+
         if (isNewUpload)
         {
             smuint32 newId = 0;
@@ -993,9 +960,9 @@ namespace Graphics
                 ++newId;
             }
         }
-        else 
+        else
         {
-            
+
             data = &m_GeometryData[geometry->m_Handle];
             oldData = *data;
         }
@@ -1024,19 +991,19 @@ namespace Graphics
             //TODO : [GRAPHICS][GEOMETRY] This is a hack, we should use freelist
         }
 
-        if (data->m_Generation == SM_INVALID_ID) 
+        if (data->m_Generation == SM_INVALID_ID)
         {
             data->m_Generation = 0;
         }
-        else 
+        else
         {
             data->m_Generation++;
         }
 
-        if (!isNewUpload) 
+        if (!isNewUpload)
         {
             m_VertexBuffer.Free(oldData.m_VertexBufferOffset, oldData.m_VertexSize);
-            if (oldData.m_IndexSize > 0) 
+            if (oldData.m_IndexSize > 0)
             {
                 m_IndexBuffer.Free(oldData.m_IndexBufferOffset, oldData.m_IndexSize);
             }
@@ -1047,7 +1014,7 @@ namespace Graphics
 
     void VulkanRenderer::DestroyGeometry(Geometry* geometry)
     {
-        if (geometry != nullptr && geometry->m_Handle != SM_INVALID_ID) 
+        if (geometry != nullptr && geometry->m_Handle != SM_INVALID_ID)
         {
             vkDeviceWaitIdle(m_VulkanDevice.m_LogicalDevice);
             Vulkan::Types::GeometryData& geometryData = m_GeometryData[geometry->m_Handle];
@@ -1069,7 +1036,7 @@ namespace Graphics
     {
         shader->m_InternalData = mnew<VulkanShader>(Memory::MemoryTag::MEM_RENDERER);
         VulkanShader* vkShader = static_cast<VulkanShader*>(shader->m_InternalData);
-        const VulkanRenderpass& renderpass = m_RenderPasses[shader->m_RenderpassName];
+        const VulkanRenderpass& renderpass = GetRenderpassByName(shader->m_RenderpassName);
 
         smuint32 stageIndex = 0;
         for (const ShaderStage& shaderStage : shader->m_Stages)
@@ -1100,7 +1067,7 @@ namespace Graphics
             }
         }
         vkShader->m_StageCount = stageIndex;
-        
+
         vkShader->m_PoolSizes[0] = { VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1024 };
         vkShader->m_PoolSizes[1] = { VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 4096 };
 
@@ -1131,7 +1098,7 @@ namespace Graphics
             instanceBindingLayout.descriptorCount = 1;
             instanceBindingLayout.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
             instanceBindingLayout.pImmutableSamplers = nullptr;
-            
+
             ++instanceDescriptorSet.m_Bindings;
             instanceDescriptorSet.m_BindingLayouts[SM_VULKAN_BINDING_UBO] = instanceBindingLayout;
             vkShader->m_DescriptorSetData[SM_VULKAN_DESCRIPTOR_SET_INSTANCE] = instanceDescriptorSet;
@@ -1144,6 +1111,42 @@ namespace Graphics
         }
 
         return true;
+    }
+
+    void VulkanRenderer::InitRenderpasses()
+    {
+        m_WorldPass.Init(m_VulkanDevice.m_FrameBufferWidth, m_VulkanDevice.m_FrameBufferHeight);
+        m_PickingPass.Init(m_VulkanDevice.m_FrameBufferWidth, m_VulkanDevice.m_FrameBufferHeight);
+    }
+
+    //Very ugly
+    //[GRAPHICS][RENDERPASS] TODO : Fix this shit I don't like how renderpass is done
+    VulkanRenderpass& VulkanRenderer::GetRenderpassByName(const smstring& name)
+    {
+        if (name == "world")
+        {
+            return m_WorldPass.GetRenderpass();
+        }
+        if (name == "picking")
+        {
+            return m_PickingPass.GetRenderpass();
+        }
+
+        softAssert(false, "Unknown renderpass name: %s", name.c_str());
+        return m_WorldPass.GetRenderpass();
+    }
+
+    void VulkanRenderer::BeginWorldPass()
+    {
+        VulkanCommandBuffer& cmd = m_GraphicsCommandBuffers[m_ImageIndex];
+        VkFramebuffer fb = m_SwapChain.GetFrameBuffers()[m_ImageIndex].GetHandle();
+        m_WorldPass.Begin(cmd, fb, m_VulkanDevice.m_FrameBufferWidth, m_VulkanDevice.m_FrameBufferHeight);
+    }
+
+    void VulkanRenderer::EndWorldPass()
+    {
+        VulkanCommandBuffer& cmd = m_GraphicsCommandBuffers[m_ImageIndex];
+        m_WorldPass.End(cmd);
     }
 
     void VulkanRenderer::InitVulkanModules(Shader* shader)
@@ -1208,7 +1211,7 @@ namespace Graphics
         smuint32 offset = 0;
         smuint32 index = 0;
         VulkanShader* vkShader = static_cast<VulkanShader*>(shader->m_InternalData);
-        for (const ShaderAttribute& shaderAttribute : shader->m_Attributes) 
+        for (const ShaderAttribute& shaderAttribute : shader->m_Attributes)
         {
             VkVertexInputAttributeDescription attribute;
             attribute.location = index;
@@ -1279,7 +1282,7 @@ namespace Graphics
     {
         VulkanShader* vkShader = static_cast<VulkanShader*>(shader->m_InternalData);
 
-        for (smuint32 index = 0; index < vkShader->m_DescriptorSetCount; ++index) 
+        for (smuint32 index = 0; index < vkShader->m_DescriptorSetCount; ++index)
         {
             VkDescriptorSetLayoutCreateInfo layoutInfo = { VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO };
             layoutInfo.bindingCount = vkShader->m_DescriptorSetData[index].m_Bindings;
@@ -1317,10 +1320,11 @@ namespace Graphics
         VulkanPipeline& pipeline = vkShader->m_VulkanPipeline;
         constexpr smbool isWireframe = false;
         constexpr smbool depthTestEnabled = true;
+        smbool blendEnabled = (shader->m_RenderpassName != "picking");
 
         smbool result = pipeline.Create
         (
-            &m_RenderPasses[shader->m_RenderpassName],
+            &GetRenderpassByName(shader->m_RenderpassName),
             shader->m_AttributeStride,
             depthTestEnabled,
             static_cast<smuint32>(shader->m_Attributes.size()),
@@ -1334,6 +1338,7 @@ namespace Graphics
             shader->m_PushConstantRangeCount,
             shader->m_PushConstantRanges,
             isWireframe,
+            blendEnabled,
             m_VulkanDevice.m_LogicalDevice,
             m_Allocator
         );
@@ -1367,7 +1372,7 @@ namespace Graphics
     {
         VulkanShader* vkShader = static_cast<VulkanShader*>(shader->m_InternalData);
 
-        VkDescriptorSetLayout globalDescriptorSetLayouts[3] = 
+        VkDescriptorSetLayout globalDescriptorSetLayouts[3] =
         {
             vkShader->m_DescriptorSetLayouts[SM_VULKAN_DESCRIPTOR_SET_GLOBAL],
             vkShader->m_DescriptorSetLayouts[SM_VULKAN_DESCRIPTOR_SET_GLOBAL],
@@ -1433,9 +1438,9 @@ namespace Graphics
                 vkShader->m_InstanceStates[shader->m_BoundInstancId].m_Textures[uniform.m_Location] = *textureHandle;
             }
         }
-        else 
+        else
         {
-            if (uniform.m_ScopeType == ShaderScopeType::LOCAL) 
+            if (uniform.m_ScopeType == ShaderScopeType::LOCAL)
             {
                 // Is local, using push constants. Do this immediately.
                 VkCommandBuffer commandBuffer = m_GraphicsCommandBuffers[m_ImageIndex].GetHandle();
@@ -1467,9 +1472,13 @@ namespace Graphics
 
     smbool VulkanRenderer::ShaderApplyGlobals(Shader* shader)
     {
+        return ShaderApplyGlobals(shader, m_GraphicsCommandBuffers[m_ImageIndex].GetHandle(), m_ImageIndex);
+    }
+
+    smbool VulkanRenderer::ShaderApplyGlobals(Shader* shader, VkCommandBuffer commandBuffer, smuint32 descriptorSetIndex)
+    {
         VulkanShader* vkShader = static_cast<VulkanShader*>(shader->m_InternalData);
-        VkCommandBuffer commandBuffer = m_GraphicsCommandBuffers[m_ImageIndex].GetHandle();
-        VkDescriptorSet globalDescriptor = vkShader->m_GlobalDescriptorSets[m_ImageIndex];
+        VkDescriptorSet globalDescriptor = vkShader->m_GlobalDescriptorSets[descriptorSetIndex];
 
         VkDescriptorBufferInfo bufferInfo;
         bufferInfo.buffer = vkShader->m_VulkanUniformBuffer.GetHandle();
@@ -1478,7 +1487,7 @@ namespace Graphics
 
         // Update descriptor sets.
         VkWriteDescriptorSet descWriteUBO = { VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET };
-        descWriteUBO.dstSet = vkShader->m_GlobalDescriptorSets[m_ImageIndex];
+        descWriteUBO.dstSet = globalDescriptor;
         descWriteUBO.dstBinding = 0;
         descWriteUBO.dstArrayElement = 0;
         descWriteUBO.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
@@ -1491,7 +1500,7 @@ namespace Graphics
         smuint32 globalSetBindingCount = vkShader->m_DescriptorSetData[SM_VULKAN_DESCRIPTOR_SET_GLOBAL].m_Bindings;
         if (globalSetBindingCount > 1)
         {
-            //TODO : [GRAPHICS][VULKAN][SHADER] Not supported global samplers 
+            //TODO : [GRAPHICS][VULKAN][SHADER] Not supported global samplers
             globalSetBindingCount = 1;
             softAssert(false, "Global descriptor set has more than just the UBO binding. Samplers are not yet supported.");
         }
@@ -1503,7 +1512,7 @@ namespace Graphics
 
     smbool VulkanRenderer::ShaderApplyInstances(Shader* shader)
     {
-        if (!shader->m_IsUsingInsance) 
+        if (!shader->m_IsUsingInsance)
         {
             softAssert(false, "Shader is not using instances!");
             return false;
@@ -1516,7 +1525,7 @@ namespace Graphics
 
         constexpr smuint32 maxDescriptorSets = 2;
         VkWriteDescriptorSet descWrites[maxDescriptorSets];
-        
+
         smuint32 descriptorCount = 0;
         smuint32 descriptorIndex = 0;
 
@@ -1592,7 +1601,7 @@ namespace Graphics
             }
         }
 
-        if (descriptorCount > 0) 
+        if (descriptorCount > 0)
         {
             vkUpdateDescriptorSets(m_VulkanDevice.m_LogicalDevice, descriptorCount, descWrites, 0, 0);
         }
@@ -1624,7 +1633,7 @@ namespace Graphics
             }
         }
 
-        if (instanceId == SM_INVALID_ID) 
+        if (instanceId == SM_INVALID_ID)
         {
             softAssert(false, "No free instance slots in shader!");
             return false;
@@ -1650,7 +1659,7 @@ namespace Graphics
         VulkanDescriptorSetState& setState = instanceState.m_DescriptorSetState;
         smuint32 bindingCount = vkShader->m_DescriptorSetData[SM_VULKAN_DESCRIPTOR_SET_INSTANCE].m_Bindings;
         constexpr smuint32 imagesPerFrame = 3;
-        for (smuint32 i = 0; i < bindingCount; ++i) 
+        for (smuint32 i = 0; i < bindingCount; ++i)
         {
             for (smuint32 j = 0; j < imagesPerFrame; ++j)
             {
@@ -1659,7 +1668,7 @@ namespace Graphics
         }
 
         // Allocate 3 descriptor sets (one per frame).
-        VkDescriptorSetLayout layouts[3] = 
+        VkDescriptorSetLayout layouts[3] =
         {
             vkShader->m_DescriptorSetLayouts[SM_VULKAN_DESCRIPTOR_SET_INSTANCE],
             vkShader->m_DescriptorSetLayouts[SM_VULKAN_DESCRIPTOR_SET_INSTANCE],
@@ -1677,7 +1686,7 @@ namespace Graphics
             instanceState.m_DescriptorSetState.m_DescriptorSets
         );
 
-        if (result != VK_SUCCESS) 
+        if (result != VK_SUCCESS)
         {
             softAssert(false, "Could not allocate instance descriptor sets!");
             return false;
@@ -1702,7 +1711,7 @@ namespace Graphics
             instanceState.m_DescriptorSetState.m_DescriptorSets
         );
 
-        if (result != VK_SUCCESS) 
+        if (result != VK_SUCCESS)
         {
             softAssert(false, "Could not free instance descriptor sets!");
             return false;

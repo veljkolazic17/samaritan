@@ -1,12 +1,12 @@
 #pragma once
 #include <defines.hpp>
 
-#include <imguitools/imguimoduleregistry.hpp>
+#include <editor/imguitools/imguimoduleregistry.hpp>
 
 #ifdef SM_TOOL
 #if IMGUI_DISPLAY_ENABLED
-#include <imguitools/entity/entityviewer.hpp>
-#include <imguitools/world/worldviewer.hpp>
+#include <editor/imguitools/entity/entityviewer.hpp>
+#include <editor/imguitools/world/worldviewer.hpp>
 
 BEGIN_NAMESPACE
 

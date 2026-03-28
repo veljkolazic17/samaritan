@@ -119,6 +119,7 @@ void ShaderSystem::InitUniform(Shader& shader, ShaderUniform& uniform)
         uniform.m_Size = range.m_Size;
 
         shader.m_PushConstantRanges[shader.m_PushConstantRangeCount++] = range;
+        shader.m_PushConstantSize = range.m_Offset + range.m_Size;
         shader.m_PushConstantStride += range.m_Size;
     }
 

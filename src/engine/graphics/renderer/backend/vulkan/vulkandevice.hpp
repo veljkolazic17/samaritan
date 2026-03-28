@@ -60,7 +60,7 @@ namespace Graphics
 			vkGetPhysicalDeviceMemoryProperties(physicalDevice, &memoryProperties);
 			for (smuint32 i = 0; i < memoryProperties.memoryTypeCount; ++i)
 			{
-				if (typeFilter & (1 << i) && (memoryProperties.memoryTypes[i].propertyFlags & typeFilter) == propertyFlags)
+				if (typeFilter & (1 << i) && (memoryProperties.memoryTypes[i].propertyFlags & propertyFlags) == propertyFlags)
 				{
 					return i;
 				}

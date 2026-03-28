@@ -1,7 +1,7 @@
 #include <defines.hpp>
 #if IMGUI_DISPLAY_ENABLED
-#include <imgui/imguidrawmodule.hpp>
-#include <imgui/imguicentral.hpp>
+#include <editor/imgui/imguidrawmodule.hpp>
+#include <editor/imgui/imguicentral.hpp>
 
 #include "imgui.h"
 

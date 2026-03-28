@@ -2,7 +2,7 @@
 #include <defines.hpp>
 
 #include <engine/graphics/renderer/backend/vulkan/vulkantypes.hpp>
-#include <engine/graphics/renderer/backend/vulkan/vulkanrenderpass.hpp>
+#include <engine/graphics/renderer/backend/vulkan/renderpasses/vulkanrenderpass.hpp>
 #include <engine/graphics/renderer/backend/vulkan/vulkancommandbuffer.hpp>
 
 BEGIN_NAMESPACE
@@ -31,6 +31,7 @@ namespace Graphics
             smuint8 pushConstantsCount,
             Range pushConstantRanges[],
             smbool isWireframe,
+            smbool blendEnabled,
             VkDevice logicalDevice,
             VkAllocationCallbacks* allocator
         );

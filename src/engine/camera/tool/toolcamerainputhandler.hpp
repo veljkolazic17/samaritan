@@ -8,7 +8,7 @@
 #include <engine/threads/iupdatable.hpp>
 #endif
 #if IMGUI_DISPLAY_ENABLED
-#include <imgui/imguicentral.hpp>
+#include <editor/imgui/imguicentral.hpp>
 #endif
 
 #include <objecttemplates/singleton.hpp>

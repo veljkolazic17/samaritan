@@ -1,6 +1,6 @@
 #include <defines.hpp>
 #if IMGUI_DISPLAY_ENABLED
-#include <imgui/imguicentral.hpp>
+#include <editor/imgui/imguicentral.hpp>
 
 #include <engine/events/eventmanager.hpp>
 

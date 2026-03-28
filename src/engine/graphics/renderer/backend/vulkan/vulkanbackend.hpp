@@ -5,11 +5,14 @@
 #include <engine/graphics/renderer/backend/vulkan/vulkanbuffer.hpp>
 #include <engine/graphics/renderer/backend/vulkan/vulkandevice.hpp>
 #include <engine/graphics/renderer/backend/vulkan/vulkanswapchain.h>
-#include <engine/graphics/renderer/backend/vulkan/vulkanrenderpass.hpp>
+#include <engine/graphics/renderer/backend/vulkan/renderpasses/vulkanrenderpass.hpp>
 #include <engine/graphics/renderer/backend/vulkan/vulkancommandbuffer.hpp>
 #include <engine/graphics/renderer/backend/vulkan/vulkanfence.hpp>
 
 #include <engine/resources/graphics/texture.hpp>
+#include <engine/graphics/renderer/backend/vulkan/renderpasses/vulkanworldrenderpass.hpp>
+#include <engine/graphics/renderer/backend/vulkan/renderpasses/vulkanpickingrenderpass.hpp>
+#include <engine/resources/graphics/mesh.hpp>
 #include <vector>
 
 BEGIN_NAMESPACE
@@ -30,8 +33,14 @@ namespace Graphics
         void Resize(smuint32 width, smuint32 height) override;
         smbool BeginFrame(Time time) override;
         smbool EndFrame(Time time) override;
+        void BeginWorldPass() override;
+        void EndWorldPass() override;
         void DrawGeometry(const GeometryData& data) override;
         void DrawProcedural(smuint32 vertexCount) override;
+
+        smuint32 DrawPicking(smuint32 mouseX, smuint32 mouseY, const smMat4& projection, const smMat4& view, const std::vector<GeometryData>& drawCalls);
+
+        VulkanRenderpass& GetRenderpassByName(const smstring& name);
 
         SM_INLINE VkAllocationCallbacks* GetAllocator() { return m_Allocator; }
         SM_INLINE VkInstance GetInstance() { return m_Instance; }
@@ -41,7 +50,12 @@ namespace Graphics
         SM_INLINE std::vector<VkPresentModeKHR>& GetPresentModes() { return m_PresentModes; }
         SM_INLINE VkSurfaceCapabilitiesKHR& GetCapabilities() { return m_Capabilities; }
         SM_INLINE VulkanSwapChain& GetVulkanSwapChain() { return m_SwapChain; }
-        SM_INLINE VulkanRenderpass& GetRenderpass(const smstring& renderpassName) { return m_RenderPasses[renderpassName]; }
+        SM_INLINE VulkanWorldRenderPass& GetWorldRenderPass() { return m_WorldPass; }
+        SM_INLINE VulkanPickingRenderPass& GetPickingRenderPass() { return m_PickingPass; }
+        SM_INLINE VulkanRenderpass& GetRenderpass(const smstring& renderpassName) { return GetRenderpassByName(renderpassName); }
+        SM_INLINE Vulkan::Types::GeometryData& GetGeometryData(smuint32 index) { return m_GeometryData[index]; }
+        SM_INLINE VulkanBuffer& GetVertexBuffer() { return m_VertexBuffer; }
+        SM_INLINE VulkanBuffer& GetIndexBuffer() { return m_IndexBuffer; }
         SM_INLINE std::vector<VulkanCommandBuffer>& GetGraphicsCommandBuffers() { return m_GraphicsCommandBuffers; }
         SM_INLINE smuint32 GetImageIndex() { return m_ImageIndex; }
 
@@ -59,6 +73,7 @@ namespace Graphics
         smbool ShaderBindGlobals(Shader* shader) override;
         smbool ShaderSetUniform(Shader* shader, const ShaderUniform& uniform, const void* value) override;
         smbool ShaderApplyGlobals(Shader* shader) override;
+        smbool ShaderApplyGlobals(Shader* shader, VkCommandBuffer cmd, smuint32 descriptorSetIndex);
         smbool ShaderApplyInstances(Shader* shader) override;
         smbool ShaderBindInstance(Shader* shader, smuint32 instanceId) override;
         smbool InitShader(Shader* shader) override;
@@ -81,6 +96,7 @@ namespace Graphics
         smbool RecreateSwapchain();
         void CreateBuffers();
         void DestroyBuffers();
+        void InitRenderpasses();
         void UploadData(VkCommandPool pool, VkFence fence, VkQueue queue, const VulkanBuffer& buffer, smuint64 offset, smuint64 size, const void* data);
 
         void InitVulkanModules(Shader* shader);
@@ -110,7 +126,6 @@ namespace Graphics
         std::vector<VkSemaphore> m_RenderFinishedSemaphores;
         std::vector<VulkanFence> m_InFlightFences;
         std::vector<VulkanFence*> m_ImagesInFlight;
-        std::unordered_map<smstring, VulkanRenderpass> m_RenderPasses;
 
         VulkanSwapChain m_SwapChain;
         VkSurfaceCapabilitiesKHR m_Capabilities;
@@ -132,6 +147,8 @@ namespace Graphics
         smuint64 m_GeometryVertexOffset = 0;
         smuint32 m_ImageIndex = 0;
         smbool m_IsRecreatingSwapchain = false;
+        VulkanWorldRenderPass m_WorldPass;
+        VulkanPickingRenderPass m_PickingPass;
 #ifdef DEBUG
         VkDebugUtilsMessengerEXT m_DebugMessenger;
 #endif

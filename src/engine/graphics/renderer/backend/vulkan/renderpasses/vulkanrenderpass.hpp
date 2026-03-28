@@ -42,6 +42,7 @@ namespace Graphics
 		void End(VulkanCommandBuffer& commandBuffer);
 
 		SM_INLINE VkRenderPass GetHandle() { return m_Handle; }
+		SM_INLINE void SetHandle(VkRenderPass handle) { m_Handle = handle; }
 	private:
 		smVec4 m_RenderArea;
 		smVec4 m_Color DEFAULT_CLEAR_COLOR;

@@ -3,8 +3,8 @@
 
 #include <engine/memory/memory.hpp>
 
-#include <imgui/imguidrawmodule.hpp>
-#include <imgui/imguicentral.hpp>
+#include <editor/imgui/imguidrawmodule.hpp>
+#include <editor/imgui/imguicentral.hpp>
 
 #ifdef SM_TOOL
 #if IMGUI_DISPLAY_ENABLED

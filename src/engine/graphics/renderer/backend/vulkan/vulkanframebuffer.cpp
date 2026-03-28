@@ -1,7 +1,7 @@
 #include <defines.hpp>
 
 #include <engine/graphics/renderer/backend/vulkan/vulkanframebuffer.hpp>
-#include <engine/graphics/renderer/backend/vulkan/vulkanrenderpass.hpp>
+#include <engine/graphics/renderer/backend/vulkan/renderpasses/vulkanrenderpass.hpp>
 
 BEGIN_NAMESPACE
 

@@ -18,7 +18,7 @@ macro(SETUP_APP projname graphics_api target_platform user_remote_logging window
   file(GLOB_RECURSE HEADER_FILES LIST_DIRECTORIES false RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} src/*.h??)
   include_directories(src)
 
-  add_executable(${PROJ_NAME} ${SRC_FILES} ${HEADER_FILES})
+  add_executable(${PROJ_NAME} WIN32  ${SRC_FILES} ${HEADER_FILES})
   SETUP_GROUPS("${SRC_FILES}")
   SETUP_GROUPS("${HEADER_FILES}")
 

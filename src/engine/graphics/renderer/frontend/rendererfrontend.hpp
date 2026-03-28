@@ -19,6 +19,12 @@ namespace Graphics
     class Renderer SINGLETON(Renderer), public Shutdownable
     {
     public:
+        struct DrawCall
+        {
+            const Mesh* mesh;
+            smMat4 model;
+        };
+
         SINGLETON_CONSTRUCTOR(Renderer);
 
         void Init() override;
@@ -51,23 +57,20 @@ namespace Graphics
 
         smbool UseShader(Shader* shader);
 
-#ifdef TEST_CODE_ENABLED
-        SM_INLINE void SetGeometry(Geometry* geometry) { m_Geometry = geometry; }
-        SM_INLINE Geometry* GetGeometry() { return m_Geometry; }
-#endif
-        HACK(SM_INLINE RendererBackend* GetRendererBackend() { return m_RendererBackend; })
-    private:
-        struct DrawCall { const Mesh* mesh; smMat4 model; };
+        smuint32 PickEntity(smuint32 mouseX, smuint32 mouseY);
 
+        SM_INLINE const std::vector<DrawCall>& GetDrawList() { return m_DrawList; }
+
+        HACK(SM_INLINE RendererBackend* GetRendererBackend() { return m_RendererBackend; })
+
+    private:
         smMat4 m_Projection;
         smMat4 m_View;
         RendererBackend* m_RendererBackend = nullptr;
         smfloat32 m_NearClip;
         smfloat32 m_FarClip;
         std::vector<DrawCall> m_DrawList;
-#ifdef TEST_CODE_ENABLED
-        Geometry* m_Geometry = nullptr;
-#endif
+        std::vector<DrawCall> m_DrawListToDraw;
     };
 }
 

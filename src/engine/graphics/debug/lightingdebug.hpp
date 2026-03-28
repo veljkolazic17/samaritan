@@ -5,7 +5,7 @@
 #include <math/vector.hpp>
 
 #if IMGUI_DISPLAY_ENABLED
-#include <imgui/imguicentral.hpp>
+#include <editor/imgui/imguicentral.hpp>
 #endif
 
 #define smLightingDebug() ::samaritan::LightingDebug::GetInstance()

@@ -1,7 +1,7 @@
 #include <defines.hpp>
 #if IMGUI_DISPLAY_ENABLED
 
-#include <imgui/imguidrawmodule.hpp>
+#include <editor/imgui/imguidrawmodule.hpp>
 
 BEGIN_NAMESPACE
 

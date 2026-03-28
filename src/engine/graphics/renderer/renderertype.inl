@@ -49,6 +49,7 @@ struct GeometryData
 {
     smMat4 m_Model;
     samaritan::Geometry* m_Geometry = nullptr;
+    smuint32 m_ObjectId = 0;
 };
 }
 

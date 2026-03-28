@@ -1,5 +1,5 @@
 #pragma once
-#include <imguitools/world/worldviewer.hpp>
+#include <editor/imguitools/world/worldviewer.hpp>
 
 #ifdef SM_TOOL
 #if IMGUI_DISPLAY_ENABLED

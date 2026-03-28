@@ -6,7 +6,7 @@
 #include <math/math.hpp>
 
 #if IMGUI_DISPLAY_ENABLED
-#include <imgui/imguicentral.hpp>
+#include <editor/imgui/imguicentral.hpp>
 #endif
 
 #define smTransformDebug() ::samaritan::TransformDebug::GetInstance()

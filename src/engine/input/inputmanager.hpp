@@ -32,6 +32,8 @@ namespace Input
 		void ProcessMouseButton(MouseButton button, smbool isPressed);
 		void ProcessMouseMovement(smint16 x, smint16 y);
 		void ProcessMouseWheel(smint16 deltaMove);
+		SM_INLINE smint16 GetMouseX() const { return m_InputStates.m_CurrentMouseState.m_X; }
+		SM_INLINE smint16 GetMouseY() const { return m_InputStates.m_CurrentMouseState.m_Y; }
 		smbool IsMouseButtonUp(MouseButton button);
 		smbool IsMouseButtonDown(MouseButton button);
 		smbool WasMouseButtonUp(MouseButton button);

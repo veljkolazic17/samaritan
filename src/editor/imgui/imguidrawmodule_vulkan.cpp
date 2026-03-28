@@ -5,7 +5,7 @@
 #include "imgui_impl_win32.h"
 #include "imgui_impl_vulkan.h"
 
-#include <imgui/imguidrawmodule.hpp>
+#include <editor/imgui/imguidrawmodule.hpp>
 
 #include <engine/Engine.hpp>
 #include <engine/graphics/renderer/backend/vulkan/vulkanbackend.hpp>
@@ -62,7 +62,7 @@ void ImguiDrawModule::InitRenderer_PlatformSpecific()
     initInfo.ImageCount     = Graphics::g_VulkanRenderer->GetVulkanSwapChain().GetImageCount();
     initInfo.MSAASamples    = VK_SAMPLE_COUNT_1_BIT;
 
-    ImGui_ImplVulkan_Init(&initInfo, Graphics::g_VulkanRenderer->GetRenderpass("world").GetHandle());
+    ImGui_ImplVulkan_Init(&initInfo, Graphics::g_VulkanRenderer->GetWorldRenderPass().GetHandle());
 
     ImGui_ImplVulkan_CreateFontsTexture();
 }

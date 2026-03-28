@@ -9,7 +9,7 @@
 #include <unordered_map>
 
 #if IMGUI_DISPLAY_ENABLED
-#include <imgui/imguicentral.hpp>
+#include <editor/imgui/imguicentral.hpp>
 #endif
 
 #define smResourceSystem() ::samaritan::ResourceSystem::GetInstance()

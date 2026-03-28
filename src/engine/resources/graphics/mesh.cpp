@@ -106,27 +106,27 @@ void Mesh::OnLoad()
     // preventing "File not found" warnings. Non-image files (gltf, bin) are read normally.
     tinygltf::FsCallbacks fsCallbacks{};
     fsCallbacks.user_data = nullptr;
-    fsCallbacks.FileExists = [](const std::string& path, void*) -> bool 
+    fsCallbacks.FileExists = [](const std::string& path, void*) -> bool
     {
         if (IsImageExtension(path)) return true;
         return static_cast<bool>(std::ifstream(path));
     };
 
     fsCallbacks.ExpandFilePath = [](const std::string& path, void*) -> std::string { return path; };
-    fsCallbacks.ReadWholeFile = [](std::vector<unsigned char>* out, std::string* err, const std::string& path, void*) -> bool 
+    fsCallbacks.ReadWholeFile = [](std::vector<unsigned char>* out, std::string* err, const std::string& path, void*) -> bool
     {
-        if (IsImageExtension(path)) 
+        if (IsImageExtension(path))
         {
-            out->clear(); 
-            return true; 
+            out->clear();
+            return true;
         }
 
         std::ifstream f(path, std::ios::binary | std::ios::ate);
-        if (!f) 
-        { 
+        if (!f)
+        {
             if (err)
             {
-                *err = "Cannot open: " + path; return false; 
+                *err = "Cannot open: " + path; return false;
             }
         }
 
@@ -134,7 +134,7 @@ void Mesh::OnLoad()
         f.seekg(0);
         return f.read(reinterpret_cast<char*>(out->data()), static_cast<std::streamsize>(out->size())).good();
     };
-    
+
     fsCallbacks.WriteWholeFile = nullptr;
     loader.SetFsCallbacks(fsCallbacks);
 
@@ -247,8 +247,7 @@ void Mesh::OnLoad()
                 smVert3D& v1 = vertices[indices[i + 1]];
                 smVert3D& v2 = vertices[indices[i + 2]];
                 smVec3 tangent, bitangent;
-                Math::ComputeTangentBitangent(v0.m_Position, v1.m_Position, v2.m_Position,
-                    v0.m_TextureCoordinates, v1.m_TextureCoordinates, v2.m_TextureCoordinates, tangent, bitangent);
+                Math::ComputeTangentBitangent(v0.m_Position, v1.m_Position, v2.m_Position, v0.m_TextureCoordinates, v1.m_TextureCoordinates, v2.m_TextureCoordinates, tangent, bitangent);
                 v0.m_Tangent = v1.m_Tangent = v2.m_Tangent = tangent;
                 v0.m_Bitangent = v1.m_Bitangent = v2.m_Bitangent = bitangent;
             }
@@ -279,7 +278,9 @@ void Mesh::OnLoad()
                 {
                     const tinygltf::Value& df = extIt->second.Get("diffuseFactor");
                     if (df.IsArray() && df.ArrayLen() == 4)
+                    {
                         mat.m_DiffuseColor = smVec4{ (float)df.Get(0).GetNumberAsDouble(), (float)df.Get(1).GetNumberAsDouble(), (float)df.Get(2).GetNumberAsDouble(), (float)df.Get(3).GetNumberAsDouble() };
+                    }
                 }
             }
 
@@ -333,7 +334,9 @@ void Mesh::OnLoad()
                 }
             }
             if (!mat.m_SpecularMap.m_Texture.IsValid())
+            {
                 mat.m_SpecularMap.m_Texture = smTextureSystem().GetWhiteTexture();
+            }
 
             primitiveMaterial = smMaterialSystem().Register(std::move(mat));
         }
@@ -376,11 +379,15 @@ void Mesh::OnLoad()
         {
             const tinygltf::Mesh& gltfMesh = model.meshes[node.mesh];
             for (const tinygltf::Primitive& primitive : gltfMesh.primitives)
+            {
                 ProcessPrimitive(primitive, worldTransform);
+            }
         }
 
         for (int childIdx : node.children)
+        {
             ProcessNode(childIdx, worldTransform);
+        }
     };
 
     float identity[16] = { 1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1 };
@@ -389,13 +396,17 @@ void Mesh::OnLoad()
     {
         const tinygltf::Scene& scene = model.scenes[model.defaultScene >= 0 ? model.defaultScene : 0];
         for (int rootNode : scene.nodes)
+        {
             ProcessNode(rootNode, identity);
+        }
     }
     else
     {
         // No scene — fall back to processing all root nodes (nodes not referenced as children)
         for (int i = 0; i < (int)model.nodes.size(); ++i)
+        {
             ProcessNode(i, identity);
+        }
     }
 
     if (m_Geometries.empty())

@@ -27,6 +27,8 @@ namespace Graphics
         virtual void Resize(smuint32 width, smuint32 heigth) = 0;
         virtual smbool BeginFrame(Time time) = 0;
         virtual smbool EndFrame(Time time) = 0;
+        virtual void BeginWorldPass() = 0;
+        virtual void EndWorldPass() = 0;
         virtual void DrawGeometry(const GeometryData& data) = 0;
         virtual void DrawProcedural(smuint32 vertexCount) = 0;
         virtual smbool CreateTexture(const smuint8* pixels, Texture* texture) = 0;
@@ -45,6 +47,8 @@ namespace Graphics
         virtual smbool InitShader(Shader* shader) = 0;
         virtual smbool ShaderAcquireInstanceResources(Shader* shader, smuint32& instanceId) = 0;
         virtual smbool ShaderReleaseInstanceResources(Shader* shader, smuint32 instanceId) = 0;
+
+        virtual smuint32 DrawPicking(smuint32 mouseX, smuint32 mouseY, const smMat4& projection, const smMat4& view, const std::vector<GeometryData>& drawCalls) { return 0; }
 
     protected:
         RendererType m_RendererType;
