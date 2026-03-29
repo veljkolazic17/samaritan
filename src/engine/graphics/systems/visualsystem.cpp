@@ -35,7 +35,7 @@ void ECS::VisualSystem(ECS::World& world)
 
         smMat4 model = translation * rotation * scale;
 
-        smRenderer().SubmitMesh(vc.m_Mesh.GetResource(), model);
+        smRenderer().SubmitMesh(vc.m_Mesh.GetResource(), model, entity);
     });
 }
 

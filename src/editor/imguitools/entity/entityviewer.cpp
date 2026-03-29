@@ -19,30 +19,18 @@ void EntityViewer::DrawImgui()
         m_EnableEntityPicking != m_EnableEntityPicking;
     }
     smuint32 pickedEntity = smEntityPicker().GetPickedObjectId();
+    if (pickedEntity == std::numeric_limits<unsigned int>::max()) //must use this because I have put 32bit for entity id in texture
+    {
+        return;
+    }
 
     World* world = GET_WORLD();
     ECS::World& ecsWorld = world->GetESCWorld();
 
     PersistentId persistentId = ecsWorld.Get<PersistentId>(pickedEntity);
 
-    ImGui::Text("Entity %u", persistentId.m_Id);
-
-    std::string nameBuffer {};
-    ImGui::InputText("Entity Name", &nameBuffer);
-
-    if (ImGui::Button("Add Entity"))
-    {
-        ECS::EntityId entity = ecsWorld.Spawn();
-        world->SaveAll();
-    }
-
-    ImGui::Separator();
-
-    const std::vector<ECS::EntityId>& entities = ecsWorld.GetEntityIds();
-    for (ECS::EntityId id : entities)
-    {
-        ImGui::Text("Entity %u", id);
-    }
+    ImGui::Text("ECS Entity Id %u", pickedEntity);
+    ImGui::Text("Persistent Entity Id %u", persistentId.m_Id);
 }
 
 END_NAMESPACE

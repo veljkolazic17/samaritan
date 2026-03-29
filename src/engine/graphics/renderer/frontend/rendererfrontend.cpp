@@ -136,10 +136,10 @@ namespace Graphics
                 {
                     for (const DrawCall& call : m_DrawListToDraw)
                     {
-                        for (Geometry* geometry : call.mesh->m_Geometries)
+                        for (Geometry* geometry : call.m_Mesh->m_Geometries)
                         {
                             GeometryData data = {};
-                            data.m_Model = call.model;
+                            data.m_Model = call.m_Model;
                             data.m_Geometry = geometry;
                             data.m_ObjectId = geometry->m_Id;
                             if (geometry->m_Material)
@@ -220,11 +220,11 @@ namespace Graphics
         }
     }
 
-    void Renderer::SubmitMesh(const Mesh* mesh, const smMat4& model)
+    void Renderer::SubmitMesh(const Mesh* mesh, const smMat4& model, smuint32 objectId)
     {
         if (mesh != nullptr)
         {
-            m_DrawList.push_back({ mesh, model });
+            m_DrawList.push_back({ mesh, model, objectId});
         }
     }
 
@@ -269,12 +269,12 @@ namespace Graphics
             std::vector<GeometryData> geometryData;
             for (const DrawCall& call : m_DrawListToDraw)
             {
-                for (Geometry* geometry : call.mesh->m_Geometries)
+                for (Geometry* geometry : call.m_Mesh->m_Geometries)
                 {
                     GeometryData data = {};
-                    data.m_Model = call.model;
+                    data.m_Model = call.m_Model;
                     data.m_Geometry = geometry;
-                    data.m_ObjectId = geometry->m_Id;
+                    data.m_ObjectId = call.m_ObjectId;
                     geometryData.push_back(data);
                 }
             }

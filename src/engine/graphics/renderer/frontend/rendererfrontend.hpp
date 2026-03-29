@@ -21,8 +21,9 @@ namespace Graphics
     public:
         struct DrawCall
         {
-            const Mesh* mesh;
-            smMat4 model;
+            const Mesh* m_Mesh;
+            smMat4 m_Model;
+            smuint32 m_ObjectId;
         };
 
         SINGLETON_CONSTRUCTOR(Renderer);
@@ -37,7 +38,7 @@ namespace Graphics
         void Resize(smuint32 width, smuint32 heigth);
         void DrawFrame(RenderData& renderData);
 
-        void SubmitMesh(const Mesh* mesh, const smMat4& model);
+        void SubmitMesh(const Mesh* mesh, const smMat4& model, smuint32 objectId);
 
         SM_INLINE smMat4& GetProjection() { return m_Projection; }
         SM_INLINE smMat4& GetView() { return m_View; }

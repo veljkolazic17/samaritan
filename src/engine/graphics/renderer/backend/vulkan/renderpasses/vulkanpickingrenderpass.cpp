@@ -116,7 +116,7 @@ namespace Graphics
 
         // Begin picking renderpass
         VkClearValue clearValues[2];
-        clearValues[0].color.uint32[0] = 0;
+        clearValues[0].color.uint32[0] = std::numeric_limits<unsigned int>::max();
         clearValues[1].depthStencil = { 1.0f, 0 };
 
         VkRenderPassBeginInfo rpBegin = { VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO };
