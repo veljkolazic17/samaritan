@@ -101,45 +101,8 @@ void Mesh::OnLoad()
     tinygltf::TinyGLTF loader;
     std::string err, warn;
 
-    // Skip image loading — textures are managed by our own texture system.
-    // Override filesystem callbacks so image file reads silently succeed with empty data,
-    // preventing "File not found" warnings. Non-image files (gltf, bin) are read normally.
-    tinygltf::FsCallbacks fsCallbacks{};
-    fsCallbacks.user_data = nullptr;
-    fsCallbacks.FileExists = [](const std::string& path, void*) -> bool
-    {
-        if (IsImageExtension(path)) return true;
-        return static_cast<bool>(std::ifstream(path));
-    };
-
-    fsCallbacks.ExpandFilePath = [](const std::string& path, void*) -> std::string { return path; };
-    fsCallbacks.ReadWholeFile = [](std::vector<unsigned char>* out, std::string* err, const std::string& path, void*) -> bool
-    {
-        if (IsImageExtension(path))
-        {
-            out->clear();
-            return true;
-        }
-
-        std::ifstream f(path, std::ios::binary | std::ios::ate);
-        if (!f)
-        {
-            if (err)
-            {
-                *err = "Cannot open: " + path; return false;
-            }
-        }
-
-        out->resize(static_cast<size_t>(f.tellg()));
-        f.seekg(0);
-        return f.read(reinterpret_cast<char*>(out->data()), static_cast<std::streamsize>(out->size())).good();
-    };
-
-    fsCallbacks.WriteWholeFile = nullptr;
-    loader.SetFsCallbacks(fsCallbacks);
-
-    // Install a no-op image decoder so tinygltf never tries to decode image bytes.
-    // We load textures ourselves via stbi in our own texture system.
+    // No-op image decoder — tinygltf reads image files normally but we skip
+    // decoding. Our texture system loads textures separately via stbi.
     loader.SetImageLoader(
         [](tinygltf::Image*, const int, std::string*, std::string*,
            int, int, const unsigned char*, int, void*) -> bool { return true; },
@@ -157,8 +120,8 @@ void Mesh::OnLoad()
         return;
     }
 
-    if (!warn.empty())
-        LogWarning(LogChannel::Resource, "glTF '%s': %s", path.c_str(), warn.c_str());
+    // tinygltf warnings are expected — we deliberately skip image loading
+    // (images are loaded separately via our texture system)
 
     // Directory containing the glTF file — used to resolve relative image URIs
     const std::string meshDir = std::format("assets/meshes/{}/", m_Name);

@@ -13,7 +13,7 @@ struct smVec4
 {
 	smVec4(){}
 
-	explicit smVec4(const smfloat32 x, const smfloat32 y, const smfloat32 z, const smfloat32 w)
+	smVec4(const smfloat32 x, const smfloat32 y, const smfloat32 z, const smfloat32 w)
 		: m_X(x), m_Y(y), m_Z(z), m_W(w){}
 
 	void Set(const smfloat32 x, const smfloat32 y, const smfloat32 z, const smfloat32 w);
@@ -210,7 +210,7 @@ struct smVec3
 {
 	smVec3() {}
 
-	explicit smVec3(const smfloat32 x, const smfloat32 y, const smfloat32 z)
+	smVec3(const smfloat32 x, const smfloat32 y, const smfloat32 z)
 		: m_X(x), m_Y(y), m_Z(z) {}
 
 	void Set(const smfloat32 x, const smfloat32 y, const smfloat32 z);
@@ -426,7 +426,7 @@ struct smVec2
 {
 	smVec2() {}
 
-	explicit smVec2(const smfloat32 x, const smfloat32 y)
+	smVec2(const smfloat32 x, const smfloat32 y)
 		: m_X(x), m_Y(y) {}
 
 	void Set(const smfloat32 x, const smfloat32 y);

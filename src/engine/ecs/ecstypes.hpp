@@ -6,7 +6,9 @@
 
 #include <array>
 #include <bitset>
+#include <functional>
 #include <memory>
+#include <refl.hpp>
 
 BEGIN_NAMESPACE
 
@@ -76,6 +78,8 @@ struct Typelist
     using get = std::tuple_element_t<At, TTuple>;
 };
 
+using ComponentVisitor = std::function<void(const char* memberName, const char* typeName, void* memberPtr, smsize memberSize)>;
+
 struct ISparseSet
 {
     virtual ~ISparseSet() = default;
@@ -86,6 +90,8 @@ struct ISparseSet
     virtual smsize Size() const = 0;
     virtual const smvector<EntityId>& Entities() const = 0;
 
+    virtual void* GetRawPtr(EntityId entity) = 0;
+    virtual void VisitMembers(EntityId entity, const ComponentVisitor& visitor) = 0;
     virtual void Delete(EntityId entity) = 0;
     virtual void DeleteAll() = 0;
 };
@@ -190,6 +196,30 @@ public:
         }
         return nullptr;
     }
+
+    void* GetRawPtr(EntityId entity) override { return static_cast<void*>(GetPtr(entity)); }
+
+#ifdef SM_TOOL
+    void VisitMembers(EntityId entity, const ComponentVisitor& visitor) override
+    {
+        //added for sparese set that does not have it's T as a Component
+        if constexpr (refl::trait::is_reflectable_v<T>)
+        {
+            T* comp = GetPtr(entity);
+            if (comp == nullptr)
+            {
+                return;
+            }
+
+            refl::util::for_each(refl::reflect<T>().members, [&](auto member)
+            {
+                using F = typename decltype(member)::value_type;
+                void* memberPtr = &member(*comp);
+                visitor(member.name.c_str(), typeid(F).name(), memberPtr, sizeof(F));
+            });
+        }
+    }
+#endif
 
     SM_INLINE smbool Contains(EntityId id) const { return GetDenseIndex(id) != TOMBSTONE; }
     SM_INLINE smbool IsEmpty() const { return m_Data.empty(); }

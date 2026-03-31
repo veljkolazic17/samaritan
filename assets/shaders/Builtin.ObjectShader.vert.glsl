@@ -16,12 +16,10 @@ layout(set = 0, binding = 0) uniform global_uniform_object{
 } global_ubo;
 
 layout(push_constant) uniform push_constants{
-
 	// Only guaranteed a total of 128 bytes.
-	mat4 model; // 64 bytes
+	mat4 model;         // 64 bytes
+	vec4 overlay_color; // 16 bytes = 80 total
 } u_push_constants;
-
-layout(location = 0) out int out_mode;
 
 // Data Transfer Object
 layout(location = 1) out struct dto {

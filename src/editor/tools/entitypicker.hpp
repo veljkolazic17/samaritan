@@ -9,6 +9,7 @@
 #include <engine/input/events/mouseevents.hpp>
 
 #include <vector>
+#include <limits>
 
 #define smEntityPicker() ::samaritan::EntityPicker::GetInstance()
 
@@ -30,7 +31,7 @@ private:
 
     Events::EventHandler<Input::MouseButtonPressedEvent> m_MouseButtonPressedHandler;
 
-    smuint32 m_PickedObjectId = 0;
+    smuint32 m_PickedObjectId = UINT_MAX;
     smint16 m_ClickX = 0;
     smint16 m_ClickY = 0;
     smbool m_PickRequested = false;

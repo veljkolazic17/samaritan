@@ -17,6 +17,11 @@ layout(set = 1, binding = 0) uniform local_uniform_object {
     float shininess;
 } object_ubo;
 
+layout(push_constant) uniform push_constants{
+    mat4 model;      // 64 bytes
+    vec4 overlay_color; // 16 bytes = 80 total
+} u_push_constants;
+
 // Samplers — packed into a single binding as an array to match Vulkan descriptor layout
 // [0] = diffuse, [1] = specular, [2] = normal
 layout(set = 1, binding = 1) uniform sampler2D material_samplers[3];
@@ -52,5 +57,5 @@ void main() {
     vec4 diffuse  = vec4(vec3(global_ubo.dir_light_color * diffuse_intensity), texColor.a) * texColor;
     vec4 specular = vec4(vec3(global_ubo.dir_light_color * spec), texColor.a) * texSpecular;
 
-    out_colour = ambient + diffuse + specular;
+    out_colour = ambient + diffuse + specular + u_push_constants.overlay_color;
 }

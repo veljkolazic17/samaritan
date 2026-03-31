@@ -120,6 +120,9 @@ namespace Engine
                 smECSSystems().UpdateAll(world->GetESCWorld());
             }
 
+            constexpr smuint32 vertCount = 6;
+            renderer.SubmitProcedural("InfiniteGridShader", vertCount, 128);
+
             Graphics::RenderData data;
             data.m_Time = m_DeltaTime;
             renderer.DrawFrame(data);

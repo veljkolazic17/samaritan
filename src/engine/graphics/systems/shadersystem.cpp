@@ -211,7 +211,12 @@ smbool ShaderSystem::SetUniformByName(const std::string& uniformName, const void
         if (shader.IsValid())
         {
             Shader* shaderPtr = shader.GetResource();
-            const ShaderUniform& shaderUniform = shaderPtr->m_UniformLookupTable[uniformName];
+            auto uniformIt = shaderPtr->m_UniformLookupTable.find(uniformName);
+            if (uniformIt == shaderPtr->m_UniformLookupTable.end())
+            {
+                return false;
+            }
+            const ShaderUniform& shaderUniform = uniformIt->second;
 
             if (shaderPtr->m_ScopeType != shaderUniform.m_ScopeType)
             {

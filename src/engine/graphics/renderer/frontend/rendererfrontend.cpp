@@ -6,22 +6,14 @@
 #include <engine/memory/memory.hpp>
 #include <engine/events/eventmanager.hpp>
 
+#include <algorithm>
+
 #if IMGUI_DISPLAY_ENABLED
 #include <editor/imgui/imguidrawmodule.hpp>
 #endif
 
 #ifdef SM_TOOL
 #include <engine/graphics/debug/lightingdebug.hpp>
-#endif
-
-#ifdef TEST_CODE_ENABLED
-#include <math/matrix.hpp>
-#include <math/math.hpp>
-#include <math/vector.hpp>
-#include <engine/graphics/systems/geometrysystem.hpp>
-#ifdef SM_TOOL
-#include <engine/graphics/debug/transformdebug.hpp>
-#endif
 #endif
 
 BEGIN_NAMESPACE
@@ -93,87 +85,102 @@ namespace Graphics
         gpFreeRenderer(m_RendererBackend, sizeof(m_RendererBackend));
     }
 
+    void Renderer::SetGlobalUniforms()
+    {
+        smShaderSystem().SetUniformByName("projection", &m_Projection);
+        smShaderSystem().SetUniformByName("view", &m_View);
+#ifdef SM_TOOL
+        smVec4 ambientColor = smLightingDebug().GetAmbientColor();
+#else
+        smVec4 ambientColor = smVec4{ 0.1f, 0.1f, 0.1f, 1.0f };
+#endif
+        smShaderSystem().SetUniformByName("ambient_color", &ambientColor);
+        smVec4 dirLightDirection = smVec4{ -0.577f, -0.577f, -0.577f, 0.0f };
+        smVec4 dirLightColor = smVec4{ 1.0f, 1.0f, 1.0f, 1.0f };
+        smShaderSystem().SetUniformByName("dir_light_direction", &dirLightDirection);
+        smShaderSystem().SetUniformByName("dir_light_color", &dirLightColor);
+        smShaderSystem().ApplyGlobalUniforms();
+    }
+
     void Renderer::DrawFrame(RenderData& renderData)
     {
-        if (m_RendererBackend != nullptr)
-        {
-            if (m_RendererBackend->BeginFrame(renderData.m_Time))
-            {
-                m_DrawList.swap(m_DrawListToDraw);
-                m_DrawList.clear();
-
-                m_RendererBackend->BeginWorldPass();
-#if IMGUI_DISPLAY_ENABLED
-                smImguiDrawModule().NewFrame();
-#endif
-                // --- World pass ---
-
-                smShaderSystem().Use(SM_DEFAULT_SHADER_NAME);
-                smShaderSystem().SetUniformByName("projection", &m_Projection);
-                smShaderSystem().SetUniformByName("view", &m_View);
-#ifdef SM_TOOL
-                smVec4 ambientColor = smLightingDebug().GetAmbientColor();
-#else
-                smVec4 ambientColor = smVec4{ 0.1f, 0.1f, 0.1f, 1.0f };
-#endif
-                smShaderSystem().SetUniformByName("ambient_color", &ambientColor);
-                smVec4 dirLightDirection = smVec4{ -0.577f, -0.577f, -0.577f, 0.0f };
-                smVec4 dirLightColor = smVec4{ 1.0f, 1.0f, 1.0f, 1.0f };
-                smShaderSystem().SetUniformByName("dir_light_direction", &dirLightDirection);
-                smShaderSystem().SetUniformByName("dir_light_color", &dirLightColor);
-                smShaderSystem().ApplyGlobalUniforms();
-
-                constexpr smfloat32 meshScale = 1.0f;
-#ifdef SM_TOOL
-                smMat4 model = smTransformDebug().GetModelMatrix();
-#else
-                smMat4 model = smMat4_identity;
-#endif
-                model[0] = model[0] * meshScale;
-                model[1] = model[1] * meshScale;
-                model[2] = model[2] * meshScale;
-                if (!m_DrawListToDraw.empty())
-                {
-                    for (const DrawCall& call : m_DrawListToDraw)
-                    {
-                        for (Geometry* geometry : call.m_Mesh->m_Geometries)
-                        {
-                            GeometryData data = {};
-                            data.m_Model = call.m_Model;
-                            data.m_Geometry = geometry;
-                            data.m_ObjectId = geometry->m_Id;
-                            if (geometry->m_Material)
-                            {
-                                geometry->m_Material->Apply();
-                            }
-                            smShaderSystem().SetUniformByName("model", &data.m_Model);
-                            m_RendererBackend->DrawGeometry(data);
-                        }
-                    }
-                }
-
-                smShaderSystem().Use("InfiniteGridShader");
-                smShaderSystem().SetUniformByName("projection", &m_Projection);
-                smShaderSystem().SetUniformByName("view", &m_View);
-                smShaderSystem().ApplyGlobalUniforms();
-                smRenderer().DrawProcedural(6);
-
-#if IMGUI_DISPLAY_ENABLED
-                smImguiDrawModule().Render();
-#endif
-                m_RendererBackend->EndWorldPass();
-
-                if (!m_RendererBackend->EndFrame(renderData.m_Time))
-                {
-                    softAssert(false, "Error ending frame!");
-                }
-                m_RendererBackend->IncrementFrameCount();
-            }
-        }
-        else
+        if (m_RendererBackend == nullptr)
         {
             hardAssert(false, "Renderer not initialized!");
+            return;
         }
+
+        if (!m_RendererBackend->BeginFrame(renderData.m_Time))
+        {
+            return;
+        }
+
+        m_DrawList.swap(m_DrawListToDraw);
+        m_DrawList.clear();
+
+        // Sort by order then by name. this is neede because infinite grid will render before world objects and objects won't be seen
+        std::stable_sort(m_DrawListToDraw.begin(), m_DrawListToDraw.end(),
+        [](const DrawCall& a, const DrawCall& b)
+        {
+            if (a.m_SortOrder != b.m_SortOrder)
+            {
+                return a.m_SortOrder < b.m_SortOrder;
+            }
+
+            return a.m_ShaderName < b.m_ShaderName;
+        });
+
+        m_RendererBackend->BeginWorldPass();
+#if IMGUI_DISPLAY_ENABLED
+        smImguiDrawModule().NewFrame();
+#endif
+
+        smstring activeShader;
+        for (const DrawCall& call : m_DrawListToDraw)
+        {
+            if (call.m_ShaderName != activeShader)
+            {
+                activeShader = call.m_ShaderName;
+                smShaderSystem().Use(activeShader);
+                SetGlobalUniforms();
+            }
+
+            if (call.m_Mesh)
+            {
+                for (Geometry* geometry : call.m_Mesh->m_Geometries)
+                {
+                    GeometryData data = {};
+                    data.m_Model = call.m_Model;
+                    data.m_Geometry = geometry;
+                    data.m_ObjectId = call.m_ObjectId;
+
+                    if (geometry->m_Material)
+                    {
+                        geometry->m_Material->Apply();
+                    }
+
+                    smShaderSystem().SetUniformByName("model", &data.m_Model);
+                    smShaderSystem().SetUniformByName("overlay_color", &call.m_OverlayColor);
+                    m_RendererBackend->DrawGeometry(data);
+                }
+            }
+            else if (call.m_ProceduralVertexCount > 0)
+            {
+                m_RendererBackend->DrawProcedural(call.m_ProceduralVertexCount);
+            }
+        }
+
+#if IMGUI_DISPLAY_ENABLED
+        smImguiDrawModule().Render();
+#endif
+        m_RendererBackend->EndWorldPass();
+
+        if (!m_RendererBackend->EndFrame(renderData.m_Time))
+        {
+            softAssert(false, "Error ending frame!");
+        }
+
+        m_RendererBackend->IncrementFrameCount();
     }
 
     void Renderer::Resize(smuint32 width, smuint32 heigth)
@@ -224,8 +231,45 @@ namespace Graphics
     {
         if (mesh != nullptr)
         {
-            m_DrawList.push_back({ mesh, model, objectId});
+            DrawCall call;
+            call.m_Mesh = mesh;
+            call.m_Model = model;
+            call.m_ObjectId = objectId;
+            call.m_ShaderName = SM_DEFAULT_SHADER_NAME;
+            m_DrawList.push_back(call);
         }
+    }
+
+    void Renderer::SubmitMeshOverlayed(const Mesh* mesh, const smMat4& model, smuint32 objectId, const smVec4& overlay)
+    {
+        if (mesh != nullptr)
+        {
+            DrawCall call;
+            call.m_Mesh = mesh;
+            call.m_Model = model;
+            call.m_ObjectId = objectId;
+            call.m_OverlayColor = overlay;
+            call.m_ShaderName = SM_DEFAULT_SHADER_NAME;
+            m_DrawList.push_back(call);
+        }
+    }
+
+    void Renderer::SubmitProcedural(const smstring& shaderName, smuint32 vertexCount, smuint8 sortOrder)
+    {
+        DrawCall call;
+        call.m_ShaderName = shaderName;
+        call.m_ProceduralVertexCount = vertexCount;
+        call.m_SortOrder = sortOrder;
+        m_DrawList.push_back(call);
+    }
+
+    void Renderer::SubmitProceduralOverlayed(const smstring& shaderName, smuint32 vertexCount, const smVec4& overlay)
+    {
+        DrawCall call;
+        call.m_ShaderName = shaderName;
+        call.m_ProceduralVertexCount = vertexCount;
+        call.m_OverlayColor = overlay;
+        m_DrawList.push_back(call);
     }
 
     void Renderer::DrawProcedural(smuint32 vertexCount)
@@ -261,7 +305,6 @@ namespace Graphics
         return false;
     }
 
-    //TODO : [FUCKED]This is more than pure shit. Is there way not to iterate over all geometries again????
     smuint32 Renderer::PickEntity(smuint32 mouseX, smuint32 mouseY)
     {
         if (m_RendererBackend != nullptr)
@@ -269,6 +312,11 @@ namespace Graphics
             std::vector<GeometryData> geometryData;
             for (const DrawCall& call : m_DrawListToDraw)
             {
+                if (!call.m_Mesh)
+                {
+                    continue;
+                }
+
                 for (Geometry* geometry : call.m_Mesh->m_Geometries)
                 {
                     GeometryData data = {};
@@ -278,7 +326,6 @@ namespace Graphics
                     geometryData.push_back(data);
                 }
             }
-
 
             return m_RendererBackend->DrawPicking(mouseX, mouseY, m_Projection, m_View, geometryData);
         }

@@ -19,11 +19,15 @@ namespace Graphics
     class Renderer SINGLETON(Renderer), public Shutdownable
     {
     public:
-        struct DrawCall
+        struct DrawCall //TODO : [FUCKED] this overlay shit should be moved somewhere else
         {
-            const Mesh* m_Mesh;
-            smMat4 m_Model;
-            smuint32 m_ObjectId;
+            const Mesh* m_Mesh = nullptr;
+            smuint32 m_ProceduralVertexCount = 0;
+            smMat4 m_Model = smMat4_identity;
+            smuint32 m_ObjectId = 0;
+            smVec4 m_OverlayColor = { 0.0f, 0.0f, 0.0f, 0.0f };
+            smstring m_ShaderName;
+            smuint8 m_SortOrder = 0; // lower draws first
         };
 
         SINGLETON_CONSTRUCTOR(Renderer);
@@ -39,6 +43,9 @@ namespace Graphics
         void DrawFrame(RenderData& renderData);
 
         void SubmitMesh(const Mesh* mesh, const smMat4& model, smuint32 objectId);
+        void SubmitMeshOverlayed(const Mesh* mesh, const smMat4& model, smuint32 objectId, const smVec4& overlay);
+        void SubmitProcedural(const smstring& shaderName, smuint32 vertexCount, smuint8 sortOrder = 0);
+        void SubmitProceduralOverlayed(const smstring& shaderName, smuint32 vertexCount, const smVec4& overlay);
 
         SM_INLINE smMat4& GetProjection() { return m_Projection; }
         SM_INLINE smMat4& GetView() { return m_View; }
@@ -65,6 +72,8 @@ namespace Graphics
         HACK(SM_INLINE RendererBackend* GetRendererBackend() { return m_RendererBackend; })
 
     private:
+        void SetGlobalUniforms();
+
         smMat4 m_Projection;
         smMat4 m_View;
         RendererBackend* m_RendererBackend = nullptr;

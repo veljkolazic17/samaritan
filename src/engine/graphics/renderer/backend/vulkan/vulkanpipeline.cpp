@@ -125,26 +125,27 @@ namespace Graphics
         // Pipeline layout
         VkPipelineLayoutCreateInfo pipelineLayoutCreateInfo = { VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO };
 
-        // Push constants
-        if (pushConstantsCount > 0) 
+        // Push constants — merge all ranges into one covering [0, totalSize]
+        // Vulkan requires that no two ranges share the same stage flags.
+        VkPushConstantRange mergedRange = {};
+        if (pushConstantsCount > 0)
         {
-            if (pushConstantsCount > 32) 
-            {
-                softAssert(false, "Too many push constant ranges! Max is 32.");
-                return false;
-            }
-
-            // NOTE: 32 is the max number of ranges we can ever have, since spec only guarantees 128 bytes with 4-byte alignment.
-            VkPushConstantRange ranges[32];
+            smuint32 totalSize = 0;
             for (smuint32 index = 0; index < pushConstantsCount; ++index)
             {
-                ranges[index].stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
-                ranges[index].offset = pushConstantRanges[index].m_Offset;
-                ranges[index].size = pushConstantRanges[index].m_Size;
+                smuint32 end = pushConstantRanges[index].m_Offset + pushConstantRanges[index].m_Size;
+                if (end > totalSize)
+                {
+                    totalSize = end;
+                }
             }
 
-            pipelineLayoutCreateInfo.pushConstantRangeCount = pushConstantsCount;
-            pipelineLayoutCreateInfo.pPushConstantRanges = ranges;
+            mergedRange.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
+            mergedRange.offset = 0;
+            mergedRange.size = totalSize;
+
+            pipelineLayoutCreateInfo.pushConstantRangeCount = 1;
+            pipelineLayoutCreateInfo.pPushConstantRanges = &mergedRange;
         }
         else 
         {

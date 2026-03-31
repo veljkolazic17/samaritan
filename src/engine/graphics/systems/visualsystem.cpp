@@ -6,12 +6,24 @@
 #include <engine/graphics/renderer/frontend/rendererfrontend.hpp>
 #include <engine/ecs/ecsquery.hpp>
 
+#ifdef SM_TOOL
+#include <editor/tools/entitypicker.hpp>
+#endif
+
 BEGIN_NAMESPACE
 
 void ECS::VisualSystem(ECS::World& world)
 {
+#ifdef SM_TOOL
+    smuint32 pickedId = smEntityPicker().GetPickedObjectId();
+#endif
+
     ECS::Query<VisualComponent, Transform> query(&world);
-    query.Foreach([](ECS::EntityId entity, VisualComponent& vc, Transform& t)
+    query.Foreach([
+#ifdef SM_TOOL
+        pickedId
+#endif
+    ](ECS::EntityId entity, VisualComponent& vc, Transform& t)
     {
         if (!vc.m_MeshPath.empty() && !vc.m_Mesh)
         {
@@ -22,7 +34,7 @@ void ECS::VisualSystem(ECS::World& world)
         {
             return;
         }
-        
+
         smMat4 translation = smMat4Translation(t.m_Position);
         smMat4 rotation = smMat4::RotationEuler(t.m_Rotation.m_X, t.m_Rotation.m_Y, t.m_Rotation.m_Z);
         smMat4 scale = smMat4
@@ -35,7 +47,17 @@ void ECS::VisualSystem(ECS::World& world)
 
         smMat4 model = translation * rotation * scale;
 
-        smRenderer().SubmitMesh(vc.m_Mesh.GetResource(), model, entity);
+        //THIS HERE IS A PURE SHIT
+#ifdef SM_TOOL
+        if (entity == pickedId)
+        {
+            smRenderer().SubmitMeshOverlayed(vc.m_Mesh.GetResource(), model, entity, smVec4{ 0.0f, 1.0f, 0.7f, 0.0f });
+        }
+        else
+#endif
+        {
+            smRenderer().SubmitMesh(vc.m_Mesh.GetResource(), model, entity);
+        }
     });
 }
 

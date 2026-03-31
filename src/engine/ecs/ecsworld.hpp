@@ -145,6 +145,23 @@ public:
         hardAssert(comp != nullptr, "Entity is nullptr");
         return *comp;
     }
+    
+#ifdef SM_TOOL
+    void ForEachComponent(EntityId entity, std::function<void(const smstring& componentName, ISparseSet& storage)> visitor)
+    {
+        ECS_CHECK_VALID_ENTITY(entity);
+        ECS_CHECK_IS_IN_USE_ENTITY(entity);
+
+        ComponentMask& mask = GetEntityMask(entity);
+        for (smsize i = 0; i < m_ComponentStorage.size(); ++i)
+        {
+            if (mask[i] && m_ComponentStorage[i] && m_ComponentStorage[i]->Contains(entity))
+            {
+                visitor(ms_ComponentDebugLabels[i], *m_ComponentStorage[i]);
+            }
+        }
+    }
+#endif
 
     EntityId Spawn()
     {

@@ -89,6 +89,11 @@
             "name": "model",
             "type": "mat4",
             "scope": "local"
+        },
+        {
+            "name": "overlay_color",
+            "type": "vec4",
+            "scope": "local"
         }
     ]
 }
