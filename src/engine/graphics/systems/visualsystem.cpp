@@ -45,7 +45,7 @@ void ECS::VisualSystem(ECS::World& world)
             smVec4(0, 0, 0, 1)
         );
 
-        smMat4 model = translation * rotation * scale;
+        smMat4 model = rotation * scale * translation;
 
         //THIS HERE IS A PURE SHIT
 #ifdef SM_TOOL
